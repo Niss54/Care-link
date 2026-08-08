@@ -63,9 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (event === "SIGNED_IN" && session) {
         setEmail(session.user.email ?? "");
         setMode("live");
+        setHospital("CareLink Hospital Network");
       } else if (event === "SIGNED_OUT") {
         setEmail(null);
         setMode(null);
+        setHospital(null);
       }
     });
 
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (session) {
         setEmail(session.user.email ?? "");
         setMode("live");
+        setHospital("CareLink Hospital Network");
       }
       setReady(true);
     });
