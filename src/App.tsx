@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TabType, Patient, Appointment, ActivityItem, ToastMessage, DoctorProfile, AppointmentStatus, Medication, VitalRecord } from './types';
+import { supabase } from './lib/supabase';
 import { CURRENT_DOCTOR, INITIAL_PATIENTS, INITIAL_APPOINTMENTS, INITIAL_ACTIVITIES, INITIAL_MEDICATIONS, INITIAL_VITALS, INITIAL_LABS } from './data/mockData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -20,7 +21,7 @@ import { LandingView } from './views/LandingView';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<TabType>('landing');
-  const [doctor] = useState<DoctorProfile>(CURRENT_DOCTOR);
+  const [doctor, setDoctor] = useState<DoctorProfile>(CURRENT_DOCTOR);
   const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS);
   const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
   const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
@@ -49,6 +50,33 @@ export function App() {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 4000);
   };
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+        setActiveTab('home');
+        
+        const metadata = session.user.user_metadata;
+        const name = metadata?.full_name || metadata?.name || session.user.email?.split('@')[0] || 'Doctor';
+        const email = session.user.email || 'doctor@carelink.health';
+        const avatarUrl = metadata?.avatar_url || metadata?.picture || CURRENT_DOCTOR.avatarUrl;
+
+        setDoctor(prev => ({
+          ...prev,
+          name: name.includes('Dr.') ? name : `Dr. ${name}`,
+          email,
+          avatarUrl
+        }));
+
+        addToast('Welcome', `Logged in as ${name}`, 'success');
+      } else if (event === 'SIGNED_OUT') {
+        setActiveTab('landing');
+        setDoctor(CURRENT_DOCTOR); // Reset to default on sign out
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
