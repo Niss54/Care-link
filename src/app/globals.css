@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-green: #34d399;
+  --brand-teal: #14b8a6;
+  --brand-deep: #0e8a7e;
+}
+
+html,
+body {
+  background-color: #f6f9f8;
+  color: #0f1e1b;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Soft ambient background wash for the app */
+.app-bg {
+  background:
+    radial-gradient(1100px 520px at 12% -8%, rgba(52, 211, 153, 0.10), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, rgba(20, 184, 166, 0.10), transparent 55%),
+    linear-gradient(180deg, #f8fbfa 0%, #f6f9f8 100%);
+}
+
+/* Frosted glass panel */
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(15, 30, 27, 0.06);
+}
+
+.brand-text {
+  background: linear-gradient(92deg, var(--brand-green), var(--brand-teal));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-gradient {
+  background: linear-gradient(92deg, var(--brand-green), var(--brand-teal));
+}
+
+/* Loading shimmer for skeletons */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(15, 30, 27, 0.06);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.6),
+    transparent
+  );
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus visibility for accessibility */
+:focus-visible {
+  outline: 2px solid var(--brand-teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Login field helpers */
+.field-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  height: 1rem;
+  width: 1rem;
+  transform: translateY(-50%);
+  color: #849292;
+  pointer-events: none;
+}
+.field-input {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(15, 30, 27, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+  font-size: 0.875rem;
+  color: #0f1e1b;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field-input:focus {
+  border-color: #14b8a6;
+}
