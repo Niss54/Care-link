@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from './context/AuthContext';
 import { TabType, Patient, Appointment, ActivityItem, ToastMessage, DoctorProfile, AppointmentStatus, Medication, VitalRecord } from './types';
 import { supabase } from './lib/supabase';
-import { CURRENT_DOCTOR, INITIAL_PATIENTS, INITIAL_APPOINTMENTS, INITIAL_ACTIVITIES, INITIAL_MEDICATIONS, INITIAL_VITALS, INITIAL_LABS } from './data/mockData';
+import { usePatients } from './hooks/usePatients';
+import { useAppointments } from './hooks/useAppointments';
+import { useMedications } from './hooks/useMedications';
+import { CURRENT_DOCTOR, INITIAL_ACTIVITIES, INITIAL_VITALS, INITIAL_LABS } from './data/mockData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
@@ -20,12 +24,17 @@ import { NotFoundView } from './views/NotFoundView';
 import { LandingView } from './views/LandingView';
 
 export function App() {
+  const { user, loading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('landing');
-  const [doctor, setDoctor] = useState<DoctorProfile>(CURRENT_DOCTOR);
-  const [patients, setPatients] = useState<Patient[]>(INITIAL_PATIENTS);
-  const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
+  const [doctor, setDoctor] = useState<DoctorProfile>({
+    ...CURRENT_DOCTOR,
+    email: user?.email || CURRENT_DOCTOR.email,
+    name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || CURRENT_DOCTOR.name,
+  });
+  const { patients, addPatient: dbAdd, deletePatient: dbDelete, updatePatientNotes: dbUpdateNotes } = usePatients();
+  const { appointments, addAppointment: aptAdd, updateAppointmentStatus: aptUpdateStatus } = useAppointments();
+  const { medications, addMedication: medAdd, refillMedication: medRefill, archiveMedication: medArchive } = useMedications();
   const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
-  const [medications, setMedications] = useState<Medication[]>(INITIAL_MEDICATIONS);
   const [vitalRecords, setVitalRecords] = useState<VitalRecord[]>(INITIAL_VITALS);
   const [labRecords, setLabRecords] = useState(INITIAL_LABS);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -52,45 +61,39 @@ export function App() {
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+    if (!loading) {
+      if (user && ['login','landing','reset-password'].includes(activeTab)) {
         setActiveTab('home');
-        
-        const metadata = session.user.user_metadata;
-        const name = metadata?.full_name || metadata?.name || session.user.email?.split('@')[0] || 'Doctor';
-        const email = session.user.email || 'doctor@carelink.health';
-        const avatarUrl = metadata?.avatar_url || metadata?.picture || CURRENT_DOCTOR.avatarUrl;
-
-        setDoctor(prev => ({
-          ...prev,
-          name: name.includes('Dr.') ? name : `Dr. ${name}`,
-          email,
-          avatarUrl
-        }));
-
-        addToast('Welcome', `Logged in as ${name}`, 'success');
-      } else if (event === 'SIGNED_OUT') {
+      } else if (!user && !['login','landing','reset-password'].includes(activeTab)) {
         setActiveTab('landing');
-        setDoctor(CURRENT_DOCTOR); // Reset to default on sign out
       }
-    });
+    }
+  }, [user, loading, activeTab]);
 
-    return () => subscription.unsubscribe();
-  }, []);
+  useEffect(() => {
+    if (user) {
+      setDoctor(prev => ({
+        ...prev,
+        email: user.email || prev.email,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0] || prev.name,
+      }));
+    }
+  }, [user]);
 
   const dismissToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
   // Handlers
-  const handleScheduleAppointment = (newAptData: Omit<Appointment, 'id'>) => {
+  const handleScheduleAppointment = async (newAptData: Omit<Appointment, 'id'>) => {
     const newId = `APT-${appointments.length + 101}`;
     const newApt: Appointment = {
       ...newAptData,
       id: newId,
       urgency: isOnCall ? 'High' : (newAptData.urgency || 'Medium')
     };
-    setAppointments((prev) => [newApt, ...prev]);
+    
+    await aptAdd(newApt);
 
     // Add activity item
     const newAct: ActivityItem = {
@@ -106,8 +109,8 @@ export function App() {
     addToast('Appointment Scheduled', `Booked consultation for ${newApt.patientName} at ${newApt.time}.`, 'success');
   };
 
-  const handleAddPatient = (newPatient: Patient) => {
-    setPatients((prev) => [newPatient, ...prev]);
+  const handleAddPatient = async (newPatient: Patient) => {
+    await dbAdd(newPatient);
 
     const newAct: ActivityItem = {
       id: `ACT-${activities.length + 1}`,
@@ -122,43 +125,25 @@ export function App() {
     addToast('Patient Registered', `Created medical EHR record for ${newPatient.name}.`, 'success');
   };
 
-  const handleDeletePatient = (patientId: string) => {
+  const handleDeletePatient = async (patientId: string) => {
     const pt = patients.find((p) => p.id === patientId);
-    setPatients((prev) => prev.filter((p) => p.id !== patientId));
+    await dbDelete(patientId);
     addToast('Patient Archived', `Archived record for ${pt ? pt.name : patientId}.`, 'info');
   };
 
-  const handleUpdateAppointmentStatus = (id: string, newStatus: AppointmentStatus) => {
-    setAppointments((prev) =>
-      prev.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt))
-    );
+  const handleUpdateAppointmentStatus = async (id: string, newStatus: AppointmentStatus) => {
+    await aptUpdateStatus(id, newStatus);
     addToast('Status Updated', `Appointment ${id} status set to ${newStatus}.`, 'info');
   };
 
-  const handleRefillMedication = (id: string) => {
-    setMedications((prev) =>
-      prev.map((m) =>
-        m.id === id
-          ? {
-              ...m,
-              status: 'Active',
-              refillsRemaining: Math.max(0, m.refillsRemaining - 1)
-            }
-          : m
-      )
-    );
+  const handleRefillMedication = async (id: string) => {
+    await medRefill(id);
     const med = medications.find((m) => m.id === id);
     addToast('Prescription Refill Approved', `Refill authorized for ${med?.name || 'medication'}.`, 'success');
   };
 
-  const handleArchiveMedication = (id: string) => {
-    setMedications((prev) =>
-      prev.map((m) =>
-        m.id === id
-          ? { ...m, status: m.status === 'Archived' ? 'Active' : 'Archived' }
-          : m
-      )
-    );
+  const handleArchiveMedication = async (id: string) => {
+    await medArchive(id);
     const med = medications.find((m) => m.id === id);
     addToast(
       'Prescription Status Changed',
@@ -169,10 +154,10 @@ export function App() {
     );
   };
 
-  const handleAddMedication = (newMedData: Omit<Medication, 'id'>) => {
+  const handleAddMedication = async (newMedData: Omit<Medication, 'id'>) => {
     const newId = `MED-${medications.length + 101}`;
     const newMed: Medication = { ...newMedData, id: newId };
-    setMedications((prev) => [newMed, ...prev]);
+    await medAdd(newMed);
     addToast('Prescription Added', `Created new prescription for ${newMed.name}.`, 'success');
   };
 
@@ -183,14 +168,29 @@ export function App() {
     addToast('Vitals Recorded', `Logged BP ${newVital.bloodPressureSystolic}/${newVital.bloodPressureDiastolic}, HR ${newVital.heartRate} bpm.`, 'success');
   };
 
-  const handleUpdatePatientNotes = (id: string, newNotes: string) => {
-    setPatients((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, notes: newNotes } : p))
-    );
+  const handleUpdatePatientNotes = async (id: string, newNotes: string) => {
+    await dbUpdateNotes(id, newNotes);
     addToast('Notes Updated', `Clinical notes updated for patient ${id}.`, 'success');
   };
 
   // Auth Layouts
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7f9fb] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[#316bf3] flex items-center justify-center text-white">
+            <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </div>
+          <p className="text-sm font-semibold text-[#316bf3]">CareLink</p>
+          <p className="text-xs text-[#74777f]">Loading clinical portal...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (activeTab === 'landing') {
     return <LandingView onLogin={() => setActiveTab('login')} />;
   }
@@ -225,8 +225,9 @@ export function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         doctor={{...doctor, status: isOnCall ? 'On-Call' : doctor.status}}
-        onSignOut={() => {
-          setActiveTab('login');
+        onSignOut={async () => {
+          await signOut();
+          setActiveTab('landing');
           addToast('Signed Out', 'You have been logged out safely.', 'info');
         }}
         isOpenMobile={isMobileMenuOpen}

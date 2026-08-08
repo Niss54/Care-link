@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, ArrowLeft, CheckCircle2, ShieldCheck, Stethoscope } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface ResetPasswordViewProps {
   onBackToLogin: () => void;
@@ -8,11 +9,25 @@ interface ResetPasswordViewProps {
 export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ onBackToLogin }) => {
   const [email, setEmail] = useState('');
   const [isSent, setIsSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-    setIsSent(true);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/auth/reset-password',
+      });
+      if (authError) throw authError;
+      setIsSent(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send reset email. Check the address and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,11 +87,18 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ onBackToLo
               </div>
             </div>
 
+            {error && (
+              <div className="p-3 bg-[#ba1a1a]/10 border border-[#ba1a1a]/30 rounded-xl text-xs text-[#ba1a1a] font-medium">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full py-3 bg-[#316bf3] hover:bg-[#0051d5] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#316bf3]/25 transition-all"
+              disabled={isLoading}
+              className="w-full py-3 bg-[#316bf3] hover:bg-[#0051d5] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#316bf3]/25 transition-all disabled:opacity-50"
             >
-              Send Password Reset Link
+              {isLoading ? 'Sending...' : 'Send Reset Instructions'}
             </button>
 
             <button
