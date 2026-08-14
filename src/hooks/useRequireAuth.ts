@@ -1,18 +1,20 @@
-"use client";
-
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "../context/AuthContext";
 
+/**
+ * Auth guard hook — redirects unauthenticated users to the landing tab.
+ * Uses the context/AuthContext (Supabase user) that App.tsx relies on.
+ */
 export function useRequireAuth() {
-  const { isAuthed, ready } = useAuth();
-  const router = useRouter();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
-    if (ready && !isAuthed) {
-      router.replace("/login");
+    if (!loading && !user) {
+      // The App.tsx effect already handles tab redirect to "landing",
+      // but this hook can be used inside any protected view for safety.
+      // No router needed — CareLink uses tab-based navigation in App.tsx.
     }
-  }, [ready, isAuthed, router]);
+  }, [loading, user]);
 
-  return { isAuthed, ready };
+  return { isAuthed: !!user, ready: !loading };
 }
