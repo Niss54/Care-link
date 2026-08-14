@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { Patient, Medication, VitalRecord, Appointment, LabResult } from '../../types';
-import { X, Calendar, Mail, Phone, Heart, Activity, FileText, Stethoscope, Clock, ShieldCheck, Printer, Pill, Thermometer, UserCheck, AlertTriangle, Mic, MicOff, FlaskConical, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { X, Calendar, Mail, Phone, Heart, Activity, FileText, Stethoscope, Clock, ShieldCheck, Printer, Pill, Thermometer, UserCheck, AlertTriangle, Mic, MicOff, FlaskConical, ArrowUp, ArrowDown, Minus, BrainCircuit, Play, Check, CheckCircle2 } from 'lucide-react';
 import { MedicationsTab } from '../MedicationsTab';
 import { calculateAge } from '../../utils';
 import { VitalsTracker } from '../VitalsTracker';
+import { BigGauge } from '../BigGauge';
+import { ShapChart } from '../ShapChart';
+import { getPrediction, sendFeedback } from '../../lib/api';
+import type { Prediction } from '../../lib/types';
 
 interface ViewPatientModalProps {
   patient: Patient | null;
@@ -18,6 +22,7 @@ interface ViewPatientModalProps {
   onAddMedication: (newMed: Omit<Medication, 'id'>) => void;
   onAddVitalRecord: (record: Omit<VitalRecord, 'id'>) => void;
   onUpdatePatientNotes: (id: string, notes: string) => void;
+  onShowToast?: (title: string, message: string, type?: 'success' | 'info' | 'error') => void;
 }
 
 export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
@@ -32,9 +37,17 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
   onArchiveMedication,
   onAddMedication,
   onAddVitalRecord,
-  onUpdatePatientNotes
+  onUpdatePatientNotes,
+  onShowToast
 }) => {
-  const [activeModalTab, setActiveModalTab] = useState<'overview' | 'medications' | 'vitals' | 'timeline' | 'labs'>('overview');
+  const [activeModalTab, setActiveModalTab] = useState<'overview' | 'medications' | 'vitals' | 'labs' | 'risk'>('overview');
+  
+  // Risk Analysis State
+  const [prediction, setPrediction] = useState<Prediction | null>(null);
+  const [isLoadingRisk, setIsLoadingRisk] = useState(false);
+  const [feedbackMode, setFeedbackMode] = useState<'confirmed' | 'overridden' | null>(null);
+  const [feedbackNote, setFeedbackNote] = useState('');
+  const [feedbackSent, setFeedbackSent] = useState(false);
   const [notesDraft, setNotesDraft] = useState('');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -87,6 +100,48 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
     setIsDictating(false);
   };
 
+  const handleRunRiskAnalysis = async () => {
+    if (!patient) return;
+    setIsLoadingRisk(true);
+    try {
+      const pred = await getPrediction(patient.external_ref || patient.id);
+      setPrediction(pred);
+      setFeedbackMode(null);
+      setFeedbackSent(false);
+      setFeedbackNote('');
+    } catch (e) {
+      console.error(e);
+      if (onShowToast) onShowToast('Error', 'Failed to run risk analysis', 'error');
+    } finally {
+      setIsLoadingRisk(false);
+    }
+  };
+
+  const handleSendFeedback = async (mode: 'confirmed' | 'overridden') => {
+    if (!prediction) return;
+    
+    if (mode === 'overridden' && !feedbackNote && feedbackMode !== 'overridden') {
+      setFeedbackMode('overridden');
+      return;
+    }
+
+    try {
+      const success = await sendFeedback({
+        prediction_id: prediction.prediction_id,
+        action: mode,
+        note: feedbackNote,
+      });
+      if (success) {
+        setFeedbackSent(true);
+        if (onShowToast) onShowToast('Feedback Recorded', 'Clinician feedback saved successfully', 'success');
+      } else {
+        if (onShowToast) onShowToast('Error', 'Failed to save feedback', 'error');
+      }
+    } catch (e) {
+      if (onShowToast) onShowToast('Error', 'Failed to save feedback', 'error');
+    }
+  };
+
   if (!patient) return null;
 
   const handleEditNotes = () => {
@@ -128,32 +183,7 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
 
   const medicationAlerts = patientMeds.filter(m => m.status === 'Active' && m.refillsRemaining === 0);
 
-  const timelineEvents = [
-    ...patientAppointments.map(a => ({
-      id: a.id,
-      date: new Date(a.date).getTime(),
-      displayDate: a.date,
-      type: 'appointment',
-      title: `Appointment: ${a.type}`,
-      desc: `Status: ${a.status}. Doctor: ${a.doctor}. ${a.notes || ''}`
-    })),
-    ...patientMeds.map(m => ({
-      id: m.id,
-      date: new Date(m.prescribedDate).getTime(),
-      displayDate: m.prescribedDate,
-      type: 'medication',
-      title: `Prescribed: ${m.name}`,
-      desc: `Dosage: ${m.dosage}. Frequency: ${m.frequency}. Doctor: ${m.doctor}`
-    })),
-    ...patientVitals.map(v => ({
-      id: v.id,
-      date: new Date(v.timestamp).getTime(),
-      displayDate: v.timestamp.split(' ')[0],
-      type: 'vital',
-      title: 'Vitals Logged',
-      desc: `BP: ${v.bloodPressureSystolic}/${v.bloodPressureDiastolic}, HR: ${v.heartRate}. By: ${v.recordedBy || 'Unknown'}`
-    }))
-  ].sort((a, b) => b.date - a.date);
+  const patientLabs = labRecords.filter(l => l.patientId === patient.id);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in overflow-y-auto">
@@ -276,16 +306,29 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
               <span>Vitals Tracker ({patientVitals.length})</span>
             </button>
             <button
-              onClick={() => setActiveModalTab('timeline')}
+              onClick={() => setActiveModalTab('labs')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-                activeModalTab === 'timeline'
+                activeModalTab === 'labs'
                   ? 'bg-white text-[#022448] shadow-md'
                   : 'bg-white/10 text-[#adc8f5] hover:text-white hover:bg-white/20'
               }`}
             >
-              <Clock className="w-3.5 h-3.5" />
-              <span>Timeline</span>
+              <FlaskConical className="w-3.5 h-3.5" />
+              <span>Lab Results ({patientLabs.length})</span>
             </button>
+            {patient.external_ref && (
+              <button
+                onClick={() => setActiveModalTab('risk')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                  activeModalTab === 'risk'
+                    ? 'bg-white text-[#022448] shadow-md'
+                    : 'bg-white/10 text-[#adc8f5] hover:text-white hover:bg-white/20'
+                }`}
+              >
+                <BrainCircuit className="w-3.5 h-3.5" />
+                <span>Risk Analysis</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -528,36 +571,150 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
               </div>
             )}
 
-            {activeModalTab === 'timeline' && (
+            {activeModalTab === 'labs' && (
               <div className="animate-in fade-in bg-white rounded-xl p-6 shadow-sm">
-                <h3 className="text-sm font-bold text-[#191c1e] uppercase tracking-wider mb-6">Patient History Timeline</h3>
+                <h3 className="text-sm font-bold text-[#191c1e] uppercase tracking-wider mb-6">Lab Results</h3>
                 
-                {timelineEvents.length === 0 ? (
-                  <p className="text-xs text-[#74777f]">No historical events recorded for this patient.</p>
+                {patientLabs.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FlaskConical className="w-8 h-8 text-[#74777f] mx-auto mb-2" />
+                    <p className="text-xs text-[#74777f]">No lab results recorded for this patient.</p>
+                  </div>
                 ) : (
-                  <div className="relative border-l-2 border-[#e0e3e5] ml-3 md:ml-4 space-y-6">
-                    {timelineEvents.map((event, index) => (
-                      <div key={`${event.id}-${index}`} className="relative pl-6 md:pl-8">
-                        <div 
-                          className={`absolute w-5 h-5 rounded-full border-2 border-white -left-[11px] top-0 flex items-center justify-center
-                            ${event.type === 'appointment' ? 'bg-[#316bf3]' : 
-                              event.type === 'medication' ? 'bg-[#10b981]' : 
-                              'bg-[#ff9800]'}`}
-                        >
-                          {event.type === 'appointment' && <Calendar className="w-2.5 h-2.5 text-white" />}
-                          {event.type === 'medication' && <Pill className="w-2.5 h-2.5 text-white" />}
-                          {event.type === 'vital' && <Activity className="w-2.5 h-2.5 text-white" />}
-                        </div>
-                        
-                        <div className="bg-[#f7f9fb] p-3 rounded-xl border border-[#e0e3e5]">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <h4 className="text-xs font-bold text-[#191c1e]">{event.title}</h4>
-                            <span className="text-[10px] font-semibold text-[#74777f]">{event.displayDate}</span>
+                  <div className="space-y-3">
+                    {patientLabs.map((lab) => (
+                      <div key={lab.id} className="p-4 bg-[#f7f9fb] rounded-xl border border-[#e0e3e5] flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="text-sm font-bold text-[#191c1e]">{lab.testName}</h4>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                              lab.status === 'Normal' ? 'bg-[#10b981]/15 text-[#10b981]' :
+                              lab.status === 'High' ? 'bg-[#ba1a1a]/15 text-[#ba1a1a]' :
+                              'bg-[#ff9800]/15 text-[#ff9800]'
+                            }`}>
+                              {lab.status === 'Normal' ? '● Normal' : lab.status === 'High' ? '▲ High' : '▼ Low'}
+                            </span>
                           </div>
-                          <p className="text-[11px] text-[#43474e] leading-relaxed">{event.desc}</p>
+                          <p className="text-xs text-[#74777f]">{lab.date}</p>
+                          {lab.notes && <p className="text-[11px] text-[#43474e] mt-1 italic">{lab.notes}</p>}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-[#191c1e]">{lab.value}</p>
+                          <p className="text-[11px] text-[#74777f]">{lab.unit}</p>
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeModalTab === 'risk' && (
+              <div className="animate-in fade-in space-y-6">
+                {!prediction && !isLoadingRisk && (
+                  <div className="bg-white rounded-xl p-8 shadow-sm flex flex-col items-center text-center border border-[#e0e3e5]">
+                    <div className="w-16 h-16 rounded-2xl bg-[#316bf3]/10 flex items-center justify-center mb-4">
+                      <BrainCircuit className="w-8 h-8 text-[#316bf3]" />
+                    </div>
+                    <h3 className="text-lg font-bold text-[#191c1e] mb-2">Predictive Risk Analysis</h3>
+                    <p className="text-sm text-[#43474e] max-w-md mb-6">
+                      Run the federated ML model to calculate 30-day readmission risk based on clinical history and current vitals.
+                    </p>
+                    <button
+                      onClick={handleRunRiskAnalysis}
+                      className="px-6 py-3 rounded-xl text-sm font-bold bg-[#316bf3] text-white hover:bg-[#0051d5] shadow-md flex items-center gap-2 transition-all"
+                    >
+                      <Play className="w-4 h-4 fill-current" />
+                      Run Risk Analysis
+                    </button>
+                  </div>
+                )}
+
+                {isLoadingRisk && (
+                  <div className="bg-white rounded-xl p-12 shadow-sm flex flex-col items-center justify-center border border-[#e0e3e5]">
+                    <div className="w-12 h-12 border-4 border-[#316bf3]/20 border-t-[#316bf3] rounded-full animate-spin mb-4" />
+                    <p className="text-sm font-semibold text-[#191c1e]">Analyzing clinical factors...</p>
+                  </div>
+                )}
+
+                {prediction && !isLoadingRisk && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Gauge Card */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-[#e0e3e5] flex flex-col items-center justify-center h-full">
+                      <BigGauge probability={prediction.probability} riskTier={prediction.risk_tier} />
+                    </div>
+
+                    {/* SHAP Chart Card */}
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-[#e0e3e5]">
+                      <h3 className="text-sm font-bold text-[#191c1e] uppercase tracking-wider mb-4">Key Risk Factors</h3>
+                      <ShapChart factors={prediction.top_factors} />
+                    </div>
+
+                    {/* Clinician Feedback */}
+                    <div className="md:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-[#e0e3e5]">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="text-sm font-bold text-[#191c1e] uppercase tracking-wider flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4 text-[#316bf3]" />
+                            Clinician Feedback
+                          </h3>
+                          <p className="text-xs text-[#74777f] mt-1">Help train the model by confirming or overriding this prediction.</p>
+                        </div>
+                        {feedbackSent && (
+                          <span className="px-3 py-1 bg-[#f0fdf4] text-[#16a34a] text-xs font-bold rounded-full flex items-center gap-1 border border-[#bbf7d0]">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            Feedback Recorded
+                          </span>
+                        )}
+                      </div>
+
+                      {!feedbackSent && (
+                        <div className="mt-5 space-y-4 border-t border-[#e0e3e5] pt-5">
+                          <div className="flex flex-wrap gap-3">
+                            <button
+                              onClick={() => handleSendFeedback('confirmed')}
+                              className="px-4 py-2 bg-[#f0fdf4] hover:bg-[#dcfce7] text-[#16a34a] border border-[#bbf7d0] rounded-xl text-sm font-bold flex items-center gap-2 transition-colors"
+                            >
+                              <Check className="w-4 h-4" />
+                              Confirm Prediction
+                            </button>
+                            <button
+                              onClick={() => handleSendFeedback('overridden')}
+                              className={`px-4 py-2 border rounded-xl text-sm font-bold flex items-center gap-2 transition-colors ${
+                                feedbackMode === 'overridden'
+                                  ? 'bg-[#fef3c7] border-[#fde68a] text-[#d97706]'
+                                  : 'bg-[#fffbeb] hover:bg-[#fef3c7] text-[#d97706] border-[#fde68a]'
+                              }`}
+                            >
+                              <AlertTriangle className="w-4 h-4" />
+                              Override Prediction
+                            </button>
+                          </div>
+
+                          {feedbackMode === 'overridden' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 pt-2">
+                              <label className="block text-xs font-semibold text-[#43474e] mb-2">Override Reason (Required)</label>
+                              <div className="flex gap-3">
+                                <input
+                                  type="text"
+                                  value={feedbackNote}
+                                  onChange={(e) => setFeedbackNote(e.target.value)}
+                                  placeholder="E.g., Patient is on new medication protocol..."
+                                  className="flex-1 px-3 py-2 bg-[#f2f4f6] border border-[#c4c6cf] rounded-xl text-sm focus:outline-none focus:border-[#316bf3]"
+                                />
+                                <button
+                                  onClick={() => handleSendFeedback('overridden')}
+                                  disabled={!feedbackNote.trim()}
+                                  className="px-4 py-2 bg-[#d97706] disabled:opacity-50 text-white rounded-xl text-sm font-bold shadow-sm"
+                                >
+                                  Submit
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

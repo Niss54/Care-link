@@ -6,7 +6,7 @@ import type {
 import { DEMO_PATIENTS, demoPrediction } from "./demo-data";
 import { getSessionMode } from "./auth";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
+const BASE = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
 const TIMEOUT_MS = 6000;
 
 function useLiveData(): boolean {

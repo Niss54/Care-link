@@ -181,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="max-h-72 overflow-y-auto divide-y divide-[#f2f4f6]">
-                {activities.map((act) => (
+                {activities.slice(0, 5).map((act) => (
                   <div key={act.id} className="p-3 hover:bg-[#f7f9fb] transition-colors flex items-start gap-3">
                     <span className={`w-2 h-2 rounded-full mt-2 shrink-0 ${act.statusColor || 'bg-[#316bf3]'}`} />
                     <div className="flex-1">

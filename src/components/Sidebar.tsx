@@ -102,12 +102,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <button
                     key={item.id}
                     onClick={() => handleSelect(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative ${
                       isActive
                         ? 'bg-[#316bf3] text-white shadow-md shadow-[#316bf3]/30 font-semibold'
                         : 'text-[#adc8f5] hover:bg-white/5 hover:text-white'
                     }`}
                   >
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full -ml-3" />
+                    )}
                     <div className="flex items-center gap-3">
                       <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-[#adc8f5]'}`} />
                       <span>{item.label}</span>

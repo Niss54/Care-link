@@ -19,12 +19,12 @@ export const Toast: React.FC<ToastProps> = ({ toasts, onDismiss }) => {
         return (
           <div
             key={toast.id}
-            className={`p-4 rounded-xl border shadow-lg flex items-start gap-3 transition-all duration-300 animate-in slide-in-from-bottom-5 ${
+            className={`p-4 rounded-xl border shadow-lg flex items-start gap-3 transition-all duration-300 animate-in slide-in-from-bottom-5 bg-white ${
               isSuccess
-                ? 'bg-[#ffffff] border-[#10b981]/30 text-[#191c1e]'
+                ? 'border-l-4 border-l-[#10b981] border-[#10b981]/20'
                 : isError
-                ? 'bg-[#ffffff] border-[#ba1a1a]/30 text-[#191c1e]'
-                : 'bg-[#ffffff] border-[#c4c6cf] text-[#191c1e]'
+                ? 'border-l-4 border-l-[#ba1a1a] border-[#ba1a1a]/20'
+                : 'border-l-4 border-l-[#316bf3] border-[#316bf3]/20'
             }`}
           >
             <div className="mt-0.5">

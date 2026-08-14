@@ -20,6 +20,7 @@ export type AppointmentStatus =
 
 export interface Patient {
   id: string; // e.g. "PT-8472"
+  external_ref?: string;
   name: string;
   dob: string; // "YYYY-MM-DD"
   gender?: string;

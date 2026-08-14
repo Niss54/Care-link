@@ -323,6 +323,7 @@ export function App() {
         onAddMedication={handleAddMedication}
         onAddVitalRecord={handleAddVitalRecord}
         onUpdatePatientNotes={handleUpdatePatientNotes}
+        onShowToast={addToast}
       />
     </div>
   );
