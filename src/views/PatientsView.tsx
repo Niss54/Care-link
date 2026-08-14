@@ -71,27 +71,17 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
     }
   };
   const [activeFilter, setActiveFilter] = useState<string>('All');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('All');
   const [quickFilter, setQuickFilter] = useState<string>('None');
   const [isLoadingSkeleton, setIsLoadingSkeleton] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
-  const itemsPerPage = 6;
+  const itemsPerPage = 10;
 
-  // CSV Export logic for administrative reporting
+  // CSV Export logic — spec columns: ID, Name, DOB, Gender, Status, Department, Last Visit, Email
   const handleExportCSV = () => {
     const listToExport = filteredPatients.length > 0 ? filteredPatients : patients;
-    const headers = [
-      'Patient ID',
-      'Name',
-      'Date of Birth',
-      'Status',
-      'Department',
-      'Last Visit',
-      'Email',
-      'Phone',
-      'Date Added',
-      'Notes'
-    ];
+    const headers = ['ID', 'Name', 'DOB', 'Gender', 'Status', 'Department', 'Last Visit', 'Email'];
 
     const escapeCSV = (str: string | undefined) => {
       if (!str) return '""';
@@ -102,13 +92,11 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
       escapeCSV(p.id),
       escapeCSV(p.name),
       escapeCSV(p.dob),
+      escapeCSV(p.gender),
       escapeCSV(p.status),
-      escapeCSV(p.department || 'Cardiology'),
+      escapeCSV(p.department),
       escapeCSV(p.lastVisit),
-      escapeCSV(p.email),
-      escapeCSV(p.phone),
-      escapeCSV(p.dateAdded || '2023-10-24'),
-      escapeCSV(p.notes)
+      escapeCSV(p.email)
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -175,12 +163,19 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
     );
   };
 
+  // Unique departments for filter dropdown
+  const departments = Array.from(new Set(patients.map(p => p.department).filter(Boolean))) as string[];
+
   // Filter logic
   const filteredPatients = patients.filter((p) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.department && p.department.toLowerCase().includes(searchQuery.toLowerCase()));
+      p.name.toLowerCase().includes(q) ||
+      p.id.toLowerCase().includes(q) ||
+      (p.department && p.department.toLowerCase().includes(q)) ||
+      (p.email && p.email.toLowerCase().includes(q));
+
+    const matchesDepartment = departmentFilter === 'All' || p.department === departmentFilter;
 
     let matchesQuickFilter = true;
     if (quickFilter === 'Frequent Visitors') {
@@ -191,8 +186,8 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
       matchesQuickFilter = !!p.dateAdded && (p.dateAdded.includes('2023') || p.dateAdded.includes('2024'));
     }
 
-    if (activeFilter === 'All') return matchesSearch && matchesQuickFilter;
-    return matchesSearch && matchesQuickFilter && p.status === activeFilter;
+    if (activeFilter === 'All') return matchesSearch && matchesDepartment && matchesQuickFilter;
+    return matchesSearch && matchesDepartment && matchesQuickFilter && p.status === activeFilter;
   });
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage) || 1;
@@ -201,11 +196,12 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
     currentPage * itemsPerPage
   );
 
-  const filterCounts = {
+  const filterCounts: Record<string, number> = {
     All: patients.length,
     Active: patients.filter((p) => p.status === 'Active').length,
     Pending: patients.filter((p) => p.status === 'Pending').length,
-    Inactive: patients.filter((p) => p.status === 'Inactive' || p.status === 'Archived').length
+    Inactive: patients.filter((p) => p.status === 'Inactive').length,
+    Archived: patients.filter((p) => p.status === 'Archived').length,
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,10 +264,15 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
       )}
 
       {/* Top Header & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e0e3e5] card-shadow">
-        <div>
-          <h2 className="text-xl font-bold text-[#191c1e]">Patient Directory</h2>
-          <p className="text-xs text-[#74777f]">Manage patient EHR records, status, and clinical assignments</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e0e3e5] shadow-sm">
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-[#191c1e]">Patient Records</h2>
+            <p className="text-xs text-[#74777f]">Manage patient EHR records, status, and clinical assignments</p>
+          </div>
+          <span className="px-2.5 py-1 bg-[#316bf3]/10 text-[#316bf3] text-xs font-bold rounded-full">
+            {patients.length}
+          </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -323,7 +324,7 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Status Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          {(['All', 'Active', 'Pending', 'Inactive'] as const).map((filter) => {
+          {(['All', 'Active', 'Pending', 'Inactive', 'Archived'] as const).map((filter) => {
             const count = filterCounts[filter];
             const isActive = activeFilter === filter;
             return (
@@ -365,7 +366,18 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#74777f]">Quick Filters:</span>
+            <span className="text-xs font-bold text-[#74777f]">Dept:</span>
+            <select
+              value={departmentFilter}
+              onChange={(e) => { setDepartmentFilter(e.target.value); setCurrentPage(1); }}
+              className="pl-3 pr-8 py-2 bg-[#f7f9fb] border border-[#c4c6cf] rounded-xl text-xs font-semibold text-[#191c1e] focus:outline-none focus:border-[#316bf3]"
+            >
+              <option value="All">All Departments</option>
+              {departments.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-[#74777f]">Quick:</span>
             <select
               value={quickFilter}
               onChange={(e) => setQuickFilter(e.target.value)}
@@ -500,12 +512,14 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
                               ? 'bg-[#10b981]/15 text-[#10b981]'
                               : isPending
                               ? 'bg-[#ff9800]/15 text-[#ff9800]'
+                              : patient.status === 'Archived'
+                              ? 'bg-[#ba1a1a]/15 text-[#ba1a1a]'
                               : 'bg-[#74777f]/15 text-[#74777f]'
                           }`}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${
-                              isActive ? 'bg-[#10b981]' : isPending ? 'bg-[#ff9800]' : 'bg-[#74777f]'
+                              isActive ? 'bg-[#10b981]' : isPending ? 'bg-[#ff9800]' : patient.status === 'Archived' ? 'bg-[#ba1a1a]' : 'bg-[#74777f]'
                             }`}
                           />
                           {patient.status}
