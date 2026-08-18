@@ -27,6 +27,12 @@ class HospitalClient(fl.client.NumPyClient):
         score=self.model.get_auc(self.X_test,self.y_test)
         print(f"[{self.hospital_id}] Local ROC-AUC={score:.4F}")
 
+        try:
+            from model import accountant
+            print(f"Privacy spent: epsilon={accountant.total_spent:.2f}, delta={accountant.delta}")
+        except ImportError:
+            pass
+
         return self.model.get_weights(),len(self.X_train),{"score":float(score)}
         
         

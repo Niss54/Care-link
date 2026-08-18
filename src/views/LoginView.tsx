@@ -22,10 +22,55 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [lockoutTime, setLockoutTime] = useState<number | null>(null);
+  
+  // CAPTCHA Challenge state
+  const [captchaExpected, setCaptchaExpected] = useState<number | null>(null);
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [captchaPrompt, setCaptchaPrompt] = useState('');
+
+  React.useEffect(() => {
+    const storedLockout = localStorage.getItem('carelink_auth_lockout');
+    if (storedLockout) {
+      const lockUntil = parseInt(storedLockout, 10);
+      if (Date.now() < lockUntil) {
+        setLockoutTime(lockUntil);
+      } else {
+        localStorage.removeItem('carelink_auth_lockout');
+      }
+    }
+  }, []);
+
+  const handleFailure = () => {
+    const attempts = failedAttempts + 1;
+    setFailedAttempts(attempts);
+    
+    if (attempts >= 3) {
+      const lockUntil = Date.now() + 15 * 60 * 1000; // 15 minutes
+      localStorage.setItem('carelink_auth_lockout', lockUntil.toString());
+      setLockoutTime(lockUntil);
+      setError('Too many failed attempts. Security lockout initiated for 15 minutes.');
+    } else if (attempts === 2) {
+      generateCaptcha();
+      setError('Suspicious activity detected. Please solve the challenge below.');
+    } else {
+      setError('Invalid credentials. Please try again.');
+    }
+  };
+
+  const generateCaptcha = () => {
+    const a = Math.floor(Math.random() * 10) + 1;
+    const b = Math.floor(Math.random() * 10) + 1;
+    setCaptchaExpected(a + b);
+    setCaptchaPrompt(`What is ${a} + ${b}?`);
+    setCaptchaInput('');
+  };
 
   // ── Step 1: Hospital Verification ──
   const handleVerifyHospital = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutTime && Date.now() < lockoutTime) return;
     setError(null);
     setIsLoading(true);
     try {
@@ -33,10 +78,10 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
       if (ok) {
         setStep(2);
       } else {
-        setError('Invalid hospital access code. Please check and try again.');
+        handleFailure();
       }
     } catch {
-      setError('Verification failed. Please try again.');
+      handleFailure();
     } finally {
       setIsLoading(false);
     }
@@ -45,17 +90,27 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
   // ── Step 2: Credentials ──
   const handleVerifyCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lockoutTime && Date.now() < lockoutTime) return;
+    
+    if (captchaExpected !== null && parseInt(captchaInput, 10) !== captchaExpected) {
+      setError('Incorrect security challenge answer.');
+      generateCaptcha();
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
     try {
       const ok = await verifyCredentials(email, password);
       if (ok) {
+        setFailedAttempts(0);
+        setCaptchaExpected(null);
         setStep(3);
       } else {
-        setError('Invalid email or password. Please try again.');
+        handleFailure();
       }
     } catch {
-      setError('Authentication failed. Please try again.');
+      handleFailure();
     } finally {
       setIsLoading(false);
     }
@@ -64,6 +119,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
   // ── Step 3: OTP ──
   const handleVerifyOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (lockoutTime && Date.now() < lockoutTime) return;
     setError(null);
     setIsLoading(true);
     try {
@@ -71,10 +127,10 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
       if (ok) {
         onLoginSuccess();
       } else {
-        setError('Invalid verification code. Please try again.');
+        handleFailure();
       }
     } catch {
-      setError('Verification failed. Please try again.');
+      handleFailure();
     } finally {
       setIsLoading(false);
     }
@@ -270,12 +326,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
                     <><span>Verify Institution</span> <ArrowRight className="w-4 h-4" /></>
                   )}
                 </button>
-
-                {/* Demo hint */}
-                <div className="p-3 bg-[#316bf3]/5 border border-[#316bf3]/15 rounded-xl text-xs text-[#43474e]">
-                  <span className="font-semibold text-[#316bf3]">Demo:</span>{' '}
-                  Use code <code className="px-1.5 py-0.5 bg-[#316bf3]/10 rounded font-mono text-[#316bf3] font-bold">HX-7729</code>
-                </div>
               </form>
             )}
 
@@ -339,6 +389,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
                   </div>
                 </div>
 
+                {captchaExpected !== null && (
+                  <div className="p-4 bg-[#fef3c7] border border-[#fde68a] rounded-xl">
+                    <label className="block text-xs font-bold text-[#d97706] uppercase tracking-wider mb-2">
+                      Security Challenge *
+                    </label>
+                    <p className="text-sm font-semibold text-[#92400e] mb-3">{captchaPrompt}</p>
+                    <input
+                      type="text"
+                      required
+                      value={captchaInput}
+                      onChange={(e) => setCaptchaInput(e.target.value)}
+                      placeholder="Enter answer"
+                      className="w-full px-4 py-2 bg-white border border-[#fcd34d] rounded-lg text-sm text-[#92400e] focus:outline-none focus:border-[#d97706]"
+                    />
+                  </div>
+                )}
+
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -350,14 +417,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
                     <><span>Continue to Verification</span> <ArrowRight className="w-4 h-4" /></>
                   )}
                 </button>
-
-                {/* Demo hint */}
-                <div className="p-3 bg-[#316bf3]/5 border border-[#316bf3]/15 rounded-xl text-xs text-[#43474e]">
-                  <span className="font-semibold text-[#316bf3]">Demo:</span>{' '}
-                  <code className="px-1 py-0.5 bg-[#316bf3]/10 rounded font-mono text-[#316bf3] font-bold text-[11px]">clinician@hospital-x.org</code>
-                  {' / '}
-                  <code className="px-1 py-0.5 bg-[#316bf3]/10 rounded font-mono text-[#316bf3] font-bold text-[11px]">carelink-demo</code>
-                </div>
               </form>
             )}
 

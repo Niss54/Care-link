@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Patient, Medication, VitalRecord, Appointment, LabResult } from '../../types';
-import { X, Calendar, Mail, Phone, Heart, Activity, FileText, Stethoscope, Clock, ShieldCheck, Printer, Pill, Thermometer, UserCheck, AlertTriangle, Mic, MicOff, FlaskConical, ArrowUp, ArrowDown, Minus, BrainCircuit, Play, Check, CheckCircle2 } from 'lucide-react';
+import { X, Calendar, Mail, Phone, Heart, Activity, FileText, Stethoscope, Clock, ShieldCheck, Printer, Pill, Thermometer, UserCheck, AlertTriangle, Mic, MicOff, FlaskConical, ArrowUp, ArrowDown, Minus, BrainCircuit, Play, Check, CheckCircle2, Brain } from 'lucide-react';
 import { MedicationsTab } from '../MedicationsTab';
 import { calculateAge } from '../../utils';
 import { VitalsTracker } from '../VitalsTracker';
 import { BigGauge } from '../BigGauge';
 import { ShapChart } from '../ShapChart';
-import { getPrediction, sendFeedback } from '../../lib/api';
-import type { Prediction } from '../../lib/types';
+import { callTriage, getUrgencyColor } from '../../lib/api';
+import type { TriageResult } from '../../lib/types';
+import { usePrediction } from '../../lib/riskService';
 
 interface ViewPatientModalProps {
   patient: Patient | null;
@@ -43,11 +44,15 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
   const [activeModalTab, setActiveModalTab] = useState<'overview' | 'medications' | 'vitals' | 'labs' | 'risk'>('overview');
   
   // Risk Analysis State
-  const [prediction, setPrediction] = useState<Prediction | null>(null);
-  const [isLoadingRisk, setIsLoadingRisk] = useState(false);
+  const { risk, loading: isLoadingRisk, submitFeedback } = usePrediction(patient?.id);
   const [feedbackMode, setFeedbackMode] = useState<'confirmed' | 'overridden' | null>(null);
   const [feedbackNote, setFeedbackNote] = useState('');
   const [feedbackSent, setFeedbackSent] = useState(false);
+  
+  // Triage State
+  const [triageResult, setTriageResult] = useState<TriageResult | null>(null);
+  const [isTriageLoading, setIsTriageLoading] = useState(false);
+  
   const [notesDraft, setNotesDraft] = useState('');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -100,25 +105,8 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
     setIsDictating(false);
   };
 
-  const handleRunRiskAnalysis = async () => {
-    if (!patient) return;
-    setIsLoadingRisk(true);
-    try {
-      const pred = await getPrediction(patient.external_ref || patient.id);
-      setPrediction(pred);
-      setFeedbackMode(null);
-      setFeedbackSent(false);
-      setFeedbackNote('');
-    } catch (e) {
-      console.error(e);
-      if (onShowToast) onShowToast('Error', 'Failed to run risk analysis', 'error');
-    } finally {
-      setIsLoadingRisk(false);
-    }
-  };
-
   const handleSendFeedback = async (mode: 'confirmed' | 'overridden') => {
-    if (!prediction) return;
+    if (!risk) return;
     
     if (mode === 'overridden' && !feedbackNote && feedbackMode !== 'overridden') {
       setFeedbackMode('overridden');
@@ -126,19 +114,30 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
     }
 
     try {
-      const success = await sendFeedback({
-        prediction_id: prediction.prediction_id,
-        action: mode,
-        note: feedbackNote,
-      });
+      const success = await submitFeedback(mode, feedbackNote);
       if (success) {
         setFeedbackSent(true);
-        if (onShowToast) onShowToast('Feedback Recorded', 'Clinician feedback saved successfully', 'success');
+        setFeedbackMode(null);
+        if (onShowToast) onShowToast('Feedback saved — thank you, Doctor!', 'Clinician feedback saved successfully', 'success');
       } else {
         if (onShowToast) onShowToast('Error', 'Failed to save feedback', 'error');
       }
     } catch (e) {
       if (onShowToast) onShowToast('Error', 'Failed to save feedback', 'error');
+    }
+  };
+
+  const handleRunTriage = async () => {
+    if (!patient) return;
+    setIsTriageLoading(true);
+    try {
+      const result = await callTriage(patient);
+      setTriageResult(result);
+    } catch (e: any) {
+      console.error(e);
+      if (onShowToast) onShowToast('Triage Error', e.message || 'Failed to generate AI triage.', 'error');
+    } finally {
+      setIsTriageLoading(false);
     }
   };
 
@@ -543,6 +542,194 @@ export const ViewPatientModal: React.FC<ViewPatientModalProps> = ({
                   ) : (
                     <div className="p-3.5 bg-[#f7f9fb] border border-[#e0e3e5] rounded-xl text-xs text-[#43474e] leading-relaxed whitespace-pre-wrap min-h-[60px]">
                       {patient.notes || 'No recent clinical flags or allergies reported.'}
+                    </div>
+                  )}
+                </div>
+                {/* 30-Day Readmission Risk */}
+                <div className="pt-4 border-t border-[#e0e3e5]">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xs font-bold text-[#191c1e] uppercase tracking-wider flex items-center gap-1.5">
+                      <BrainCircuit className="w-4 h-4 text-blue-500" />
+                      30-Day Readmission Risk
+                    </h4>
+                  </div>
+                  
+                  {isLoadingRisk ? (
+                    <div className="animate-pulse flex space-x-4">
+                      <div className="h-16 w-16 bg-gray-200 rounded-full"></div>
+                      <div className="flex-1 space-y-4 py-1">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      </div>
+                    </div>
+                  ) : risk ? (
+                    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                      <div className="flex flex-col sm:flex-row justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="text-center">
+                            <div className={`text-4xl font-black ${risk.riskTier === 'High' ? 'text-red-600' : risk.riskTier === 'Medium' ? 'text-orange-500' : 'text-green-600'}`}>
+                              {Math.round(risk.probability * 100)}%
+                            </div>
+                            <span className={`inline-block mt-1 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${risk.riskTier === 'High' ? 'bg-red-100 text-red-700' : risk.riskTier === 'Medium' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                              {risk.riskTier} Risk
+                            </span>
+                          </div>
+                          <div className="hidden sm:block w-px h-16 bg-gray-200"></div>
+                          <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Key Driving Factors (SHAP)</p>
+                            <div className="flex flex-wrap gap-2">
+                              {risk.topFactors.map((f, idx) => (
+                                <div key={idx} className="flex items-center gap-1 bg-gray-50 border border-gray-100 px-2 py-1 rounded text-xs font-medium text-gray-700">
+                                  {f.feature}
+                                  {f.impact > 0 ? (
+                                    <ArrowUp className="w-3 h-3 text-red-500" />
+                                  ) : (
+                                    <ArrowDown className="w-3 h-3 text-green-500" />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] text-gray-400 mb-2">Last predicted: just now</p>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      {!feedbackSent ? (
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-3">
+                          {feedbackMode === 'overridden' ? (
+                            <div className="w-full space-y-3 bg-orange-50 p-3 rounded-lg border border-orange-100">
+                              <p className="text-xs font-bold text-orange-800">Override Prediction</p>
+                              <textarea 
+                                className="w-full p-2 border border-orange-200 rounded text-xs" 
+                                placeholder="Reason for overriding (e.g., patient has external support structure)..."
+                                value={feedbackNote}
+                                onChange={(e) => setFeedbackNote(e.target.value)}
+                              />
+                              <div className="flex gap-2">
+                                <button onClick={() => setFeedbackMode(null)} className="px-3 py-1.5 text-xs text-orange-600 font-medium hover:bg-orange-100 rounded">Cancel</button>
+                                <button onClick={() => handleSendFeedback('overridden')} className="px-3 py-1.5 text-xs bg-orange-500 text-white font-bold rounded shadow-sm hover:bg-orange-600">Submit Override</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <button 
+                                onClick={() => handleSendFeedback('confirmed')}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                                Confirm Prediction
+                              </button>
+                              <button 
+                                onClick={() => setFeedbackMode('overridden')}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors"
+                              >
+                                <AlertTriangle className="w-4 h-4" />
+                                Override Prediction
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex items-center gap-2 text-sm font-semibold text-green-600">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Feedback submitted. Thank you!
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500">Risk score not available.</div>
+                  )}
+                </div>
+
+                {/* AI Triage Card */}
+                <div className="pt-4 border-t border-[#e0e3e5]">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-xs font-bold text-[#191c1e] uppercase tracking-wider flex items-center gap-1.5">
+                      <Brain className="w-4 h-4 text-[#8b5cf6]" />
+                      AI Triage Assessment
+                    </h4>
+                    {!triageResult && !isTriageLoading && (
+                      <button
+                        onClick={handleRunTriage}
+                        className="px-3 py-1.5 text-[11px] font-bold bg-[#f3e8ff] text-[#7e22ce] hover:bg-[#e9d5ff] rounded-xl transition-colors flex items-center gap-1.5"
+                      >
+                        <Brain className="w-3.5 h-3.5" />
+                        Run AI Triage
+                      </button>
+                    )}
+                  </div>
+
+                  {isTriageLoading && (
+                    <div className="p-6 bg-[#f7f9fb] border border-[#e0e3e5] rounded-xl flex items-center justify-center">
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 border-2 border-[#8b5cf6]/20 border-t-[#8b5cf6] rounded-full animate-spin" />
+                        <span className="text-xs font-semibold text-[#43474e]">Generating clinical triage...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {triageResult && !isTriageLoading && (
+                    <div className="p-4 bg-white border border-[#e0e3e5] rounded-xl shadow-sm space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${getUrgencyColor(triageResult.urgencyLevel)}`}>
+                            <AlertTriangle className="w-3 h-3" />
+                            {triageResult.urgencyLevel}
+                          </span>
+                          <p className="text-xs text-[#43474e] mt-2 leading-relaxed max-w-2xl">
+                            {triageResult.clinicalSummary}
+                          </p>
+                        </div>
+                        <div className="shrink-0">
+                          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#74777f] uppercase tracking-wider bg-[#f2f4f6] px-2.5 py-1 rounded-md">
+                            <Clock className="w-3 h-3" />
+                            Wait: {triageResult.estimatedWaitTime}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-3 border-t border-[#e0e3e5]">
+                        <div>
+                          <h5 className="text-[10px] font-bold text-[#191c1e] uppercase tracking-wider mb-2">Primary Concerns</h5>
+                          <ul className="space-y-1.5">
+                            {triageResult.primaryConcerns.map((c, i) => (
+                              <li key={i} className="text-[11px] text-[#43474e] flex items-start gap-1.5">
+                                <span className="text-[#8b5cf6] mt-0.5">•</span>
+                                <span>{c}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="text-[10px] font-bold text-[#191c1e] uppercase tracking-wider mb-2">Recommended Actions</h5>
+                          <ul className="space-y-1.5">
+                            {triageResult.recommendedActions.map((a, i) => (
+                              <li key={i} className="text-[11px] text-[#43474e] flex items-start gap-1.5">
+                                <span className="text-[#316bf3] mt-0.5">•</span>
+                                <span>{a}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+
+                      {triageResult.redFlags && triageResult.redFlags.length > 0 && (
+                        <div className="pt-3 border-t border-[#e0e3e5]">
+                          <h5 className="text-[10px] font-bold text-[#ba1a1a] uppercase tracking-wider mb-2 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" /> Red Flags
+                          </h5>
+                          <div className="flex flex-wrap gap-2">
+                            {triageResult.redFlags.map((rf, i) => (
+                              <span key={i} className="px-2 py-1 bg-[#ba1a1a]/10 text-[#ba1a1a] text-[10px] font-semibold rounded-md">
+                                {rf}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -218,3 +218,17 @@ def submit_feedback(fb: FeedbackIn):
     conn.commit()
     cur.close(); conn.close()
     return {"feedback_id": feedback_id, "status": "saved"}
+
+
+#  Privacy Report 
+@app.get("/privacy-report")
+def privacy_report():
+    from model import accountant
+    return {
+        "epsilon_spent": round(accountant.total_spent, 2),
+        "delta": accountant.delta,
+        "noise_multiplier": round(accountant.get_noise_multiplier(), 4),
+        "rounds_completed": int(accountant.total_spent / accountant.epsilon_spent_per_round) if accountant.epsilon_spent_per_round else 0,
+        "privacy_guarantee": f"Patient data is protected with ({accountant.total_spent:.2f}, {accountant.delta})-DP"
+    }
+

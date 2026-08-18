@@ -29,3 +29,13 @@ export interface FeedbackPayload {
   action: "confirmed" | "overridden";
   note: string;
 }
+
+export interface TriageResult {
+  urgencyLevel: "IMMEDIATE" | "URGENT" | "SEMI-URGENT" | "NON-URGENT";
+  clinicalSummary: string;
+  primaryConcerns: string[];
+  recommendedActions: string[];
+  estimatedWaitTime: string;
+  redFlags: string[];
+  confidence: number;
+}

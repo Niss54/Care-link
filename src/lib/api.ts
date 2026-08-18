@@ -2,7 +2,9 @@ import type {
   FeedbackPayload,
   PatientSummary,
   Prediction,
+  TriageResult,
 } from "./types";
+import type { Patient } from "../types";
 import { DEMO_PATIENTS, demoPrediction } from "./demo-data";
 import { getSessionMode } from "./auth";
 
@@ -86,5 +88,30 @@ export async function sendFeedback(payload: FeedbackPayload): Promise<boolean> {
     return res.ok;
   } catch {
     return false;
+  }
+}
+
+export async function callTriage(patient: Patient): Promise<TriageResult> {
+  const res = await fetchWithTimeout('/.netlify/functions/triage', {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patient),
+  });
+  
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Triage failed (${res.status}): ${errText}`);
+  }
+  
+  return res.json() as Promise<TriageResult>;
+}
+
+export function getUrgencyColor(level: string): string {
+  switch (level.toUpperCase()) {
+    case 'IMMEDIATE': return 'text-red-600 bg-red-100 border border-red-200';
+    case 'URGENT': return 'text-orange-500 bg-orange-100 border border-orange-200';
+    case 'SEMI-URGENT': return 'text-yellow-600 bg-yellow-100 border border-yellow-200';
+    case 'NON-URGENT': return 'text-green-600 bg-green-100 border border-green-200';
+    default: return 'text-gray-600 bg-gray-100 border border-gray-200';
   }
 }
