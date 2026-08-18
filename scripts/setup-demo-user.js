@@ -5,15 +5,17 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function main() {
-  console.log('Signing up user...');
+  console.log('Signing up user nishantma05@gmail.com...');
   const { data, error } = await supabase.auth.signUp({
-    email: 'admin@carelink.com',
-    password: 'carelink-demo',
+    email: 'nishantma05@gmail.com',
+    password: 'Nis&!,/9854',
   });
+  
   if (error) {
     console.error('Error signing up:', error.message);
   } else {
     console.log('User signed up successfully:', data.user?.id);
+    console.log('Since email confirmation is enabled, a confirmation email has been sent to nishantma05@gmail.com.');
   }
 }
 
