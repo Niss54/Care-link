@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
-import { TabType, Patient, Appointment, ActivityItem, ToastMessage, DoctorProfile, AppointmentStatus, Medication, VitalRecord } from './types';
-import { supabase } from './lib/supabase';
+import { TabType, Patient, Appointment, ActivityItem, ToastMessage, DoctorProfile, AppointmentStatus } from './types';
 import { usePatients } from './hooks/usePatients';
-import { useAppointments } from './hooks/useAppointments';
-import { useMedications } from './hooks/useMedications';
-import { CURRENT_DOCTOR, INITIAL_ACTIVITIES, INITIAL_VITALS, INITIAL_LABS } from './data/mockData';
+import { CURRENT_DOCTOR, INITIAL_APPOINTMENTS, INITIAL_ACTIVITIES } from './data/mockData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Toast } from './components/Toast';
 import { ScheduleAppointmentModal } from './components/Modals/ScheduleAppointmentModal';
-import { AddPatientModal } from './components/Modals/AddPatientModal';
 import { ViewPatientModal } from './components/Modals/ViewPatientModal';
 
 import { DashboardView } from './views/DashboardView';
@@ -31,12 +27,13 @@ export function App() {
     email: user?.email || CURRENT_DOCTOR.email,
     name: user?.user_metadata?.full_name || user?.email?.split('@')[0] || CURRENT_DOCTOR.name,
   });
-  const { patients, addPatient: dbAdd, deletePatient: dbDelete, updatePatientNotes: dbUpdateNotes } = usePatients();
-  const { appointments, addAppointment: aptAdd, updateAppointmentStatus: aptUpdateStatus } = useAppointments();
-  const { medications, addMedication: medAdd, refillMedication: medRefill, archiveMedication: medArchive } = useMedications();
+
+  // Patient data from backend API (or demo fallback)
+  const { patients, refetchPatients } = usePatients();
+
+  // Frontend-only state (appointments, activities)
+  const [appointments, setAppointments] = useState<Appointment[]>(INITIAL_APPOINTMENTS);
   const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
-  const [vitalRecords, setVitalRecords] = useState<VitalRecord[]>(INITIAL_VITALS);
-  const [labRecords, setLabRecords] = useState(INITIAL_LABS);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isOnCall, setIsOnCall] = useState(false);
 
@@ -45,7 +42,6 @@ export function App() {
 
   // Modals
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [isAddPatientModalOpen, setIsAddPatientModalOpen] = useState(false);
   const [selectedPatientForView, setSelectedPatientForView] = useState<Patient | null>(null);
 
   // Mobile Drawer
@@ -92,10 +88,9 @@ export function App() {
       id: newId,
       urgency: isOnCall ? 'High' : (newAptData.urgency || 'Medium')
     };
-    
-    await aptAdd(newApt);
 
-    // Add activity item
+    setAppointments(prev => [newApt, ...prev]);
+
     const newAct: ActivityItem = {
       id: `ACT-${activities.length + 1}`,
       type: 'appointment',
@@ -109,68 +104,9 @@ export function App() {
     addToast('Appointment Scheduled', `Booked consultation for ${newApt.patientName} at ${newApt.time}.`, 'success');
   };
 
-  const handleAddPatient = async (newPatient: Patient) => {
-    await dbAdd(newPatient);
-
-    const newAct: ActivityItem = {
-      id: `ACT-${activities.length + 1}`,
-      type: 'referral',
-      patientName: newPatient.name,
-      description: `New patient record registered for ${newPatient.name} (${newPatient.id}).`,
-      timestamp: 'Just now',
-      statusColor: 'bg-[#10b981]'
-    };
-    setActivities((prev) => [newAct, ...prev]);
-
-    addToast('Patient Registered', `Created medical EHR record for ${newPatient.name}.`, 'success');
-  };
-
-  const handleDeletePatient = async (patientId: string) => {
-    const pt = patients.find((p) => p.id === patientId);
-    await dbDelete(patientId);
-    addToast('Patient Archived', `Archived record for ${pt ? pt.name : patientId}.`, 'info');
-  };
-
   const handleUpdateAppointmentStatus = async (id: string, newStatus: AppointmentStatus) => {
-    await aptUpdateStatus(id, newStatus);
+    setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
     addToast('Status Updated', `Appointment ${id} status set to ${newStatus}.`, 'info');
-  };
-
-  const handleRefillMedication = async (id: string) => {
-    await medRefill(id);
-    const med = medications.find((m) => m.id === id);
-    addToast('Prescription Refill Approved', `Refill authorized for ${med?.name || 'medication'}.`, 'success');
-  };
-
-  const handleArchiveMedication = async (id: string) => {
-    await medArchive(id);
-    const med = medications.find((m) => m.id === id);
-    addToast(
-      'Prescription Status Changed',
-      med?.status === 'Archived'
-        ? `Restored ${med?.name} to active prescriptions.`
-        : `Archived ${med?.name} prescription record.`,
-      'info'
-    );
-  };
-
-  const handleAddMedication = async (newMedData: Omit<Medication, 'id'>) => {
-    const newId = `MED-${medications.length + 101}`;
-    const newMed: Medication = { ...newMedData, id: newId };
-    await medAdd(newMed);
-    addToast('Prescription Added', `Created new prescription for ${newMed.name}.`, 'success');
-  };
-
-  const handleAddVitalRecord = (newVitalData: Omit<VitalRecord, 'id'>) => {
-    const newId = `VIT-${vitalRecords.length + 201}`;
-    const newVital: VitalRecord = { ...newVitalData, id: newId };
-    setVitalRecords((prev) => [newVital, ...prev]);
-    addToast('Vitals Recorded', `Logged BP ${newVital.bloodPressureSystolic}/${newVital.bloodPressureDiastolic}, HR ${newVital.heartRate} bpm.`, 'success');
-  };
-
-  const handleUpdatePatientNotes = async (id: string, newNotes: string) => {
-    await dbUpdateNotes(id, newNotes);
-    addToast('Notes Updated', `Clinical notes updated for patient ${id}.`, 'success');
   };
 
   // Auth Layouts
@@ -243,7 +179,6 @@ export function App() {
           doctor={{...doctor, status: isOnCall ? 'On-Call' : doctor.status}}
           activities={activities}
           onOpenScheduleModal={() => setIsScheduleModalOpen(true)}
-          onOpenAddPatientModal={() => setIsAddPatientModalOpen(true)}
           onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -259,10 +194,7 @@ export function App() {
               patients={patients}
               appointments={appointments}
               activities={activities}
-              vitalRecords={vitalRecords}
-        labRecords={labRecords}
               onOpenScheduleModal={() => setIsScheduleModalOpen(true)}
-              onOpenAddPatientModal={() => setIsAddPatientModalOpen(true)}
               onSelectPatient={(p) => setSelectedPatientForView(p)}
               onNavigateTab={(tab) => setActiveTab(tab)}
             />
@@ -271,13 +203,11 @@ export function App() {
           {activeTab === 'patients' && (
             <PatientsView
               patients={patients}
-              vitalRecords={vitalRecords}
-              onOpenAddPatient={() => setIsAddPatientModalOpen(true)}
               onSelectPatient={(p) => setSelectedPatientForView(p)}
-              onDeletePatient={handleDeletePatient}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               onShowToast={addToast}
+              onRefetch={refetchPatients}
             />
           )}
 
@@ -304,25 +234,9 @@ export function App() {
         patients={patients}
       />
 
-      <AddPatientModal
-        isOpen={isAddPatientModalOpen}
-        onClose={() => setIsAddPatientModalOpen(false)}
-        onAddPatient={handleAddPatient}
-      />
-
       <ViewPatientModal
         patient={selectedPatientForView}
         onClose={() => setSelectedPatientForView(null)}
-        onScheduleForPatient={(patientName) => {
-          setIsScheduleModalOpen(true);
-        }}
-        medications={medications}
-        vitalRecords={vitalRecords}
-        onRefillMedication={handleRefillMedication}
-        onArchiveMedication={handleArchiveMedication}
-        onAddMedication={handleAddMedication}
-        onAddVitalRecord={handleAddVitalRecord}
-        onUpdatePatientNotes={handleUpdatePatientNotes}
         onShowToast={addToast}
       />
     </div>

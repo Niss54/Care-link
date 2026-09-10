@@ -1,39 +1,44 @@
-import type { PatientSummary, Prediction, RiskTier, ShapFactor } from "./types";
+/**
+ * Demo data — silent fallback when the FastAPI backend is unreachable.
+ * All values match the backend's v_patient_latest_risk view schema.
+ * Nothing here is a real patient record.
+ */
+import type { Patient, Prediction, RiskTier, ShapFactor, PrivacyReport } from "../types";
 
-// Representative demo data used as a silent fallback so the UI always looks
-// complete. Values are scattered (hash-based) so they look like real model
-// output, not a regular sequence. Nothing here is a real patient record.
+// ─── Constants ───────────────────────────────────────────
 
-const DIAGNOSES = [
-  "Heart failure",
-  "Sepsis",
-  "Atrial fibrillation",
-  "Chronic kidney disease",
-  "Type 2 diabetes",
-  "Pneumonia",
-  "COPD exacerbation",
-  "Acute myocardial infarction",
-  "Stroke",
-  "Cellulitis",
+const ADMISSION_TYPES = [
+  "EMERGENCY", "URGENT", "ELECTIVE", "NEWBORN", "OBSERVATION",
+  "DIRECT OBSERVATION", "EU OBSERVATION", "AMBULATORY OBSERVATION",
 ];
 
-const AGE_BANDS = ["40–50", "50–60", "60–70", "70–80", "80–90"];
+const DISCHARGE_LOCATIONS = [
+  "HOME", "HOME HEALTH CARE", "SKILLED NURSING FACILITY",
+  "REHAB", "LONG TERM CARE HOSPITAL", "AGAINST ADVICE", "HOSPICE",
+];
+
+const GENDERS = ["M", "F"];
 
 const FEATURE_LABELS: Record<string, string> = {
-  total_prior_visits: "Total prior visits",
-  n_inpatient: "Prior inpatient stays",
-  n_medications: "Number of medications",
-  n_emergency: "Emergency visits",
-  time_in_hospital: "Length of stay",
+  length_of_stay: "Length of Stay",
+  prior_admissions: "Prior Admissions",
   age: "Age",
-  num_lab_procedures: "Lab procedures",
-  num_diagnoses: "Number of diagnoses",
-  a1c_result: "HbA1c result",
-  insulin_change: "Insulin change",
+  num_diagnoses: "Number of Diagnoses",
+  num_lab_procedures: "Lab Procedures",
+  n_inpatient: "Prior Inpatient Stays",
+  n_medications: "Number of Medications",
+  n_emergency: "Emergency Visits",
+  a1c_result: "HbA1c Result",
+  insulin_change: "Insulin Change",
+  total_prior_visits: "Total Prior Visits",
+  time_in_hospital: "Time in Hospital",
 };
 
 const FEATURE_KEYS = Object.keys(FEATURE_LABELS);
 
+// ─── Helpers ─────────────────────────────────────────────
+
+/** Convert internal feature name to human-readable label */
 export function humanizeFeature(feature: string): string {
   if (FEATURE_LABELS[feature]) return FEATURE_LABELS[feature];
   return feature
@@ -47,42 +52,58 @@ function tierFor(p: number): RiskTier {
   return "Low";
 }
 
-// Non-linear hash -> well-scattered, deterministic value in [0,1).
-// Consecutive inputs produce uncorrelated outputs (no visible pattern).
+/**
+ * Non-linear hash → well-scattered, deterministic value in [0,1).
+ * Consecutive inputs produce uncorrelated outputs (no visible pattern).
+ */
 function hashFloat(n: number): number {
   const x = Math.sin(n * 12.9898 + 78.233) * 43758.5453;
   return x - Math.floor(x);
 }
 
-const DEMO_COUNT = 48; // internal only — never shown
+// ─── Demo Patient List ───────────────────────────────────
 
-export const DEMO_PATIENTS: PatientSummary[] = Array.from(
+const DEMO_COUNT = 48;
+
+export const DEMO_PATIENTS: Patient[] = Array.from(
   { length: DEMO_COUNT },
   (_, i) => {
     const probability =
       Math.round((0.04 + hashFloat(i + 0.5) * 0.92) * 1000) / 1000;
+    const age = Math.floor(40 + hashFloat(i + 100.5) * 50); // 40-90
     return {
-      patient_id: `HX-${String(i).padStart(4, "0")}`,
-      external_ref: `HX-${String(i).padStart(4, "0")}`,
-      age_band: AGE_BANDS[Math.floor(hashFloat(i + 100.5) * AGE_BANDS.length)],
-      primary_diagnosis:
-        DIAGNOSES[Math.floor(hashFloat(i + 200.5) * DIAGNOSES.length)],
+      patient_id: i + 1,
+      external_ref: `HX-${String(i + 1).padStart(4, "0")}`,
+      age,
+      gender: GENDERS[Math.floor(hashFloat(i + 150.5) * GENDERS.length)],
+      admission_type:
+        ADMISSION_TYPES[
+          Math.floor(hashFloat(i + 200.5) * ADMISSION_TYPES.length)
+        ],
+      discharge_location:
+        DISCHARGE_LOCATIONS[
+          Math.floor(hashFloat(i + 250.5) * DISCHARGE_LOCATIONS.length)
+        ],
       probability,
       risk_tier: tierFor(probability),
+      predicted_label: probability >= 0.5 ? 1 : 0,
+      predicted_at: new Date(
+        Date.now() - Math.floor(hashFloat(i + 300.5) * 7 * 86400000)
+      ).toISOString(),
     };
   }
-).sort((a, b) => a.patient_id.localeCompare(b.patient_id));
+).sort((a, b) => (b.probability ?? 0) - (a.probability ?? 0));
 
-export function demoPrediction(patientId: string): Prediction {
+// ─── Demo Prediction ─────────────────────────────────────
+
+export function demoPrediction(patientId: number): Prediction {
   const patient =
     DEMO_PATIENTS.find((p) => p.patient_id === patientId) ?? DEMO_PATIENTS[0];
 
-  // stable per-patient seed from the id
-  const seed = patientId
-    .split("")
-    .reduce((acc, c, idx) => acc + c.charCodeAt(0) * (idx + 1), 0);
+  // Stable per-patient seed
+  const seed = patientId * 17 + 42;
 
-  // pick 6 factors, scattered by hash
+  // Pick 6 SHAP factors, scattered by hash
   const chosen = [...FEATURE_KEYS]
     .map((f, idx) => ({ f, r: hashFloat(seed + idx * 13.1) }))
     .sort((a, b) => a.r - b.r)
@@ -92,20 +113,31 @@ export function demoPrediction(patientId: string): Prediction {
   const factors: ShapFactor[] = chosen.map((feature, idx) => {
     const magnitude =
       Math.round((hashFloat(seed + idx * 7.7 + 1) * 0.32 + 0.04) * 100) / 100;
-    // higher-risk patients skew toward more risk-raising factors
-    const sign = hashFloat(seed + idx * 5.3 + 2) < patient.probability ? 1 : -1;
+    const sign =
+      hashFloat(seed + idx * 5.3 + 2) < (patient.probability ?? 0.5) ? 1 : -1;
     return { feature, impact: Math.round(magnitude * sign * 100) / 100 };
   });
 
   factors.sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
 
   return {
-    prediction_id: `pred_${patientId}`,
+    prediction_id: patientId * 100,
     patient_id: patient.patient_id,
     external_ref: patient.external_ref,
-    probability: patient.probability,
-    risk_tier: patient.risk_tier,
-    prediction: patient.probability >= 0.5 ? 1 : 0,
+    probability: patient.probability ?? 0,
+    risk_tier: patient.risk_tier ?? "Low",
+    prediction: (patient.probability ?? 0) >= 0.5 ? 1 : 0,
     top_factors: factors,
   };
 }
+
+// ─── Demo Privacy Report ─────────────────────────────────
+
+export const DEMO_PRIVACY: PrivacyReport = {
+  epsilon_spent: 1.0,
+  delta: 1e-5,
+  noise_multiplier: 4.3912,
+  rounds_completed: 5,
+  privacy_guarantee:
+    "Patient data is protected with (1.00, 1e-05)-DP",
+};
