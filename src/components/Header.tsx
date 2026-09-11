@@ -20,7 +20,6 @@ interface HeaderProps {
   doctor: DoctorProfile;
   activities: ActivityItem[];
   onOpenScheduleModal: () => void;
-  onOpenAddPatientModal: () => void;
   onToggleMobileMenu: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -34,12 +33,11 @@ export const Header: React.FC<HeaderProps> = ({
   doctor,
   activities,
   onOpenScheduleModal,
-  onOpenAddPatientModal,
   onToggleMobileMenu,
   searchQuery,
   setSearchQuery,
   isOnCall = false,
-  setIsOnCall = () => {}
+  setIsOnCall = (_: boolean) => {}
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -137,16 +135,6 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <CalendarPlus className="w-4 h-4 text-[#316bf3]" />
                 <span>Schedule Appointment</span>
-              </button>
-              <button
-                onClick={() => {
-                  setShowQuickActions(false);
-                  onOpenAddPatientModal();
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm text-[#191c1e] hover:bg-[#f2f4f6] flex items-center gap-2.5 font-medium"
-              >
-                <UserPlus className="w-4 h-4 text-[#10b981]" />
-                <span>Add New Patient</span>
               </button>
             </div>
           )}

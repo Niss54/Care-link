@@ -11,7 +11,7 @@ dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = process.env.PORT || 3005;
+  const PORT = Number(process.env.PORT) || 3005;
 
   app.use(express.json());
 
