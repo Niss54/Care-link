@@ -4,11 +4,14 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
+process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
+
 dotenv.config();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3005;
 
   app.use(express.json());
 
@@ -61,9 +64,16 @@ Vitals: ${JSON.stringify(vitals || {})}
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://0.0.0.0:${PORT}`);
+  });
+  
+  server.on('error', (e) => {
+    console.error('Server Listen Error:', e);
   });
 }
 
-startServer();
+startServer().catch(err => {
+  console.error("Fatal Error during server start:", err);
+  process.exit(1);
+});

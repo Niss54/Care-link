@@ -55,6 +55,15 @@ class XGBoostBaggingStrategy(fl.server.strategy.FedAvg):
         booster.save_model("global_model.json")
         print(f"[Round {server_round}] Bagged {len(results)} hospital models "
               f"-> {booster.num_boosted_rounds()} trees. Saved global_model.json")
+              
+        try:
+            from model import accountant
+            print(f"Privacy Guarantee: No individual patient record changes model output by more than "
+                  f"{accountant.sensitivity} with probability > 1 - {accountant.delta}.")
+            print(f"Privacy spent globally: epsilon={accountant.total_spent:.2f}, delta={accountant.delta}")
+        except ImportError:
+            pass
+            
         return ndarrays_to_parameters([np.frombuffer(global_bytes, dtype=np.uint8)]), {}
 
 

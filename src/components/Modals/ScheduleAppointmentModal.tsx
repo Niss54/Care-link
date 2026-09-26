@@ -21,6 +21,7 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
   const [department, setDepartment] = useState('Cardiology');
   const [doctor, setDoctor] = useState('Dr. Smith');
   const [type, setType] = useState('Annual Physical');
+  const [urgency, setUrgency] = useState<'High' | 'Medium' | 'Low'>('Medium');
   const [notes, setNotes] = useState('');
 
   if (!isOpen) return null;
@@ -45,6 +46,7 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
       doctor,
       type,
       status: 'Upcoming',
+      urgency,
       notes
     });
 
@@ -190,10 +192,26 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
               className="w-full px-3.5 py-2.5 bg-[#f2f4f6] border border-[#c4c6cf] rounded-xl text-sm text-[#191c1e] focus:outline-none focus:bg-white focus:border-[#316bf3]"
             >
               <option value="Annual Physical">Annual Physical</option>
-              <option value="Follow-up Consultation">Follow-up Consultation</option>
+              <option value="Follow-up Consultation">Follow-up</option>
+              <option value="Emergency">Emergency</option>
               <option value="Medication Review">Medication Review</option>
-              <option value="ECG Diagnostic">ECG Diagnostic Check</option>
-              <option value="Routine Bloodwork">Routine Bloodwork</option>
+              <option value="Specialist Referral">Specialist Referral</option>
+            </select>
+          </div>
+
+          {/* Urgency */}
+          <div>
+            <label className="block text-xs font-semibold text-[#43474e] uppercase tracking-wider mb-1.5">
+              Urgency Level
+            </label>
+            <select
+              value={urgency}
+              onChange={(e) => setUrgency(e.target.value as 'High' | 'Medium' | 'Low')}
+              className="w-full px-3.5 py-2.5 bg-[#f2f4f6] border border-[#c4c6cf] rounded-xl text-sm text-[#191c1e] focus:outline-none focus:bg-white focus:border-[#316bf3]"
+            >
+              <option value="High">🔴 High</option>
+              <option value="Medium">🟡 Medium</option>
+              <option value="Low">🟢 Low</option>
             </select>
           </div>
 

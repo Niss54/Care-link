@@ -20,7 +20,6 @@ interface HeaderProps {
   doctor: DoctorProfile;
   activities: ActivityItem[];
   onOpenScheduleModal: () => void;
-  onOpenAddPatientModal: () => void;
   onToggleMobileMenu: () => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
@@ -34,12 +33,11 @@ export const Header: React.FC<HeaderProps> = ({
   doctor,
   activities,
   onOpenScheduleModal,
-  onOpenAddPatientModal,
   onToggleMobileMenu,
   searchQuery,
   setSearchQuery,
   isOnCall = false,
-  setIsOnCall = () => {}
+  setIsOnCall = (_: boolean) => {}
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -138,16 +136,6 @@ export const Header: React.FC<HeaderProps> = ({
                 <CalendarPlus className="w-4 h-4 text-[#316bf3]" />
                 <span>Schedule Appointment</span>
               </button>
-              <button
-                onClick={() => {
-                  setShowQuickActions(false);
-                  onOpenAddPatientModal();
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm text-[#191c1e] hover:bg-[#f2f4f6] flex items-center gap-2.5 font-medium"
-              >
-                <UserPlus className="w-4 h-4 text-[#10b981]" />
-                <span>Add New Patient</span>
-              </button>
             </div>
           )}
         </div>
@@ -181,7 +169,7 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
 
               <div className="max-h-72 overflow-y-auto divide-y divide-[#f2f4f6]">
-                {activities.map((act) => (
+                {activities.slice(0, 5).map((act) => (
                   <div key={act.id} className="p-3 hover:bg-[#f7f9fb] transition-colors flex items-start gap-3">
                     <span className={`w-2 h-2 rounded-full mt-2 shrink-0 ${act.statusColor || 'bg-[#316bf3]'}`} />
                     <div className="flex-1">

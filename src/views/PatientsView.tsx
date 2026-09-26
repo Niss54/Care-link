@@ -1,172 +1,87 @@
-import React, { useState } from 'react';
-import { Patient, PatientStatus, VitalRecord } from '../types';
-import { calculateAge } from '../utils';
+import React, { useState, useMemo } from 'react';
+import { Patient } from '../types';
+import { tierColor } from '../lib/api';
 import {
   Search,
-  Plus,
   Filter,
   Eye,
-  Trash2,
-  Calendar,
-  MoreVertical,
   ChevronLeft,
   ChevronRight,
-  UserCheck,
-  UserX,
-  Clock,
-  Sparkles,
-  RefreshCw,
-  SlidersHorizontal,
   Download,
-  FileSpreadsheet,
   BrainCircuit,
-  Loader2
+  RefreshCw,
+  Users,
+  AlertTriangle,
+  ShieldCheck,
+  Activity,
 } from 'lucide-react';
 
 interface PatientsViewProps {
   patients: Patient[];
-  vitalRecords?: VitalRecord[];
-  onOpenAddPatient: () => void;
   onSelectPatient: (patient: Patient) => void;
-  onDeletePatient: (id: string) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   onShowToast?: (title: string, message: string, type?: 'success' | 'info' | 'error') => void;
+  onRefetch?: () => void;
 }
 
 export const PatientsView: React.FC<PatientsViewProps> = ({
   patients,
-  vitalRecords = [],
-  onOpenAddPatient,
   onSelectPatient,
-  onDeletePatient,
   searchQuery,
   setSearchQuery,
-  onShowToast
+  onShowToast,
+  onRefetch,
 }) => {
-  const [triages, setTriages] = useState<Record<string, { status: 'loading' | 'done' | 'error', val?: string }>>({});
-
-  const handleGetTriage = async (e: React.MouseEvent, patient: Patient) => {
-    e.stopPropagation();
-    setTriages(prev => ({ ...prev, [patient.id]: { status: 'loading' } }));
-    
-    try {
-      const patientVitals = vitalRecords.filter(v => v.patientId === patient.id);
-      const res = await fetch('/api/triage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          notes: patient.notes,
-          vitals: patientVitals.slice(0, 3) // sending last 3 vitals
-        })
-      });
-
-      if (!res.ok) throw new Error("Failed");
-      const data = await res.json();
-      setTriages(prev => ({ ...prev, [patient.id]: { status: 'done', val: data.triage } }));
-      if (onShowToast) onShowToast('Triage Generated', `AI suggested ${data.triage} for ${patient.name}.`, 'success');
-    } catch (err) {
-      setTriages(prev => ({ ...prev, [patient.id]: { status: 'error' } }));
-      if (onShowToast) onShowToast('Triage Error', 'Failed to generate AI triage.', 'error');
-    }
-  };
-  const [activeFilter, setActiveFilter] = useState<string>('All');
-  const [quickFilter, setQuickFilter] = useState<string>('None');
-  const [isLoadingSkeleton, setIsLoadingSkeleton] = useState(false);
+  const [riskFilter, setRiskFilter] = useState<string>('All');
+  const [genderFilter, setGenderFilter] = useState<string>('All');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPatientIds, setSelectedPatientIds] = useState<string[]>([]);
-  const itemsPerPage = 6;
+  const itemsPerPage = 12;
 
-  // CSV Export logic for administrative reporting
+  // ── CSV Export ──
   const handleExportCSV = () => {
     const listToExport = filteredPatients.length > 0 ? filteredPatients : patients;
-    const headers = [
-      'Patient ID',
-      'Name',
-      'Date of Birth',
-      'Status',
-      'Department',
-      'Last Visit',
-      'Email',
-      'Phone',
-      'Date Added',
-      'Notes'
-    ];
-
-    const escapeCSV = (str: string | undefined) => {
-      if (!str) return '""';
-      return `"${str.replace(/"/g, '""')}"`;
+    const headers = ['Patient ID', 'External Ref', 'Age', 'Gender', 'Admission Type', 'Discharge Location', 'Probability', 'Risk Tier', 'Predicted At'];
+    const escapeCSV = (str: string | number | null | undefined) => {
+      if (str == null) return '""';
+      return `"${String(str).replace(/"/g, '""')}"`;
     };
-
     const rows = listToExport.map((p) => [
-      escapeCSV(p.id),
-      escapeCSV(p.name),
-      escapeCSV(p.dob),
-      escapeCSV(p.status),
-      escapeCSV(p.department || 'Cardiology'),
-      escapeCSV(p.lastVisit),
-      escapeCSV(p.email),
-      escapeCSV(p.phone),
-      escapeCSV(p.dateAdded || '2023-10-24'),
-      escapeCSV(p.notes)
+      escapeCSV(p.patient_id),
+      escapeCSV(p.external_ref),
+      escapeCSV(p.age),
+      escapeCSV(p.gender),
+      escapeCSV(p.admission_type),
+      escapeCSV(p.discharge_location),
+      escapeCSV(p.probability != null ? (p.probability * 100).toFixed(1) + '%' : '—'),
+      escapeCSV(p.risk_tier),
+      escapeCSV(p.predicted_at ? new Date(p.predicted_at).toLocaleDateString() : '—'),
     ]);
-
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const today = new Date().toISOString().split('T')[0];
     link.href = url;
-    link.setAttribute('download', `carelink_patient_report_${today}.csv`);
+    link.setAttribute('download', `carelink_risk_report_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
     if (onShowToast) {
-      onShowToast(
-        'CSV Export Complete',
-        `Exported ${listToExport.length} patient records to CSV file.`,
-        'success'
-      );
+      onShowToast('CSV Export Complete', `Exported ${listToExport.length} patient risk records.`, 'success');
     }
   };
 
-  // JSON Export logic for clinical system interoperability
-  const handleExportJSON = () => {
-    const listToExport = filteredPatients.length > 0 ? filteredPatients : patients;
-    const jsonContent = JSON.stringify(listToExport, null, 2);
-    const blob = new Blob([jsonContent], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const today = new Date().toISOString().split('T')[0];
-    link.href = url;
-    link.setAttribute('download', `carelink_patients_export_${today}.json`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    if (onShowToast) {
-      onShowToast(
-        'JSON Export Complete',
-        `Exported ${listToExport.length} patient records to JSON file for interoperability.`,
-        'success'
-      );
-    }
-  };
-
+  // ── Search highlight ──
   const HighlightText = ({ text, highlight }: { text: string; highlight: string }) => {
     if (!highlight.trim()) return <>{text}</>;
-    const regex = new RegExp(`(${highlight})`, 'gi');
+    const regex = new RegExp(`(${highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
     return (
       <>
         {parts.map((part, i) =>
           regex.test(part) ? (
-            <span key={i} className="bg-[#fff176] text-[#191c1e] font-bold rounded-sm">
-              {part}
-            </span>
+            <span key={i} className="bg-[#fff176] text-[#191c1e] font-bold rounded-sm">{part}</span>
           ) : (
             <span key={i}>{part}</span>
           )
@@ -175,25 +90,23 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
     );
   };
 
-  // Filter logic
-  const filteredPatients = patients.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.department && p.department.toLowerCase().includes(searchQuery.toLowerCase()));
+  // ── Filters ──
+  const filteredPatients = useMemo(() => {
+    return patients.filter((p) => {
+      const q = searchQuery.toLowerCase();
+      const matchesSearch =
+        p.external_ref.toLowerCase().includes(q) ||
+        (p.admission_type && p.admission_type.toLowerCase().includes(q)) ||
+        (p.discharge_location && p.discharge_location.toLowerCase().includes(q)) ||
+        (p.gender && p.gender.toLowerCase().includes(q)) ||
+        String(p.patient_id).includes(q);
 
-    let matchesQuickFilter = true;
-    if (quickFilter === 'Frequent Visitors') {
-      matchesQuickFilter = p.status === 'Active';
-    } else if (quickFilter === 'Patients with Chronic Conditions') {
-      matchesQuickFilter = !!p.notes && /chronic|hypertension|diabetes|asthma/i.test(p.notes);
-    } else if (quickFilter === 'New Patients') {
-      matchesQuickFilter = !!p.dateAdded && (p.dateAdded.includes('2023') || p.dateAdded.includes('2024'));
-    }
+      const matchesRisk = riskFilter === 'All' || p.risk_tier === riskFilter;
+      const matchesGender = genderFilter === 'All' || p.gender === genderFilter;
 
-    if (activeFilter === 'All') return matchesSearch && matchesQuickFilter;
-    return matchesSearch && matchesQuickFilter && p.status === activeFilter;
-  });
+      return matchesSearch && matchesRisk && matchesGender;
+    });
+  }, [patients, searchQuery, riskFilter, genderFilter]);
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage) || 1;
   const paginatedPatients = filteredPatients.slice(
@@ -201,158 +114,81 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
     currentPage * itemsPerPage
   );
 
-  const filterCounts = {
+  const riskCounts = useMemo(() => ({
     All: patients.length,
-    Active: patients.filter((p) => p.status === 'Active').length,
-    Pending: patients.filter((p) => p.status === 'Pending').length,
-    Inactive: patients.filter((p) => p.status === 'Inactive' || p.status === 'Archived').length
-  };
-
-  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedPatientIds(paginatedPatients.map(p => p.id));
-    } else {
-      setSelectedPatientIds([]);
-    }
-  };
-
-  const handleSelectPatient = (id: string) => {
-    setSelectedPatientIds(prev => 
-      prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
-    );
-  };
-
-  const handleBulkAction = (action: 'reminders' | 'announcements') => {
-    if (onShowToast) {
-      const message = action === 'reminders' 
-        ? `Sent appointment reminders to ${selectedPatientIds.length} patients.`
-        : `Sent clinic announcements to ${selectedPatientIds.length} patients.`;
-      onShowToast('Bulk Action Complete', message, 'success');
-    }
-    setSelectedPatientIds([]); // Clear selection after action
-  };
+    High: patients.filter((p) => p.risk_tier === 'High').length,
+    Medium: patients.filter((p) => p.risk_tier === 'Medium').length,
+    Low: patients.filter((p) => p.risk_tier === 'Low').length,
+  }), [patients]);
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Bulk Action Bar (Visible when items selected) */}
-      {selectedPatientIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#022448] text-white px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 animate-in slide-in-from-bottom-10 fade-in duration-300">
-          <div className="flex items-center gap-2">
-            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#316bf3] text-[11px] font-bold">
-              {selectedPatientIds.length}
-            </span>
-            <span className="text-sm font-bold">Selected</span>
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e0e3e5] shadow-sm">
+        <div className="flex items-center gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-[#191c1e]">Patient Risk Panel</h2>
+            <p className="text-xs text-[#74777f]">Readmission risk scores from the federated XGBoost model</p>
           </div>
-          <div className="w-px h-6 bg-white/20" />
-          <button 
-            onClick={() => handleBulkAction('reminders')}
-            className="text-xs font-semibold hover:text-[#adc8f5] transition-colors flex items-center gap-2"
-          >
-            <Clock className="w-4 h-4" />
-            Send Reminders
-          </button>
-          <button 
-            onClick={() => handleBulkAction('announcements')}
-            className="text-xs font-semibold hover:text-[#adc8f5] transition-colors flex items-center gap-2"
-          >
-            <Sparkles className="w-4 h-4" />
-            Send Announcements
-          </button>
-          <button 
-            onClick={() => setSelectedPatientIds([])}
-            className="p-1 hover:bg-white/10 rounded-full transition-colors ml-2"
-          >
-            <UserX className="w-4 h-4" />
-          </button>
+          <span className="px-2.5 py-1 bg-[#316bf3]/10 text-[#316bf3] text-xs font-bold rounded-full">
+            {patients.length}
+          </span>
         </div>
-      )}
-
-      {/* Top Header & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e0e3e5] card-shadow">
-        <div>
-          <h2 className="text-xl font-bold text-[#191c1e]">Patient Directory</h2>
-          <p className="text-xs text-[#74777f]">Manage patient EHR records, status, and clinical assignments</p>
-        </div>
-
         <div className="flex flex-wrap items-center gap-3">
-          {/* Export JSON Button for Interoperability */}
-          <button
-            onClick={handleExportJSON}
-            className="px-3.5 py-2 bg-white border border-[#c4c6cf] hover:bg-[#f2f4f6] text-[#022448] text-xs font-bold rounded-xl shadow-sm flex items-center gap-2 transition-all"
-            title="Export patient records to JSON format for clinical system interoperability"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#10b981]" />
-            <span>Export JSON</span>
-          </button>
-
-          {/* Export CSV Button for Administrative Reporting */}
           <button
             onClick={handleExportCSV}
             className="px-3.5 py-2 bg-white border border-[#c4c6cf] hover:bg-[#f2f4f6] text-[#022448] text-xs font-bold rounded-xl shadow-sm flex items-center gap-2 transition-all"
-            title="Export patient records to CSV file for administrative reporting"
           >
             <Download className="w-3.5 h-3.5 text-[#316bf3]" />
             <span>Export CSV</span>
           </button>
-
-          {/* Skeleton Preview Toggle Button */}
-          <button
-            onClick={() => setIsLoadingSkeleton(!isLoadingSkeleton)}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all ${
-              isLoadingSkeleton
-                ? 'bg-[#316bf3] text-white border-[#316bf3]'
-                : 'bg-[#f2f4f6] text-[#43474e] border-[#c4c6cf] hover:bg-white'
-            }`}
-            title="Toggle Skeleton Loading State Preview"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoadingSkeleton ? 'animate-spin' : ''}`} />
-            <span>{isLoadingSkeleton ? 'Show Live Table' : 'Simulate Skeleton State'}</span>
-          </button>
-
-          <button
-            onClick={onOpenAddPatient}
-            className="px-4 py-2 bg-[#316bf3] hover:bg-[#0051d5] text-white text-xs font-bold rounded-xl shadow-md shadow-[#316bf3]/20 flex items-center gap-2 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Patient</span>
-          </button>
+          {onRefetch && (
+            <button
+              onClick={onRefetch}
+              className="px-3.5 py-2 bg-white border border-[#c4c6cf] hover:bg-[#f2f4f6] text-[#022448] text-xs font-bold rounded-xl shadow-sm flex items-center gap-2 transition-all"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Filter Tabs & Search Controls */}
+      {/* Risk Filter Tabs + Search */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        {/* Status Pills */}
+        {/* Risk Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          {(['All', 'Active', 'Pending', 'Inactive'] as const).map((filter) => {
-            const count = filterCounts[filter];
-            const isActive = activeFilter === filter;
+          {(['All', 'High', 'Medium', 'Low'] as const).map((filter) => {
+            const count = riskCounts[filter];
+            const isActive = riskFilter === filter;
+            const pillColor = filter === 'High' ? 'bg-[#ef4444]' :
+              filter === 'Medium' ? 'bg-[#f59e0b]' :
+              filter === 'Low' ? 'bg-[#10b981]' : 'bg-[#022448]';
+
             return (
               <button
                 key={filter}
-                onClick={() => {
-                  setActiveFilter(filter);
-                  setCurrentPage(1);
-                }}
+                onClick={() => { setRiskFilter(filter); setCurrentPage(1); }}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 ${
                   isActive
-                    ? 'bg-[#022448] text-white shadow-md'
+                    ? `${pillColor} text-white shadow-md`
                     : 'bg-white text-[#43474e] border border-[#e0e3e5] hover:bg-[#f2f4f6]'
                 }`}
               >
+                {filter === 'High' && <AlertTriangle className="w-3.5 h-3.5" />}
+                {filter === 'Medium' && <Activity className="w-3.5 h-3.5" />}
+                {filter === 'Low' && <ShieldCheck className="w-3.5 h-3.5" />}
+                {filter === 'All' && <Users className="w-3.5 h-3.5" />}
                 <span>{filter}</span>
-                <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-[#f2f4f6] text-[#74777f]'
-                  }`}
-                >
-                  {count}
-                </span>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  isActive ? 'bg-white/20 text-white' : 'bg-[#f2f4f6] text-[#74777f]'
+                }`}>{count}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Local Search Input */}
+        {/* Search + Gender Filter */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="relative w-full lg:w-72">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#74777f]" />
@@ -360,217 +196,146 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search name, ID or department..."
+              placeholder="Search ID, admission type..."
               className="w-full pl-10 pr-4 py-2 bg-white border border-[#c4c6cf] rounded-xl text-xs text-[#191c1e] placeholder-[#74777f] focus:outline-none focus:border-[#316bf3]"
             />
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#74777f]">Quick Filters:</span>
+            <span className="text-xs font-bold text-[#74777f]">Gender:</span>
             <select
-              value={quickFilter}
-              onChange={(e) => setQuickFilter(e.target.value)}
+              value={genderFilter}
+              onChange={(e) => { setGenderFilter(e.target.value); setCurrentPage(1); }}
               className="pl-3 pr-8 py-2 bg-[#f7f9fb] border border-[#c4c6cf] rounded-xl text-xs font-semibold text-[#191c1e] focus:outline-none focus:border-[#316bf3]"
             >
-              <option value="None">None</option>
-              <option value="Frequent Visitors">Frequent Visitors</option>
-              <option value="Patients with Chronic Conditions">Chronic Conditions</option>
-              <option value="New Patients">New Patients</option>
+              <option value="All">All</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Patients Table Container */}
-      <div className="bg-white rounded-2xl border border-[#e0e3e5] card-shadow overflow-hidden">
-        {isLoadingSkeleton ? (
-          /* Skeleton Loading State View (Screen 6 Preview) */
-          <div className="p-6 space-y-4 animate-pulse">
-            <div className="h-10 bg-[#f2f4f6] rounded-xl w-full shimmer" />
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between p-4 bg-[#f7f9fb] rounded-xl border border-[#f2f4f6]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#e0e3e5]" />
-                  <div className="space-y-2">
-                    <div className="w-32 h-4 bg-[#e0e3e5] rounded" />
-                    <div className="w-20 h-3 bg-[#e0e3e5] rounded" />
-                  </div>
-                </div>
-                <div className="w-24 h-6 bg-[#e0e3e5] rounded-full" />
-                <div className="w-20 h-4 bg-[#e0e3e5] rounded" />
-                <div className="w-16 h-8 bg-[#e0e3e5] rounded-lg" />
-              </div>
-            ))}
-          </div>
-        ) : paginatedPatients.length === 0 ? (
-          /* Empty State */
+      {/* Patient Table */}
+      <div className="bg-white rounded-2xl border border-[#e0e3e5] shadow-sm overflow-hidden">
+        {paginatedPatients.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-[#f2f4f6] text-[#74777f] mx-auto flex items-center justify-center">
               <Search className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-[#191c1e]">No Patients Found</h3>
             <p className="text-xs text-[#74777f] max-w-sm mx-auto">
-              No patient records match your search criteria. Try adjusting filters or register a new patient.
+              No patient records match your search criteria. Try adjusting filters.
             </p>
-            <button
-              onClick={onOpenAddPatient}
-              className="mt-2 px-4 py-2 bg-[#316bf3] text-white text-xs font-bold rounded-xl"
-            >
-              Add New Patient
-            </button>
           </div>
         ) : (
-          /* Live Table View */
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-[#f7f9fb] border-b border-[#e0e3e5] text-[11px] font-bold text-[#74777f] uppercase tracking-wider">
-                  <th className="py-3.5 px-4 w-10">
-                    <input 
-                      type="checkbox" 
-                      className="rounded border-[#c4c6cf] text-[#316bf3] focus:ring-[#316bf3]"
-                      checked={paginatedPatients.length > 0 && selectedPatientIds.length === paginatedPatients.length}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
                   <th className="py-3.5 px-6">Patient</th>
-                  <th className="py-3.5 px-[16px]">ID Number</th>
-                  <th className="py-3.5 px-[16px]">Status</th>
-                  <th className="py-3.5 px-[16px]">Department</th>
-                  <th className="py-3.5 px-[16px]">Last Visit</th>
-                  <th className="py-3.5 px-[16px]">Triage</th>
+                  <th className="py-3.5 px-4">Age</th>
+                  <th className="py-3.5 px-4">Gender</th>
+                  <th className="py-3.5 px-4">Admission Type</th>
+                  <th className="py-3.5 px-4">Discharge To</th>
+                  <th className="py-3.5 px-4">Risk Score</th>
+                  <th className="py-3.5 px-4">Risk Tier</th>
                   <th className="py-3.5 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f2f4f6] text-xs">
                 {paginatedPatients.map((patient) => {
-                  const isActive = patient.status === 'Active';
-                  const isPending = patient.status === 'Pending';
-                  const isSelected = selectedPatientIds.includes(patient.id);
+                  const tc = tierColor(patient.risk_tier);
+                  const prob = patient.probability != null ? Math.round(patient.probability * 100) : null;
 
                   return (
                     <tr
-                      key={patient.id}
-                      className={`hover:bg-[#f7f9fb] transition-colors group ${isSelected ? 'bg-[#f7f9fb]' : ''}`}
+                      key={patient.patient_id}
+                      className="hover:bg-[#f7f9fb] transition-colors group cursor-pointer"
+                      onClick={() => onSelectPatient(patient)}
                     >
-                      <td className="py-4 px-4 w-10">
-                        <input 
-                          type="checkbox" 
-                          className="rounded border-[#c4c6cf] text-[#316bf3] focus:ring-[#316bf3]"
-                          checked={isSelected}
-                          onChange={() => handleSelectPatient(patient.id)}
-                        />
-                      </td>
-                      {/* Name & Avatar */}
+                      {/* Patient ID */}
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          {patient.avatarUrl ? (
-                            <img
-                              src={patient.avatarUrl}
-                              alt={patient.name}
-                              className="w-10 h-10 rounded-full object-cover ring-2 ring-[#316bf3]/20 shrink-0"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-[#022448] text-white font-bold text-xs flex items-center justify-center shrink-0">
-                              {patient.initials}
-                            </div>
-                          )}
+                          <div className="w-10 h-10 rounded-full bg-[#022448] text-white font-bold text-xs flex items-center justify-center shrink-0">
+                            {patient.external_ref.slice(0, 2)}
+                          </div>
                           <div>
                             <p className="font-bold text-[#191c1e] text-sm group-hover:text-[#316bf3] transition-colors">
-                              <HighlightText text={patient.name} highlight={searchQuery} />
+                              <HighlightText text={patient.external_ref} highlight={searchQuery} />
                             </p>
-                            <p className="text-[11px] text-[#74777f]">
-                              {`${calculateAge(patient.dob)} yrs • ${patient.gender || 'Unknown'} • DOB: ${patient.dob}`}
+                            <p className="text-[10px] text-[#74777f] font-mono">
+                              ID: {patient.patient_id}
                             </p>
                           </div>
                         </div>
                       </td>
 
-                      {/* ID Number Tag */}
-                      <td className="py-4 px-[16px] font-mono font-semibold text-[#191c1e]">
-                        <span className="bg-[#f2f4f6] px-2.5 py-1 rounded-md border border-[#e0e3e5]">
-                          <HighlightText text={patient.id} highlight={searchQuery} />
+                      {/* Age */}
+                      <td className="py-4 px-4 font-semibold text-[#191c1e]">
+                        {patient.age ? `${patient.age} yrs` : '—'}
+                      </td>
+
+                      {/* Gender */}
+                      <td className="py-4 px-4 text-[#43474e]">
+                        {patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : patient.gender || '—'}
+                      </td>
+
+                      {/* Admission Type */}
+                      <td className="py-4 px-4">
+                        <span className="bg-[#f2f4f6] px-2.5 py-1 rounded-md border border-[#e0e3e5] font-medium text-[#43474e]">
+                          <HighlightText text={patient.admission_type || '—'} highlight={searchQuery} />
                         </span>
                       </td>
 
-                      {/* Status Badge */}
-                      <td className="py-4 px-[16px]">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
-                            isActive
-                              ? 'bg-[#10b981]/15 text-[#10b981]'
-                              : isPending
-                              ? 'bg-[#ff9800]/15 text-[#ff9800]'
-                              : 'bg-[#74777f]/15 text-[#74777f]'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              isActive ? 'bg-[#10b981]' : isPending ? 'bg-[#ff9800]' : 'bg-[#74777f]'
-                            }`}
-                          />
-                          {patient.status}
-                        </span>
+                      {/* Discharge Location */}
+                      <td className="py-4 px-4 text-[#74777f] font-medium">
+                        {patient.discharge_location || '—'}
                       </td>
 
-                      {/* Department */}
-                      <td className="py-4 px-[16px] font-medium text-[#43474e]">
-                        {patient.department || 'Cardiology'}
-                      </td>
-
-                      {/* Last Visit */}
-                      <td className="py-4 px-[16px] text-[#74777f] font-medium">
-                        {patient.lastVisit}
-                      </td>
-
-                      <td className="py-4 px-[16px]">
-                        {triages[patient.id] ? (
-                          triages[patient.id].status === 'loading' ? (
-                            <span className="flex items-center gap-1 text-[11px] font-bold text-[#316bf3]">
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Analyzing...
+                      {/* Risk Score */}
+                      <td className="py-4 px-4">
+                        {prob != null ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-2 bg-[#f2f4f6] rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{
+                                  width: `${prob}%`,
+                                  backgroundColor: tc.ring,
+                                }}
+                              />
+                            </div>
+                            <span className="font-bold tabular-nums" style={{ color: tc.ring }}>
+                              {prob}%
                             </span>
-                          ) : triages[patient.id].status === 'done' ? (
-                            <span className={`inline-flex items-center px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider ${
-                              triages[patient.id].val === 'Emergency' || triages[patient.id].val === 'Critical' 
-                                ? 'bg-[#ba1a1a]/15 text-[#ba1a1a]' 
-                                : triages[patient.id].val === 'Urgent' 
-                                  ? 'bg-[#ff9800]/15 text-[#ff9800]' 
-                                  : 'bg-[#10b981]/15 text-[#10b981]'
-                            }`}>
-                              {triages[patient.id].val}
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-[#ba1a1a]">Failed</span>
-                          )
+                          </div>
                         ) : (
-                          <button
-                            onClick={(e) => handleGetTriage(e, patient)}
-                            className="px-2 py-1 rounded-md bg-[#e0e3e5]/50 hover:bg-[#e0e3e5] text-[#191c1e] text-[10px] font-bold transition-colors flex items-center gap-1"
-                            title="Generate AI Triage"
-                          >
-                            <BrainCircuit className="w-3.5 h-3.5 text-[#316bf3]" />
-                            Triage
-                          </button>
+                          <span className="text-[#74777f]">—</span>
                         )}
                       </td>
 
-                      {/* Action Buttons */}
+                      {/* Risk Tier Badge */}
+                      <td className="py-4 px-4">
+                        {patient.risk_tier ? (
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${tc.bg} ${tc.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${tc.dot}`} />
+                            {patient.risk_tier}
+                          </span>
+                        ) : (
+                          <span className="text-[#74777f]">—</span>
+                        )}
+                      </td>
+
+                      {/* Actions */}
                       <td className="py-4 px-6 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => onSelectPatient(patient)}
-                            className="p-2 text-[#316bf3] hover:bg-[#316bf3]/10 rounded-lg transition-colors"
-                            title="View Record"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => onDeletePatient(patient.id)}
-                            className="p-2 text-[#ba1a1a] hover:bg-[#ffdad6]/40 rounded-lg transition-colors"
-                            title="Archive Record"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onSelectPatient(patient); }}
+                          className="p-2 text-[#316bf3] hover:bg-[#316bf3]/10 rounded-lg transition-colors inline-flex items-center gap-1.5"
+                          title="View Risk Analysis"
+                        >
+                          <BrainCircuit className="w-4 h-4" />
+                          <span className="hidden sm:inline text-xs font-bold">Analyze</span>
+                        </button>
                       </td>
                     </tr>
                   );
@@ -580,13 +345,12 @@ export const PatientsView: React.FC<PatientsViewProps> = ({
           </div>
         )}
 
-        {/* Footer Pagination */}
+        {/* Pagination */}
         <div className="px-6 py-4 bg-[#f7f9fb] border-t border-[#e0e3e5] flex items-center justify-between text-xs text-[#74777f]">
           <span>
             Showing <span className="font-bold text-[#191c1e]">{paginatedPatients.length}</span> of{' '}
             <span className="font-bold text-[#191c1e]">{filteredPatients.length}</span> patients
           </span>
-
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
