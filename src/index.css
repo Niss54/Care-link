@@ -1,20 +1,10 @@
 @import "tailwindcss";
 
-html.dark {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-html.dark img,
-html.dark video,
-html.dark .no-invert {
-  filter: invert(1) hue-rotate(180deg);
-}
-
 @layer base {
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: #f7f9fb;
-    color: #191c1e;
+    background-color: #fbf9f5;
+    color: #1a1a1a;
   }
 }
 
@@ -39,130 +29,125 @@ html.dark .no-invert {
 }
 
 .card-shadow {
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 16px rgba(0, 0, 0, 0.02);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 25px -5px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 12px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.09);
 }
 
 .ambient-shadow {
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 
-.ambient-shadow:hover {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 8px 24px -6px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
 }
 
-.modal-shadow {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+.glass-card-light {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.glass-panel {
-  background: rgba(30, 58, 95, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 16px -4px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-}
-
-.glass-card:hover {
+.glass-card-light:hover {
   transform: translateY(-4px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 12px 24px -4px rgba(0, 0, 0, 0.08);
+  border-color: #93c5fd;
+  box-shadow: 0 16px 36px -8px rgba(2, 132, 199, 0.12);
 }
 
-.shimmer {
-  animation: shimmer 2s infinite linear;
-  background: linear-gradient(to right, #f2f4f6 4%, #e0e3e5 25%, #f2f4f6 36%);
-  background-size: 1000px 100%;
+/* ── nissh.info Style Colorful Cards (Light Theme) ── */
+.nissh-card {
+  border-radius: 20px;
+  padding: 1.75rem 1.5rem;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+.nissh-card:hover {
+  transform: translateY(-5px) rotate(0.5deg);
+  box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+.nissh-card-green {
+  background-color: #eaf6ed;
+  border: 1.5px solid #c2e7cc;
+  color: #1a4d2e;
+}
+.nissh-card-blue {
+  background-color: #ebf3ff;
+  border: 1.5px solid #bed6fb;
+  color: #1e3a8a;
+}
+.nissh-card-orange {
+  background-color: #fff4eb;
+  border: 1.5px solid #fed7aa;
+  color: #9a3412;
+}
+.nissh-card-maroon {
+  background-color: #fdf2f4;
+  border: 1.5px solid #fbcfe8;
+  color: #831843;
+}
+.nissh-card-purple {
+  background-color: #f5f3ff;
+  border: 1.5px solid #ddd6fe;
+  color: #4c1d95;
+}
+.nissh-card-teal {
+  background-color: #ecfeff;
+  border: 1.5px solid #a5f3fc;
+  color: #115e59;
 }
 
-/* Custom Scrollbar for Clinical Portal */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #f7f9fb;
-}
-::-webkit-scrollbar-thumb {
-  background: #c4c6cf;
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #74777f;
+/* ── Motion & Animation System (UI-UX.md & nissh.info inspired) ── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(0.8deg); }
 }
 
-/* Print Media Styles for Professional Medical Reports */
-@media print {
-  body * {
-    visibility: hidden;
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.95; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.03); }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -40;
   }
-  .printable-patient-report,
-  .printable-patient-report * {
-    visibility: visible;
-  }
-  .printable-patient-report {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0;
-    padding: 20px;
-    background: white !important;
-    color: black !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-  .no-print {
-    display: none !important;
-  }
 }
 
-
-/* Themes */
-/* Neutral Slate */
-html.theme-slate {
-  --primary-color-override: #475569;
-  --secondary-color-override: #0f172a;
+.anim-float {
+  animation: float-slow 4s ease-in-out infinite;
 }
-html.theme-slate [class*="text-[#316bf3]"]:not(.theme-override-text) { color: var(--primary-color-override) !important; }
-html.theme-slate [class*="bg-[#316bf3]"] { background-color: var(--primary-color-override) !important; }
-html.theme-slate [class*="border-[#316bf3]"]:not(.theme-override-border) { border-color: var(--primary-color-override) !important; }
-html.theme-slate [class*="ring-[#316bf3]"] { --tw-ring-color: var(--primary-color-override) !important; }
-html.theme-slate [class*="text-[#022448]"] { color: var(--secondary-color-override) !important; }
-html.theme-slate [class*="bg-[#022448]"] { background-color: var(--secondary-color-override) !important; }
 
-/* High Contrast */
-html.theme-contrast {
-  --primary-color-override: #000000;
-  --secondary-color-override: #000000;
-  --bg-override: #ffffff;
+.anim-pulse-soft {
+  animation: pulse-soft 3s ease-in-out infinite;
 }
-html.theme-contrast [class*="text-[#316bf3]"]:not(.theme-override-text) { color: var(--primary-color-override) !important; }
-html.theme-contrast [class*="bg-[#316bf3]"] { background-color: var(--primary-color-override) !important; }
-html.theme-contrast [class*="border-[#316bf3]"]:not(.theme-override-border) { border-color: var(--primary-color-override) !important; }
-html.theme-contrast [class*="ring-[#316bf3]"] { --tw-ring-color: var(--primary-color-override) !important; }
-html.theme-contrast [class*="text-[#022448]"] { color: var(--secondary-color-override) !important; }
-html.theme-contrast [class*="bg-[#022448]"] { background-color: var(--secondary-color-override) !important; }
-html.theme-contrast [class*="bg-[#f7f9fb]"] { background-color: var(--bg-override) !important; border: 1px solid #000 !important; }
-html.theme-contrast [class*="bg-[#f2f4f6]"] { background-color: var(--bg-override) !important; border: 1px solid #000 !important; }
-html.theme-contrast [class*="text-[#43474e]"] { color: #000000 !important; }
-html.theme-contrast [class*="text-[#74777f]"] { color: #000000 !important; }
-html.theme-contrast [class*="text-[#191c1e]"] { color: #000000 !important; }
+
+.anim-flow-dash {
+  stroke-dasharray: 6 6;
+  animation: dash-flow 2s linear infinite;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -36,6 +36,7 @@ export function App() {
   const [activities, setActivities] = useState<ActivityItem[]>(INITIAL_ACTIVITIES);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isOnCall, setIsOnCall] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   // Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,11 +61,11 @@ export function App() {
     if (!loading) {
       if (user && ['login','landing','reset-password'].includes(activeTab)) {
         setActiveTab('home');
-      } else if (!user && !['login','landing','reset-password'].includes(activeTab)) {
+      } else if (!user && !isDemoMode && !['login','landing','reset-password'].includes(activeTab)) {
         setActiveTab('landing');
       }
     }
-  }, [user, loading, activeTab]);
+  }, [user, loading, activeTab, isDemoMode]);
 
   useEffect(() => {
     if (user) {
@@ -128,7 +129,16 @@ export function App() {
   }
 
   if (activeTab === 'landing') {
-    return <LandingView onLogin={() => setActiveTab('login')} />;
+    return (
+      <LandingView
+        onLogin={() => setActiveTab('login')}
+        onExploreDemo={() => {
+          setIsDemoMode(true);
+          setActiveTab('home');
+          addToast('Demo Mode Active', 'Welcome to CareLink Clinical Portal as Dr. Sarah Jenkins.', 'info');
+        }}
+      />
+    );
   }
 
   if (activeTab === 'login') {
@@ -162,6 +172,7 @@ export function App() {
         setActiveTab={setActiveTab}
         doctor={{...doctor, status: isOnCall ? 'On-Call' : doctor.status}}
         onSignOut={async () => {
+          setIsDemoMode(false);
           await signOut();
           setActiveTab('landing');
           addToast('Signed Out', 'You have been logged out safely.', 'info');
