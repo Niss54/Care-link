@@ -13,6 +13,8 @@
 | 📊 | **Clinical Dashboards** | Real-time, responsive analytics and patient overviews crafted with modern React and Recharts. |
 | 🔬 | **SHAP Explainability** | Transparent AI that explains *why* a patient is high-risk, showing exactly which clinical factors drove the model's decision. |
 | ⚡ | **Automated AI Triage** | Google Gemini-powered clinical triage that automatically assesses urgency based on free-text notes and vital signs. |
+| 🎛️ | **Interactive ML Sandbox** | Real-time simulator computing live XGBoost probabilities, SHAP waterfall attributions, and clinical preset pathways. |
+| 🎨 | **GSAP Light Mode Experience** | Fluid motion with GSAP ScrollTrigger, hand-drawn vector strokes, and a warm, clinical light theme inspired by nissh.info. |
 | 🔐 | **Enterprise Security** | Granular Row-Level Security (RLS) powered by Supabase to ensure physicians only access their authorized patient rosters. |
 
 ---
@@ -48,11 +50,13 @@ graph LR
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS, Recharts, Lucide React |
+| **Frontend** | React 19, TypeScript, Vite, GSAP & @gsap/react (ScrollTrigger), Tailwind CSS, Recharts, Lucide React |
 | **Backend** | Express.js (Node), FastAPI (Python), Netlify Functions |
-| **Machine Learning**| XGBoost, Optuna, SHAP, Flower (Federated Learning) |
+| **Machine Learning**| XGBoost, Optuna, SHAP, Flower (Federated Learning v2.4) |
 | **Database & Auth** | Supabase (PostgreSQL), Row Level Security (RLS) |
 | **AI Triage** | Google Gemini 2.5 Flash API |
+| **Design System** | Clean Light Mode Aesthetic (inspired by nissh.info and `docs/UI-UX.md`) |
+| **Documentation** | 25+ comprehensive engineering blueprints in `docs/` |
 
 ---
 
@@ -62,8 +66,8 @@ Follow these steps to run CareLink locally.
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-org/carelink.git
-cd carelink
+git clone https://github.com/Niss54/Care-link.git
+cd Care-link
 ```
 
 ### 2. Environment Setup
