@@ -3,6 +3,9 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import { callWithFailover, type ModelMetrics } from "./src/lib/failoverLlm";
+import { anonymizePhi, deAnonymizePhi, checkClinicalSafety } from "./src/lib/guardrails";
+import { searchClinicalGuidelines, formatGuidelinesForPrompt, CLINICAL_GUIDELINES } from "./src/lib/clinicalRag";
+import { verifyAndResolveCitations } from "./src/lib/citationResolver";
 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
@@ -58,6 +61,61 @@ Vitals: ${JSON.stringify(vitals || {})}`;
       recent: gatewayLogs.slice(0, 10),
       providers: Array.from(new Set(gatewayLogs.map(l => l.provider)))
     });
+  });
+
+  // PHI Guardrails: Check Clinical Safety Non-Negotiables
+  app.post("/api/agent/guardrails/check-safety", (req, res) => {
+    const { text } = req.body || {};
+    const result = checkClinicalSafety(text || "");
+    res.json(result);
+  });
+
+  // PHI Guardrails: Anonymize Patient Health Information
+  app.post("/api/agent/guardrails/anonymize", (req, res) => {
+    const { text } = req.body || {};
+    const result = anonymizePhi(text || "");
+    res.json(result);
+  });
+
+  // PHI Guardrails: De-anonymize Clean Response
+  app.post("/api/agent/guardrails/de-anonymize", (req, res) => {
+    const { text, tokenMap } = req.body || {};
+    const restored = deAnonymizePhi(text || "", tokenMap || {});
+    res.json({ text: restored });
+  });
+
+  // Clinical RAG: Search Curated Clinical Guidelines
+  app.post("/api/agent/rag/search", async (req, res) => {
+    try {
+      const { query, topK, minScore } = req.body || {};
+      const results = await searchClinicalGuidelines(query || "", topK || 3, minScore || 0.05);
+      const promptContext = formatGuidelinesForPrompt(results);
+      res.json({
+        totalGuidelinesAvailable: CLINICAL_GUIDELINES.length,
+        retrievedCount: results.length,
+        guidelines: results,
+        promptContext
+      });
+    } catch (error: any) {
+      console.error("Clinical RAG Search Error:", error);
+      res.status(500).json({ error: error.message || "RAG search failed" });
+    }
+  });
+
+  // Citation Resolver: Verify LLM Claim Evidence Grounding
+  app.post("/api/agent/citations/verify", (req, res) => {
+    try {
+      const { text, retrievedGuidelines, passThreshold } = req.body || {};
+      const verification = verifyAndResolveCitations(
+        text || "",
+        retrievedGuidelines || [],
+        passThreshold || 0.70
+      );
+      res.json(verification);
+    } catch (error: any) {
+      console.error("Citation Resolver Error:", error);
+      res.status(500).json({ error: error.message || "Citation verification failed" });
+    }
   });
 
   // Vite middleware for development

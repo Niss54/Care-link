@@ -14,3 +14,9 @@ coverage/
 
 # External extract workspace
 aurag/
+
+# Python cache & artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+.runtime/

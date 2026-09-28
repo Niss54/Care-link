@@ -12,7 +12,7 @@
 
 ```
 Phase 1 — Foundation & Model Gateway   ██████████ 100% ✅
-Phase 2 — PHI Guardrails & Knowledge   ░░░░░░░░░░   0% ⏳
+Phase 2 — PHI Guardrails & Knowledge   ██████████ 100% ✅
 Phase 3 — Supervisor & Specialist      ░░░░░░░░░░   0% ⏳
 Phase 4 — Long-Term Memory & Feedback  ░░░░░░░░░░   0% ⏳
 Phase 5 — Frontend Agent Cockpit UI    ░░░░░░░░░░   0% ⏳
@@ -30,10 +30,10 @@ Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ---
 
 ## 🛡️ Phase 2: PHI Guardrails & Clinical RAG Engine
-- [ ] **Task 2.1:** Build `guardrails.py` (HIPAA zero-leak anonymizer with Regex + NER detection for patient names, DOBs, MRNs).
-- [ ] **Task 2.2:** Build in-memory Qdrant `clinical_rag.py` vector index.
-- [ ] **Task 2.3:** Seed clinical guideline corpus (ICMR, WHO, NICE, AHA readmission protocols).
-- [ ] **Task 2.4:** Build `citation_resolver.py` to enforce strict bracketed clinical evidence citations in outputs.
+- [x] **Task 2.1:** Build `guardrails.py` & `src/lib/guardrails.ts` (HIPAA zero-leak anonymizer with Regex + NER detection, token map roundtrip, and medical hazard filter).
+- [x] **Task 2.2:** Build `clinical_rag.py` & `src/lib/clinicalRag.ts` (Qdrant Cloud vector index with local in-memory cosine fallback).
+- [x] **Task 2.3:** Seed 10 clinical guidelines (ICMR, WHO, NICE, AHA, KDIGO, IAP protocols with evidence tiers).
+- [x] **Task 2.4:** Build `citation_resolver.py` & `src/lib/citationResolver.ts` (Enforces bracketed citations `[ICMR-HF-01]`, computes grounding fidelity score, and generates UI evidence badges).
 
 ---
 
