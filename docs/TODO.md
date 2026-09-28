@@ -14,7 +14,7 @@
 Phase 1 — Foundation & Model Gateway   ██████████ 100% ✅
 Phase 2 — PHI Guardrails & Knowledge   ██████████ 100% ✅
 Phase 3 — Supervisor & Specialist      ██████████ 100% ✅
-Phase 4 — Long-Term Memory & Feedback  ░░░░░░░░░░   0% ⏳
+Phase 4 — Long-Term Memory & Feedback  ██████████ 100% ✅
 Phase 5 — Frontend Agent Cockpit UI    ░░░░░░░░░░   0% ⏳
 Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ```
@@ -48,8 +48,8 @@ Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ---
 
 ## 💾 Phase 4: Long-Term Memory & Active Learning
-- [ ] **Task 4.1:** Build `memory.py` (Mem0 / Supabase cross-session memory service to recall patient chronic history and clinician preferences).
-- [ ] **Task 4.2:** Build `feedback_agent.py` (Active learning feedback monitor with $>15\%$ override drift detection and FL retraining trigger).
+- [x] **Task 4.1:** Build `memory.py` & `src/lib/memory.ts` (Mem0 Cloud REST + local JSON mirror cross-session memory service to recall patient chronic history, allergies, and clinician directives).
+- [x] **Task 4.2:** Build `feedback_agent.py` & `src/lib/feedbackAgent.ts` (Active learning feedback monitor with $>15\%$ override drift detection and fine-tuning dataset generation).
 
 ---
 

@@ -8,6 +8,8 @@ import { searchClinicalGuidelines, formatGuidelinesForPrompt, CLINICAL_GUIDELINE
 import { verifyAndResolveCitations } from "./src/lib/citationResolver";
 import { runSupervisor } from "./src/lib/agents/supervisor";
 import { createInitialAgentState } from "./src/lib/agents/state";
+import { rememberPatient, recallPatient, formatMemoryContext } from "./src/lib/memory";
+import { recordClinicianFeedback, getFeedbackMetrics, generateRetrainingPayload } from "./src/lib/feedbackAgent";
 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
@@ -142,26 +144,120 @@ Vitals: ${JSON.stringify(vitals || {})}`;
       // 2. Anonymize PHI
       const anonResult = anonymizePhi(query);
 
-      // 3. Initialize Agent State
+      // 3. Auto-recall patient memory if patientId provided
+      let resolvedMemory = memoryContext || [];
+      if (patientId && resolvedMemory.length === 0) {
+        resolvedMemory = await recallPatient(patientId, query, 3);
+      }
+
+      // 4. Initialize Agent State
       const state = createInitialAgentState(anonResult.anonymizedText, {
         patientId,
         patientDemographics: demographics || {},
         vitals: vitals || {},
         medications: medications || [],
         sessionId,
-        memoryContext: memoryContext || []
+        memoryContext: resolvedMemory
       });
 
-      // 4. Run Multi-Agent Supervisor
+      // 5. Run Multi-Agent Supervisor
       const finalState = await runSupervisor(state);
 
-      // 5. Restore PHI in local response
+      // 6. Restore PHI in local response
       finalState.agentResponse = deAnonymizePhi(finalState.agentResponse, anonResult.tokenMap);
+
+      // 7. Background store episodic memory if significant triage finding
+      if (patientId && finalState.isGrounded) {
+        rememberPatient(
+          patientId,
+          `Agent [${finalState.routedAgent}]: ${finalState.agentResponse.slice(0, 150)}...`,
+          "agent_consult",
+          sessionId
+        ).catch(() => {});
+      }
 
       res.json(finalState);
     } catch (error: any) {
       console.error("Agent Execution Error:", error);
       res.status(500).json({ error: error.message || "Multi-agent execution failed" });
+    }
+  });
+
+  // Long-Term Memory: Ingest Patient Memory
+  app.post("/api/agent/memory/add", async (req, res) => {
+    try {
+      const { patientId, text, category, sessionId } = req.body || {};
+      if (!patientId || !text) {
+        return res.status(400).json({ error: "Missing required 'patientId' or 'text'" });
+      }
+      const success = await rememberPatient(patientId, text, category || "clinical_history", sessionId);
+      res.json({ success, patientId, category });
+    } catch (error: any) {
+      console.error("Memory Add Error:", error);
+      res.status(500).json({ error: error.message || "Failed to add memory" });
+    }
+  });
+
+  // Long-Term Memory: Recall Patient Memories
+  app.post("/api/agent/memory/recall", async (req, res) => {
+    try {
+      const { patientId, query, limit } = req.body || {};
+      if (!patientId) {
+        return res.status(400).json({ error: "Missing required 'patientId'" });
+      }
+      const memories = await recallPatient(patientId, query || "", limit || 5);
+      const promptBlock = formatMemoryContext(memories);
+      res.json({ patientId, memories, count: memories.length, promptBlock });
+    } catch (error: any) {
+      console.error("Memory Recall Error:", error);
+      res.status(500).json({ error: error.message || "Failed to recall memory" });
+    }
+  });
+
+  // Active Learning: Record Clinician Feedback / Override
+  app.post("/api/agent/feedback/record", (req, res) => {
+    try {
+      const { interactionId, patientId, agentType, suggestedAction, clinicianAction, overrideReason, clinicianId } = req.body || {};
+      if (!patientId || !suggestedAction || !clinicianAction) {
+        return res.status(400).json({ error: "Missing required feedback fields" });
+      }
+      const record = recordClinicianFeedback(
+        interactionId,
+        patientId,
+        agentType || "triage",
+        suggestedAction,
+        clinicianAction,
+        overrideReason || "",
+        clinicianId || "clinician_01"
+      );
+      const currentMetrics = getFeedbackMetrics();
+      res.json({ record, currentMetrics });
+    } catch (error: any) {
+      console.error("Feedback Record Error:", error);
+      res.status(500).json({ error: error.message || "Failed to record feedback" });
+    }
+  });
+
+  // Active Learning: Get Moving Override Metrics & Drift Status
+  app.get("/api/agent/feedback/metrics", (req, res) => {
+    try {
+      const windowSize = req.query.windowSize ? Number(req.query.windowSize) : 50;
+      const metrics = getFeedbackMetrics(windowSize);
+      res.json(metrics);
+    } catch (error: any) {
+      console.error("Feedback Metrics Error:", error);
+      res.status(500).json({ error: error.message || "Failed to get metrics" });
+    }
+  });
+
+  // Active Learning: Export Fine-Tuning Retraining Payload
+  app.get("/api/agent/feedback/retraining-payload", (req, res) => {
+    try {
+      const payload = generateRetrainingPayload();
+      res.json(payload);
+    } catch (error: any) {
+      console.error("Retraining Payload Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate payload" });
     }
   });
 

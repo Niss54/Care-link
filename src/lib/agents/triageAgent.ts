@@ -116,11 +116,13 @@ Vitals: ${JSON.stringify(state.vitals)}
 Automated MTS Assessment: ${level} (Triggers: ${triggers.join(", ")})
 Generate the clinical triage assessment now.`;
 
+  const topTag = retrieved.length > 0 ? retrieved[0].tag : "[ICMR-HF-01]";
+
   const result = await callWithFailover({
     systemPrompt,
     userMessage,
     maxTokens: 500,
-    fallbackText: `### CLINICAL TRIAGE ASSESSMENT\n- **Triage Urgency Level**: ${level}\n- **Physiological Triggers**: ${triggers.join(", ") || "None reported"}\n- **Immediate Clinical Action**: Assess fluid balance and schedule priority cardiology clinic review within 7 days [ICMR-HF-01].\n- **Escalation Window**: ${level === "Emergency" ? "Immediate ER" : "24 to 48 hours"}`
+    fallbackText: `### CLINICAL TRIAGE ASSESSMENT\n- **Triage Urgency Level**: ${level}\n- **Physiological Triggers**: ${triggers.join(", ") || "None reported"}\n- **Immediate Clinical Action**: Conduct targeted clinical review and monitor patient status ${topTag}.\n- **Escalation Window**: ${level === "Emergency" ? "Immediate ER transfer" : "24 to 48 hours"}`
   });
 
   state.agentResponse = result.data;
