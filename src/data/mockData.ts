@@ -12,11 +12,13 @@ export const CURRENT_DOCTOR: DoctorProfile = {
   avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDmwiFrOKDn0G-I6stYZ-AU5N6ZOYvbHhW5zM1nJbrigkWPXFAu-v3pWXxmnQuZy6MXDC5GLgu3JAyq_ZwrxXkUpz8F1wk7TvqQf43OpCWLzLNC2MydlCqIRiAHrTVmWzF0CFpg_L1LPxMlvl1bDPsITc5osPSDiaJ6iN--DywxJH3Dtvyz6htv00-zoqsmn4z5ObtMskIvKfm6TqyRW_msDUtdeSdEri1JgE5nKSM5VQ4olOFKe7ph'
 };
 
+const TODAY = new Date().toISOString().split('T')[0];
+
 export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'APT-101',
     time: '09:00 AM',
-    date: '2023-10-12',
+    date: TODAY,
     patientName: 'Sarah Jenkins',
     patientInitials: 'SJ',
     department: 'Cardiology',
@@ -29,7 +31,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'APT-102',
     time: '09:30 AM',
-    date: '2023-10-12',
+    date: TODAY,
     patientName: 'Eleanor James',
     patientInitials: 'EJ',
     department: 'Cardiology',
@@ -42,7 +44,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'APT-103',
     time: '10:30 AM',
-    date: '2023-10-12',
+    date: TODAY,
     patientName: 'Marcus Sterling',
     patientInitials: 'MS',
     patientAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAClsVR_HrEV0B7n9tzO_2cpu5aRg1jjth75zVi9hI81KjNJDythkejM2dQgEb0xAQYuaHBQ648DIsGBf_zTAAXcjvEQYzkOXWixgjbYoNIs2KpCLdkvUa5v3Yss_uRKISWzZELOl24iGJKOKzNIhP53PtC7YEbD1OBDKaYOjyptiUXFGLr6Xx1PfBRK2_bZOMJHB6jvzC5tVjdbzYGyEAxN9J7KJgx7oKo0kpV787ClReNx4T8f8h5',
@@ -56,7 +58,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'APT-104',
     time: '11:15 AM',
-    date: '2023-10-12',
+    date: TODAY,
     patientName: 'Thomas Reed',
     patientInitials: 'TR',
     department: 'Neurology',
@@ -69,7 +71,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'APT-105',
     time: '11:15 AM',
-    date: '2023-10-12',
+    date: TODAY,
     patientName: 'Emily Davis',
     patientInitials: 'ED',
     department: 'Cardiology',
@@ -82,7 +84,7 @@ export const INITIAL_APPOINTMENTS: Appointment[] = [
   {
     id: 'APT-106',
     time: '01:00 PM',
-    date: '2023-10-12',
+    date: TODAY,
     patientName: 'Robert Chen',
     patientInitials: 'RC',
     department: 'Cardiology',

@@ -6,11 +6,12 @@ import { supabase } from '../lib/supabase';
 interface LoginViewProps {
   onLoginSuccess: () => void;
   onNavigateToReset: () => void;
+  onBackToHome?: () => void;
 }
 
 const STEP_LABELS = ['Institution', 'Credentials', 'Verification'];
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigateToReset }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigateToReset, onBackToHome }) => {
   const { verifyHospital, verifyCredentials, verifyOtp } = useAuth();
 
   // Step state
@@ -279,6 +280,15 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
         {/* ── Right Form Panel ── */}
         <div className="md:col-span-7 p-8 md:p-10 flex flex-col justify-center">
           <div className="max-w-md mx-auto w-full">
+            {onBackToHome && (
+              <button
+                type="button"
+                onClick={onBackToHome}
+                className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-[#74777f] hover:text-[#191c1e] transition-colors"
+              >
+                ← Return to Overview
+              </button>
+            )}
             <StepIndicator />
 
             {/* Error Message */}
@@ -332,11 +342,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
             {/* ════════ STEP 2: Credentials ════════ */}
             {step === 2 && (
               <form onSubmit={handleVerifyCredentials} className="space-y-5">
-                <div>
-                  <h2 className="text-2xl font-extrabold text-[#191c1e] tracking-tight">Clinician Sign In</h2>
-                  <p className="text-xs text-[#74777f] mt-1">
-                    Enter your hospital credentials to verify your identity.
-                  </p>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h2 className="text-2xl font-extrabold text-[#191c1e] tracking-tight">Clinician Sign In</h2>
+                    <p className="text-xs text-[#74777f] mt-1">
+                      Enter your hospital credentials to verify your identity.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      setStep(1);
+                    }}
+                    className="text-xs font-semibold text-[#316bf3] hover:underline whitespace-nowrap mt-1"
+                  >
+                    ← Change Hospital
+                  </button>
                 </div>
 
                 <div>
@@ -423,11 +445,23 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
             {/* ════════ STEP 3: OTP/MFA ════════ */}
             {step === 3 && (
               <form onSubmit={handleVerifyOtp} className="space-y-5">
-                <div>
-                  <h2 className="text-2xl font-extrabold text-[#191c1e] tracking-tight">Verification Code</h2>
-                  <p className="text-xs text-[#74777f] mt-1">
-                    Enter the 6-digit MFA code to complete sign-in.
-                  </p>
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h2 className="text-2xl font-extrabold text-[#191c1e] tracking-tight">Verification Code</h2>
+                    <p className="text-xs text-[#74777f] mt-1">
+                      Enter the 6-digit MFA code to complete sign-in.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setError(null);
+                      setStep(2);
+                    }}
+                    className="text-xs font-semibold text-[#316bf3] hover:underline whitespace-nowrap mt-1"
+                  >
+                    ← Change Account
+                  </button>
                 </div>
 
                 <div>

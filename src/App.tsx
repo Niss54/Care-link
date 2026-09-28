@@ -149,6 +149,7 @@ export function App() {
           addToast('Welcome Back', `Logged in as ${doctor.name} (${doctor.department}).`, 'success');
         }}
         onNavigateToReset={() => setActiveTab('reset-password')}
+        onBackToHome={() => setActiveTab('landing')}
       />
     );
   }
@@ -161,6 +162,13 @@ export function App() {
     return <NotFoundView onGoHome={() => setActiveTab('home')} />;
   }
 
+  const handleSignOut = async () => {
+    setIsDemoMode(false);
+    await signOut();
+    setActiveTab('landing');
+    addToast('Signed Out', 'You have been logged out safely.', 'info');
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f9fb] text-[#191c1e] flex flex-col antialiased">
       {/* Toast Overlay */}
@@ -171,12 +179,7 @@ export function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         doctor={{...doctor, status: isOnCall ? 'On-Call' : doctor.status}}
-        onSignOut={async () => {
-          setIsDemoMode(false);
-          await signOut();
-          setActiveTab('landing');
-          addToast('Signed Out', 'You have been logged out safely.', 'info');
-        }}
+        onSignOut={handleSignOut}
         isOpenMobile={isMobileMenuOpen}
         setIsOpenMobile={setIsMobileMenuOpen}
       />
@@ -195,6 +198,7 @@ export function App() {
           setSearchQuery={setSearchQuery}
           isOnCall={isOnCall}
           setIsOnCall={setIsOnCall}
+          onSignOut={handleSignOut}
         />
 
         {/* View Router */}
@@ -233,7 +237,7 @@ export function App() {
 
           {activeTab === 'analytics' && <AnalyticsView />}
 
-          {activeTab === 'settings' && <SettingsView />}
+          {activeTab === 'settings' && <SettingsView onShowToast={addToast} />}
         </main>
       </div>
 

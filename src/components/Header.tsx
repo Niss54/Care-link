@@ -25,6 +25,7 @@ interface HeaderProps {
   setSearchQuery: (query: string) => void;
   isOnCall?: boolean;
   setIsOnCall?: (val: boolean) => void;
+  onSignOut?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -37,7 +38,8 @@ export const Header: React.FC<HeaderProps> = ({
   searchQuery,
   setSearchQuery,
   isOnCall = false,
-  setIsOnCall = (_: boolean) => {}
+  setIsOnCall = (_: boolean) => {},
+  onSignOut
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
@@ -230,7 +232,11 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => {
                   setShowProfileMenu(false);
-                  setActiveTab('login');
+                  if (onSignOut) {
+                    onSignOut();
+                  } else {
+                    setActiveTab('login');
+                  }
                 }}
                 className="w-full text-left px-4 py-2 text-xs text-[#ba1a1a] hover:bg-[#ffdad6]/40 font-semibold"
               >

@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Building2, Stethoscope, Bell, BellOff, Shield, Lock, Info, ExternalLink, Palette, CheckCircle2, Save } from 'lucide-react';
 
-export const SettingsView = () => {
+interface SettingsViewProps {
+  onShowToast?: (title: string, message: string, type?: 'success' | 'info' | 'error') => void;
+}
+
+export const SettingsView: React.FC<SettingsViewProps> = ({ onShowToast }) => {
   // Profile state
   const [displayName, setDisplayName] = useState('Dr. Aisha Patel');
   const [email, setEmail] = useState('dr.patel@carelink.med');
@@ -32,11 +36,17 @@ export const SettingsView = () => {
     localStorage.setItem('carelink-theme', theme);
     document.documentElement.classList.remove('theme-blue', 'theme-slate', 'theme-contrast');
     document.documentElement.classList.add(`theme-${theme}`);
+    onShowToast?.('Theme Updated', `Active theme changed to ${theme}.`, 'info');
   };
 
   const handleSaveProfile = () => {
     setIsSaved(true);
+    onShowToast?.('Profile Saved', 'Clinician credentials updated successfully.', 'success');
     setTimeout(() => setIsSaved(false), 3000);
+  };
+
+  const handleChangePassword = () => {
+    onShowToast?.('Password Reset', `Password reset instructions sent to ${email}.`, 'info');
   };
 
   const Toggle = ({ value, setter }: { value: boolean, setter: (val: boolean) => void }) => (
@@ -49,13 +59,20 @@ export const SettingsView = () => {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#f7f9fb]">
-      {/* 1. HEADER */}
-      <div className="bg-[#022448] text-white px-8 py-6 shadow-md">
-        <h1 className="text-2xl font-bold">Portal Settings & Preferences</h1>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* 1. CLEAN LIGHT HEADER */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-[#e0e3e5]">
+        <div>
+          <h1 className="text-2xl font-black text-[#191c1e] tracking-tight">Portal Settings & Preferences</h1>
+          <p className="text-xs text-[#74777f] mt-1 font-medium">Manage clinician profile, automated clinical notifications, and display themes.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Online & Synced
+          </span>
+        </div>
       </div>
-
-      <div className="p-8 space-y-6 max-w-4xl mx-auto w-full">
         {/* 2. PROFILE SETTINGS */}
         <div className="bg-white rounded-2xl border border-[#e0e3e5] shadow-sm p-6">
           <div className="flex items-center gap-3 mb-6">
@@ -196,7 +213,10 @@ export const SettingsView = () => {
                 <h3 className="font-medium text-gray-800">Password</h3>
                 <p className="text-sm text-gray-500">Update your account password</p>
               </div>
-              <button className="px-5 py-2 border border-[#c4c6cf] rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              <button
+                onClick={handleChangePassword}
+                className="px-5 py-2 border border-[#c4c6cf] rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors text-xs active:scale-95"
+              >
                 Change Password
               </button>
             </div>
@@ -250,6 +270,5 @@ export const SettingsView = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };

@@ -16,7 +16,7 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
   patients
 }) => {
   const [patientName, setPatientName] = useState('');
-  const [date, setDate] = useState('2023-10-12');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('09:00 AM');
   const [department, setDepartment] = useState('Cardiology');
   const [doctor, setDoctor] = useState('Dr. Smith');
@@ -57,19 +57,19 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
       <div className="bg-white rounded-2xl max-w-lg w-full border border-[#e0e3e5] shadow-2xl overflow-hidden animate-in zoom-in-95">
         {/* Header */}
-        <div className="bg-[#022448] text-white px-6 py-4 flex items-center justify-between">
+        <div className="bg-white border-b border-[#e0e3e5] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#316bf3] flex items-center justify-center text-white">
+            <div className="w-9 h-9 rounded-xl bg-[#316bf3]/10 text-[#316bf3] flex items-center justify-center">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">Schedule Appointment</h2>
-              <p className="text-xs text-[#adc8f5]">Book a clinical session or consultation</p>
+              <h2 className="text-base font-bold text-[#191c1e]">Schedule Appointment</h2>
+              <p className="text-xs text-[#74777f]">Book a clinical session or consultation</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-[#adc8f5] hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors"
+            className="text-[#74777f] hover:text-[#191c1e] hover:bg-[#f2f4f6] p-1.5 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -94,8 +94,8 @@ export const ScheduleAppointmentModal: React.FC<ScheduleAppointmentModalProps> =
                 className="w-full pl-10 pr-4 py-2.5 bg-[#f2f4f6] border border-[#c4c6cf] rounded-xl text-sm text-[#191c1e] focus:outline-none focus:bg-white focus:border-[#316bf3] focus:ring-2 focus:ring-[#316bf3]/20"
               />
               <datalist id="patient-list">
-                {patients.map((p) => (
-                  <option key={p.id} value={p.name}>
+                {patients.map((p, idx) => (
+                  <option key={p.id ? `${p.id}-${idx}` : `patient-${idx}`} value={p.name}>
                     {p.id} - {p.department}
                   </option>
                 ))}

@@ -317,7 +317,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <div className="w-9 h-9 rounded-full bg-[#022448] text-white font-bold text-xs flex items-center justify-center">
+                            <div className="w-9 h-9 rounded-full bg-[#316bf3]/10 text-[#316bf3] font-bold text-xs flex items-center justify-center border border-[#316bf3]/20">
                               {patient.external_ref.slice(0, 2)}
                             </div>
                             <div>
@@ -421,37 +421,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-[#022448] text-white rounded-2xl p-6 shadow-xl space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-[#adc8f5]">
+            <div className="bg-white rounded-2xl p-6 border border-[#e0e3e5] shadow-sm space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#74777f]">
                 Quick Clinical Actions
               </h3>
               <div className="space-y-2">
                 <button
                   onClick={onOpenScheduleModal}
-                  className="w-full text-left p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-3 text-xs font-semibold"
+                  className="w-full text-left p-3 rounded-xl bg-[#f7f9fb] hover:bg-[#f2f4f6] border border-[#e0e3e5] transition-all flex items-center gap-3 text-xs font-bold text-[#191c1e] hover:border-[#316bf3]"
                 >
-                  <Calendar className="w-4 h-4 text-[#316bf3]" />
+                  <div className="w-7 h-7 rounded-lg bg-[#316bf3]/10 text-[#316bf3] flex items-center justify-center">
+                    <Calendar className="w-4 h-4" />
+                  </div>
                   <span>Book New Consultation</span>
                 </button>
                 <button
                   onClick={() => onNavigateTab('patients')}
-                  className="w-full text-left p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-3 text-xs font-semibold"
+                  className="w-full text-left p-3 rounded-xl bg-[#f7f9fb] hover:bg-[#f2f4f6] border border-[#e0e3e5] transition-all flex items-center gap-3 text-xs font-bold text-[#191c1e] hover:border-[#10b981]"
                 >
-                  <BrainCircuit className="w-4 h-4 text-[#10b981]" />
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#10b981] flex items-center justify-center">
+                    <BrainCircuit className="w-4 h-4" />
+                  </div>
                   <span>Review Risk Panel</span>
                 </button>
                 <button
                   onClick={() => onNavigateTab('analytics')}
-                  className="w-full text-left p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-3 text-xs font-semibold"
+                  className="w-full text-left p-3 rounded-xl bg-[#f7f9fb] hover:bg-[#f2f4f6] border border-[#e0e3e5] transition-all flex items-center gap-3 text-xs font-bold text-[#191c1e] hover:border-[#ff9800]"
                 >
-                  <Activity className="w-4 h-4 text-[#ff9800]" />
+                  <div className="w-7 h-7 rounded-lg bg-amber-50 text-[#ff9800] flex items-center justify-center">
+                    <Activity className="w-4 h-4" />
+                  </div>
                   <span>View Analytics Dashboard</span>
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="w-full text-left p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all flex items-center gap-3 text-xs font-semibold"
+                  className="w-full text-left p-3 rounded-xl bg-[#f7f9fb] hover:bg-[#f2f4f6] border border-[#e0e3e5] transition-all flex items-center gap-3 text-xs font-bold text-[#191c1e] hover:border-[#316bf3]"
                 >
-                  <FileText className="w-4 h-4 text-[#adc8f5]" />
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#316bf3] flex items-center justify-center">
+                    <FileText className="w-4 h-4" />
+                  </div>
                   <span>Download EOD Report (PDF)</span>
                 </button>
               </div>
