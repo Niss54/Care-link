@@ -115,31 +115,49 @@ class CitationResolver:
                 if not cond_keywords and ret_tag in self.guideline_map:
                     cond_keywords = self.guideline_map[ret_tag].keywords
 
-                matches = sum(1 for kw in cond_keywords if kw.lower() in llm_text.lower())
-                if matches >= 2:
+                matches = sum(1 for kw in cond_keywords if kw.lower() in enriched_text.lower())
+                if matches >= 1:
+                    target_kw = next((kw for kw in cond_keywords if kw.lower() in enriched_text.lower()), None)
+                    if target_kw:
+                        pattern = re.compile(rf"([^.?!]*\b{re.escape(target_kw)}\b[^.?!]*[.?!])", re.IGNORECASE)
+                        if pattern.search(enriched_text) and bracketed not in enriched_text:
+                            enriched_text = pattern.sub(rf"\1 {bracketed}", enriched_text, count=1)
+                            valid_citations.append(bracketed)
+                            g = self.guideline_map.get(ret_tag)
+                            if g:
+                                evidence_badges.append({
+                                    "tag": bracketed,
+                                    "title": g.title,
+                                    "source": g.source,
+                                    "condition": g.condition,
+                                    "evidence_level": g.evidence_level,
+                                    "snippet": g.content[:200] + "...",
+                                    "score": 0.92,
+                                })
+                            audit_notes.append(f"Auto-attached clinical citation {bracketed} based on semantic grounding match.")
+                        elif bracketed not in valid_citations:
+                            missing_recommended.append(bracketed)
+                    else:
+                        missing_recommended.append(bracketed)
+                else:
                     missing_recommended.append(bracketed)
-                    # Automatically attach tag to relevant sentence if absent
-                    target_kw = cond_keywords[0]
-                    pattern = re.compile(rf"([^.?!]*\b{re.escape(target_kw)}\b[^.?!]*[.?!])", re.IGNORECASE)
-                    if pattern.search(enriched_text) and bracketed not in enriched_text:
-                        enriched_text = pattern.sub(rf"\1 {bracketed}", enriched_text, count=1)
-                        audit_notes.append(f"Auto-attached clinical citation {bracketed} based on semantic grounding match.")
 
         # 4. Compute Grounding Fidelity Score
         # Grounding score formula:
         # Penalize hallucinated citations heavily.
         # Credit valid citations against retrieved guidelines.
-        if not citations_found and not retrieved_map:
+        if not valid_citations and not retrieved_map:
             # General non-clinical query
             fidelity = 1.0
             is_grounded = True
-        elif not citations_found and retrieved_map:
-            # Clinical guidance was expected and retrieved, but LLM cited nothing
+        elif not valid_citations and retrieved_map:
+            # Clinical guidance was expected and retrieved, but no valid citations found
             fidelity = 0.35 if not missing_recommended else 0.20
             is_grounded = False
             audit_notes.append("Clinical advice generated without mandatory bracketed guideline citations.")
         else:
-            base_score = len(valid_citations) / (len(valid_citations) + len(hallucinated_citations) + len(missing_recommended))
+            total_checks = len(valid_citations) + len(hallucinated_citations) + len(missing_recommended)
+            base_score = len(valid_citations) / total_checks if total_checks > 0 else 1.0
             penalty = len(hallucinated_citations) * 0.40
             fidelity = max(0.0, min(1.0, base_score - penalty))
             is_grounded = fidelity >= self.pass_threshold

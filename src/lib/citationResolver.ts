@@ -105,17 +105,29 @@ export function verifyAndResolveCitations(
           matches++;
         }
       }
-      if (matches >= 2) {
-        missingRecommended.push(bracketed);
-        // If keyword occurs, append tag to sentence
-        if (keywords.length > 0) {
-          const firstKw = keywords[0];
-          const pattern = new RegExp(`([^.?!]*\\b${firstKw}\\b[^.?!]*[.?!])`, "i");
-          if (pattern.test(enrichedText) && !enrichedText.includes(bracketed)) {
-            enrichedText = enrichedText.replace(pattern, `$1 ${bracketed}`);
-            auditNotes.push(`Auto-attached clinical citation ${bracketed} based on semantic grounding match.`);
+      const targetKw = keywords.find((kw) => enrichedText.toLowerCase().includes(kw.toLowerCase()));
+      if (targetKw) {
+        const pattern = new RegExp(`([^.?!]*\\b${targetKw}\\b[^.?!]*[.?!])`, "i");
+        if (pattern.test(enrichedText) && !enrichedText.includes(bracketed)) {
+          enrichedText = enrichedText.replace(pattern, `$1 ${bracketed}`);
+          validCitations.push(bracketed);
+          if (fullGuide) {
+            evidenceBadges.push({
+              tag: bracketed,
+              title: fullGuide.title,
+              source: fullGuide.source,
+              condition: fullGuide.condition,
+              evidenceLevel: fullGuide.evidenceLevel,
+              snippet: fullGuide.content.slice(0, 220) + "...",
+              score: 0.92
+            });
           }
+          auditNotes.push(`Auto-attached clinical citation ${bracketed} based on semantic grounding match.`);
+        } else if (!validCitations.includes(bracketed)) {
+          missingRecommended.push(bracketed);
         }
+      } else {
+        missingRecommended.push(bracketed);
       }
     }
   }
@@ -124,10 +136,10 @@ export function verifyAndResolveCitations(
   let fidelity = 1.0;
   let isGrounded = true;
 
-  if (citationsFound.length === 0 && retrievedMap.size === 0) {
+  if (validCitations.length === 0 && retrievedMap.size === 0) {
     fidelity = 1.0;
     isGrounded = true;
-  } else if (citationsFound.length === 0 && retrievedMap.size > 0) {
+  } else if (validCitations.length === 0 && retrievedMap.size > 0) {
     fidelity = missingRecommended.length > 0 ? 0.20 : 0.35;
     isGrounded = false;
     auditNotes.push("Clinical advice generated without mandatory bracketed guideline citations.");

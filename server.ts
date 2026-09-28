@@ -6,6 +6,8 @@ import { callWithFailover, type ModelMetrics } from "./src/lib/failoverLlm";
 import { anonymizePhi, deAnonymizePhi, checkClinicalSafety } from "./src/lib/guardrails";
 import { searchClinicalGuidelines, formatGuidelinesForPrompt, CLINICAL_GUIDELINES } from "./src/lib/clinicalRag";
 import { verifyAndResolveCitations } from "./src/lib/citationResolver";
+import { runSupervisor } from "./src/lib/agents/supervisor";
+import { createInitialAgentState } from "./src/lib/agents/state";
 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
@@ -115,6 +117,51 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Citation Resolver Error:", error);
       res.status(500).json({ error: error.message || "Citation verification failed" });
+    }
+  });
+
+  // Autonomous Multi-Agent Execution Endpoint (Supervisor -> Specialists -> Grounding)
+  app.post("/api/agent/run", async (req, res) => {
+    try {
+      const { query, patientId, demographics, vitals, medications, sessionId, memoryContext } = req.body || {};
+
+      if (!query) {
+        return res.status(400).json({ error: "Missing required 'query' parameter" });
+      }
+
+      // 1. HIPAA Safety & PHI Guardrails Screen
+      const safetyCheck = checkClinicalSafety(query);
+      if (!safetyCheck.isSafe) {
+        return res.status(400).json({
+          error: "Safety Blocked",
+          refusalMessage: safetyCheck.refusalMessage,
+          isBlockedBySafety: true
+        });
+      }
+
+      // 2. Anonymize PHI
+      const anonResult = anonymizePhi(query);
+
+      // 3. Initialize Agent State
+      const state = createInitialAgentState(anonResult.anonymizedText, {
+        patientId,
+        patientDemographics: demographics || {},
+        vitals: vitals || {},
+        medications: medications || [],
+        sessionId,
+        memoryContext: memoryContext || []
+      });
+
+      // 4. Run Multi-Agent Supervisor
+      const finalState = await runSupervisor(state);
+
+      // 5. Restore PHI in local response
+      finalState.agentResponse = deAnonymizePhi(finalState.agentResponse, anonResult.tokenMap);
+
+      res.json(finalState);
+    } catch (error: any) {
+      console.error("Agent Execution Error:", error);
+      res.status(500).json({ error: error.message || "Multi-agent execution failed" });
     }
   });
 

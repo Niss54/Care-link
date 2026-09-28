@@ -13,7 +13,7 @@
 ```
 Phase 1 — Foundation & Model Gateway   ██████████ 100% ✅
 Phase 2 — PHI Guardrails & Knowledge   ██████████ 100% ✅
-Phase 3 — Supervisor & Specialist      ░░░░░░░░░░   0% ⏳
+Phase 3 — Supervisor & Specialist      ██████████ 100% ✅
 Phase 4 — Long-Term Memory & Feedback  ░░░░░░░░░░   0% ⏳
 Phase 5 — Frontend Agent Cockpit UI    ░░░░░░░░░░   0% ⏳
 Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
@@ -38,12 +38,12 @@ Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ---
 
 ## 🧠 Phase 3: LangGraph Supervisor & Specialist Agents
-- [ ] **Task 3.1:** Define `state.py` (`CareLinkAgentState` with patient demographics, vitals, SHAP values, risk scores, care plans).
-- [ ] **Task 3.2:** Build `supervisor.py` (LangGraph `StateGraph` router with intent classification, confidence floor $\ge 0.60$, and fallback routing).
-- [ ] **Task 3.3:** Build `triage_agent.py` (ReAct loop: vitals tool + MTS severity rules + RAG protocol + self-critique).
-- [ ] **Task 3.4:** Build `risk_analyst_agent.py` (XGBoost ML interpretation + SHAP factor narrative + similar patient cohort search).
-- [ ] **Task 3.5:** Build `care_plan_agent.py` (Autonomous 4-part post-discharge plan generator: meds, visits, diet, warning signs).
-- [ ] **Task 3.6:** Build `medication_safety_agent.py` (Drug-drug interaction safety checker with CRITICAL blocker).
+- [x] **Task 3.1:** Define `state.py` & `src/lib/agents/state.ts` (`CareLinkAgentState` with patient demographics, vitals, SHAP values, risk scores, care plans).
+- [x] **Task 3.2:** Build `supervisor.py` & `src/lib/agents/supervisor.ts` (StateGraph router with intent classification, confidence floor $\ge 0.60$, and fallback routing).
+- [x] **Task 3.3:** Build `triage_agent.py` & `src/lib/agents/triageAgent.ts` (ReAct loop: vitals tool + MTS severity rules + RAG protocol + self-critique).
+- [x] **Task 3.4:** Build `risk_analyst_agent.py` & `src/lib/agents/riskAnalystAgent.ts` (XGBoost ML interpretation + SHAP factor narrative + similar patient cohort search).
+- [x] **Task 3.5:** Build `care_plan_agent.py` & `src/lib/agents/carePlanAgent.ts` (Autonomous 4-part post-discharge plan generator: meds, visits, diet, warning signs).
+- [x] **Task 3.6:** Build `medication_safety_agent.py` & `src/lib/agents/medicationSafetyAgent.ts` (Drug-drug interaction safety checker with CRITICAL blocker).
 
 ---
 
