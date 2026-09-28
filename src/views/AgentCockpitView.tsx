@@ -157,9 +157,10 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
     fetch('/api/agent/feedback/metrics')
       .then((res) => res.json())
       .then((data) => {
-        if (data && typeof data.override_rate === 'number') {
-          setOverrideRate(data.override_rate);
-          setIsDriftDetected(data.is_drift_detected);
+        if (data) {
+          const rate = typeof data.override_rate === 'number' ? data.override_rate : (typeof data.overrideRate === 'number' ? data.overrideRate : 0);
+          setOverrideRate(rate);
+          setIsDriftDetected(Boolean(data.is_drift_detected ?? data.isDriftDetected));
         }
       })
       .catch(() => {});
@@ -250,8 +251,10 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
         const data = await res.json();
         setFeedbackSubmitted(true);
         if (data.currentMetrics) {
-          setOverrideRate(data.currentMetrics.override_rate);
-          setIsDriftDetected(data.currentMetrics.is_drift_detected);
+          const cm = data.currentMetrics;
+          const rate = typeof cm.override_rate === 'number' ? cm.override_rate : (typeof cm.overrideRate === 'number' ? cm.overrideRate : 0);
+          setOverrideRate(rate);
+          setIsDriftDetected(Boolean(cm.is_drift_detected ?? cm.isDriftDetected));
         }
         onShowToast(
           feedbackAction === 'Approve' ? 'Recommendation Approved' : 'Clinical Override Recorded',
@@ -318,7 +321,7 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
           >
             <Activity className="w-3.5 h-3.5" />
             <span>Drift Monitor:</span>
-            <span>{isDriftDetected ? 'DRIFT DETECTED' : 'STABLE'} ({(overrideRate * 100).toFixed(1)}%)</span>
+            <span>{isDriftDetected ? 'DRIFT DETECTED' : 'STABLE'} ({((Number.isFinite(overrideRate) ? overrideRate : 0) * 100).toFixed(1)}%)</span>
           </div>
         </div>
       </div>

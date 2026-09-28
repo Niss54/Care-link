@@ -21,7 +21,9 @@ export interface FeedbackMetrics {
   totalOverrides: number;
   totalApprovals: number;
   overrideRate: number;
+  override_rate?: number;
   isDriftDetected: boolean;
+  is_drift_detected?: boolean;
   status: "STABLE" | "DRIFT_DETECTED";
   driftThreshold: number;
   recentOverrides: ClinicianFeedbackRecord[];
@@ -97,7 +99,9 @@ export function getFeedbackMetrics(windowSize = 50): FeedbackMetrics {
       totalOverrides: 0,
       totalApprovals: 0,
       overrideRate: 0.0,
+      override_rate: 0.0,
       isDriftDetected: false,
+      is_drift_detected: false,
       status: "STABLE",
       driftThreshold: OVERRIDE_DRIFT_THRESHOLD,
       recentOverrides: []
@@ -119,7 +123,9 @@ export function getFeedbackMetrics(windowSize = 50): FeedbackMetrics {
     totalOverrides: overrides,
     totalApprovals: approvals,
     overrideRate: rate,
+    override_rate: rate,
     isDriftDetected,
+    is_drift_detected: isDriftDetected,
     status: isDriftDetected ? "DRIFT_DETECTED" : "STABLE",
     driftThreshold: OVERRIDE_DRIFT_THRESHOLD,
     recentOverrides
