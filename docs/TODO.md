@@ -1,226 +1,68 @@
-# ✅ TODO — Task Tracker
+# ✅ CareLink Agentic AI — Master Task Tracker
 
-> **Project:** [Project Name]
-> **Last Updated:** [YYYY-MM-DD]
-> **Sprint:** [Sprint #] — [Start Date] → [End Date]
-> **Board:** [Jira / Linear / Notion link]
+> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon (1 Oct 2026)  
+> **Project:** CareLink Autonomous Multi-Agent HealthTech Platform  
+> **Lead:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
+> **PRD Reference:** [`docs/Prd.md`](file:///c:/Users/nisha/OneDrive/Documents/Downloads/carelink/docs/Prd.md)  
+> **Status:** 🟡 Ready for Phase 1 Execution  
 
 ---
 
 ## 📊 Progress Overview
 
 ```
-Phase 1 — Setup       ██████████ 100% ✅
-Phase 2 — Core Dev    ████░░░░░░  40% 🔄
-Phase 3 — Testing     ░░░░░░░░░░   0% ⏳
-Phase 4 — Launch      ░░░░░░░░░░   0% ⏳
+Phase 1 — Foundation & Model Gateway   ░░░░░░░░░░   0% ⏳
+Phase 2 — PHI Guardrails & Knowledge   ░░░░░░░░░░   0% ⏳
+Phase 3 — Supervisor & Specialist      ░░░░░░░░░░   0% ⏳
+Phase 4 — Long-Term Memory & Feedback  ░░░░░░░░░░   0% ⏳
+Phase 5 — Frontend Agent Cockpit UI    ░░░░░░░░░░   0% ⏳
+Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ```
 
 ---
 
-## 🔴 Phase 1 — Foundation & Setup
-
-### Infrastructure
-- [x] Initialize repository (`git init`)
-- [x] Set up `.gitignore`
-- [x] Create `README.md`
-- [x] Set up `docker-compose.yml` for local dev
-- [x] Configure ESLint + Prettier
-- [x] Set up TypeScript (`tsconfig.json`)
-
-### Backend Setup
-- [x] Initialize Node.js + Express project
-- [x] Configure Prisma + PostgreSQL
-- [x] Set up Redis connection
-- [x] Create base API structure (`/api/v1`)
-- [x] Set up error handling middleware
-- [x] Configure logging (Winston)
-- [x] Set up environment variable validation
-
-### Frontend Setup
-- [x] Initialize Next.js project
-- [x] Set up Tailwind CSS
-- [x] Install shadcn/ui components
-- [x] Configure Axios instance
-- [x] Set up TanStack Query
-- [x] Create layout components (Header, Sidebar)
-
-### Database
-- [x] Design ERD (see `02_DATABASE.md`)
-- [x] Create Prisma schema
-- [x] Run initial migration
-- [x] Set up seed data
+## 🚀 Phase 1: Foundation & Dual-Model Failover Engine
+- [ ] **Task 1.1:** Set up agent module structure in `backend/agents/`.
+- [ ] **Task 1.2:** Build `gateway.py` (Multi-LLM gateway supporting Gemini with instant auto-failover to Groq on HTTP 429/quota limits).
+- [ ] **Task 1.3:** Add token usage and latency telemetry tracking to all model calls.
+- [ ] **Task 1.4:** Verify failover resilience with live test script simulating primary quota exhaustion.
 
 ---
 
-## 🟠 Phase 2 — Core Development
-
-### Authentication
-- [x] `POST /auth/register` — Registration endpoint
-- [x] `POST /auth/login` — Login with JWT
-- [x] `POST /auth/logout` — Logout + clear tokens
-- [x] `POST /auth/refresh` — Refresh access token
-- [ ] `POST /auth/forgot-password` — Email reset flow
-- [ ] `GET /auth/verify-email` — Email verification
-- [ ] Frontend: Login page
-- [ ] Frontend: Register page
-- [ ] Frontend: Forgot password page
-- [ ] Frontend: Auth guard (redirect if not logged in)
-
-### User Profile
-- [ ] `GET /users/me` — Get current user
-- [ ] `PUT /users/me` — Update profile
-- [ ] `PUT /users/me/password` — Change password
-- [ ] `DELETE /users/me` — Delete account
-- [ ] Frontend: Profile settings page
-- [ ] Avatar upload (S3 / Cloudinary)
-
-### [Core Feature — Replace with your feature]
-- [ ] `POST /[feature]` — Create
-- [ ] `GET /[feature]` — List with pagination + filters
-- [ ] `GET /[feature]/:id` — Get single
-- [ ] `PUT /[feature]/:id` — Update
-- [ ] `DELETE /[feature]/:id` — Delete (soft delete)
-- [ ] Frontend: [Feature] list page
-- [ ] Frontend: [Feature] detail page
-- [ ] Frontend: Create/Edit form
-- [ ] Frontend: Delete confirmation modal
-- [ ] Frontend: Search + filter UI
-- [ ] Frontend: Pagination component
-
-### Dashboard
-- [ ] Stats API endpoint
-- [ ] Dashboard page UI
-- [ ] Charts / data visualization
-- [ ] Recent activity feed
-
-### Admin Panel
-- [ ] `GET /admin/users` — List all users
-- [ ] `PUT /admin/users/:id/role` — Change user role
-- [ ] `GET /admin/stats` — System statistics
-- [ ] Frontend: Admin user management
+## 🛡️ Phase 2: PHI Guardrails & Clinical RAG Engine
+- [ ] **Task 2.1:** Build `guardrails.py` (HIPAA zero-leak anonymizer with Regex + NER detection for patient names, DOBs, MRNs).
+- [ ] **Task 2.2:** Build in-memory Qdrant `clinical_rag.py` vector index.
+- [ ] **Task 2.3:** Seed clinical guideline corpus (ICMR, WHO, NICE, AHA readmission protocols).
+- [ ] **Task 2.4:** Build `citation_resolver.py` to enforce strict bracketed clinical evidence citations in outputs.
 
 ---
 
-## 🟡 Phase 3 — Testing & Quality
-
-### Unit Tests
-- [ ] Auth service tests
-- [ ] [Feature] service tests
-- [ ] Utility function tests
-- [ ] Middleware tests
-- [ ] **Coverage target: 85%+**
-
-### Integration Tests
-- [ ] Auth routes (register, login, refresh, logout)
-- [ ] User routes (CRUD)
-- [ ] [Feature] routes (CRUD + pagination)
-- [ ] Error handling tests
-- [ ] Rate limiting tests
-
-### E2E Tests (Playwright)
-- [ ] Registration + email verification flow
-- [ ] Login + logout flow
-- [ ] Create [Feature] flow
-- [ ] Edit [Feature] flow
-- [ ] Delete [Feature] flow
-- [ ] Password reset flow
-- [ ] Mobile responsiveness
-
-### Performance & Security
-- [ ] Load testing with k6
-- [ ] Security audit (OWASP checklist — see `07_SECURITY.md`)
-- [ ] Lighthouse performance audit (score 90+)
-- [ ] Accessibility audit (WCAG AA)
+## 🧠 Phase 3: LangGraph Supervisor & Specialist Agents
+- [ ] **Task 3.1:** Define `state.py` (`CareLinkAgentState` with patient demographics, vitals, SHAP values, risk scores, care plans).
+- [ ] **Task 3.2:** Build `supervisor.py` (LangGraph `StateGraph` router with intent classification, confidence floor $\ge 0.60$, and fallback routing).
+- [ ] **Task 3.3:** Build `triage_agent.py` (ReAct loop: vitals tool + MTS severity rules + RAG protocol + self-critique).
+- [ ] **Task 3.4:** Build `risk_analyst_agent.py` (XGBoost ML interpretation + SHAP factor narrative + similar patient cohort search).
+- [ ] **Task 3.5:** Build `care_plan_agent.py` (Autonomous 4-part post-discharge plan generator: meds, visits, diet, warning signs).
+- [ ] **Task 3.6:** Build `medication_safety_agent.py` (Drug-drug interaction safety checker with CRITICAL blocker).
 
 ---
 
-## 🟢 Phase 4 — Launch
-
-### Pre-Launch
-- [ ] Buy domain
-- [ ] Configure Cloudflare DNS
-- [ ] Provision production server
-- [ ] Install Docker + Nginx on server
-- [ ] Set up SSL certificate (Let's Encrypt)
-- [ ] Configure all production env variables
-- [ ] Set up GitHub Actions CI/CD pipeline
-- [ ] Configure Sentry error monitoring
-- [ ] Set up uptime monitoring (UptimeRobot)
-- [ ] Set up database backups
-
-### Launch Day
-- [ ] Final QA on staging
-- [ ] Deploy to production
-- [ ] Smoke test all critical paths
-- [ ] Test email sending
-- [ ] Monitor error rates
-- [ ] Announce on socials / Product Hunt 🎉
-
-### Post-Launch (Week 1)
-- [ ] Monitor daily active users
-- [ ] Track error rates in Sentry
-- [ ] Gather user feedback
-- [ ] Fix critical bugs immediately
-- [ ] Write post-launch blog post
+## 💾 Phase 4: Long-Term Memory & Active Learning
+- [ ] **Task 4.1:** Build `memory.py` (Mem0 / Supabase cross-session memory service to recall patient chronic history and clinician preferences).
+- [ ] **Task 4.2:** Build `feedback_agent.py` (Active learning feedback monitor with $>15\%$ override drift detection and FL retraining trigger).
 
 ---
 
-## 🔵 Backlog (Future Ideas)
-
-### Features
-- [ ] Dark mode toggle
-- [ ] Export to PDF / CSV
-- [ ] Email notifications
-- [ ] Mobile app (React Native)
-- [ ] API rate limit dashboard
-- [ ] Multi-language support (i18n)
-- [ ] Webhooks for third-party integrations
-- [ ] Two-factor authentication (2FA)
-- [ ] OAuth (Google, GitHub)
-- [ ] Team/org collaboration features
-- [ ] Public API with API key management
-
-### Technical Debt
-- [ ] Add comprehensive API documentation (Swagger/OpenAPI)
-- [ ] Set up automated DB backups to S3
-- [ ] Implement cursor-based pagination
-- [ ] Add Redis caching for frequently accessed data
-- [ ] Set up read replicas for PostgreSQL
-- [ ] Migrate to microservices when needed
+## 🖥️ Phase 5: Frontend Agent Cockpit UI
+- [ ] **Task 5.1:** Add "Agent Cockpit" view (`AgentCockpitView.tsx`) to CareLink navigation.
+- [ ] **Task 5.2:** Implement live agent execution graph visualizer and step-by-step reasoning log feed.
+- [ ] **Task 5.3:** Create Care Plan review card with medication safety check badge and PDF export button.
+- [ ] **Task 5.4:** Integrate frontend with backend `/api/agent/run` and `/api/agent/triage` endpoints.
 
 ---
 
-## 🐛 Bug Tracker
-
-| # | Bug | Severity | Status | Assignee | Found |
-|---|-----|----------|--------|----------|-------|
-| B001 | [Describe bug] | 🔴 Critical | Open | [Name] | [Date] |
-| B002 | [Describe bug] | 🟠 High | In Progress | [Name] | [Date] |
-| B003 | [Describe bug] | 🟡 Medium | Fixed | [Name] | [Date] |
-
----
-
-## 📝 Notes & Decisions
-
-> Use this section for quick notes, decisions, or context that doesn't fit elsewhere.
-
-```
-[Date]: Decided to use cursor-based pagination instead of OFFSET for better
-        performance at scale. See commit #abc123.
-
-[Date]: Switched from SendGrid to Resend for better developer experience
-        and pricing.
-
-[Date]: Deferred 2FA to v2 — out of scope for MVP based on user research.
-```
-
----
-
-## 🔗 Related Documents
-
-| Document | Link |
-|----------|------|
-| 📋 PRD | [00_PRD.md](./00_PRD.md) |
-| 📝 Changelog | [09_CHANGELOG.md](./09_CHANGELOG.md) |
-| 🚀 Deployment | [06_DEPLOYMENT.md](./06_DEPLOYMENT.md) |
+## 📈 Phase 6: Observability, End-to-End Testing & Git Checkpoint
+- [ ] **Task 6.1:** Configure LangSmith trace exports and RAGAS faithfulness benchmark runner ($>0.85$ target).
+- [ ] **Task 6.2:** Execute full End-to-End pipeline test:
+  - Ingest patient $\rightarrow$ Supervisor router $\rightarrow$ Triage ReAct loop $\rightarrow$ Care Plan generation $\rightarrow$ Drug safety check $\rightarrow$ UI telemetry.
+- [ ] **Task 6.3:** Commit verified changes to git repository locally (do not push to remote).
