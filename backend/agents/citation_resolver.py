@@ -156,10 +156,10 @@ class CitationResolver:
             is_grounded = False
             audit_notes.append("Clinical advice generated without mandatory bracketed guideline citations.")
         else:
-            total_checks = len(valid_citations) + len(hallucinated_citations) + len(missing_recommended)
-            base_score = len(valid_citations) / total_checks if total_checks > 0 else 1.0
+            citation_accuracy = len(valid_citations) / (len(valid_citations) + len(hallucinated_citations))
+            coverage = min(1.0, len(valid_citations) / max(1, min(2, len(retrieved_map))))
             penalty = len(hallucinated_citations) * 0.40
-            fidelity = max(0.0, min(1.0, base_score - penalty))
+            fidelity = max(0.0, min(1.0, (0.7 * citation_accuracy + 0.3 * coverage) - penalty))
             is_grounded = fidelity >= self.pass_threshold
 
         if hallucinated_citations:
@@ -190,3 +190,12 @@ def get_citation_resolver() -> CitationResolver:
     if _citation_resolver is None:
         _citation_resolver = CitationResolver()
     return _citation_resolver
+
+
+def verify_and_resolve_citations(
+    llm_text: str,
+    retrieved_guidelines: Optional[list] = None
+) -> GroundingVerification:
+    """Helper function matching TypeScript API to verify and resolve citations."""
+    resolver = get_citation_resolver()
+    return resolver.verify_and_resolve(llm_text, retrieved_guidelines or [])

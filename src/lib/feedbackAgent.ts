@@ -32,28 +32,54 @@ export const OVERRIDE_DRIFT_THRESHOLD = 0.15; // 15% safety tolerance
 const FEEDBACK_HISTORY: ClinicianFeedbackRecord[] = [];
 
 export function recordClinicianFeedback(
-  interactionId: string,
-  patientId: string,
-  agentType: string,
-  suggestedAction: string,
-  clinicianAction: string,
+  interactionIdOrOptions: string | {
+    interactionId?: string;
+    patientId: string;
+    agentType: string;
+    suggestedAction: string;
+    clinicianAction: string;
+    overrideReason?: string;
+    clinicianId?: string;
+  },
+  patientId?: string,
+  agentType?: string,
+  suggestedAction?: string,
+  clinicianAction?: string,
   overrideReason = "",
   clinicianId = "clinician_01"
 ): ClinicianFeedbackRecord {
-  const sClean = suggestedAction.trim().toLowerCase();
-  const cClean = clinicianAction.trim().toLowerCase();
+  let pId = patientId || "";
+  let aType = agentType || "triage";
+  let sAction = suggestedAction || "";
+  let cAction = clinicianAction || "";
+  let oReason = overrideReason;
+  let cId = clinicianId;
+  let iId = typeof interactionIdOrOptions === "string" ? interactionIdOrOptions : "";
+
+  if (typeof interactionIdOrOptions === "object" && interactionIdOrOptions !== null) {
+    iId = interactionIdOrOptions.interactionId || "";
+    pId = interactionIdOrOptions.patientId;
+    aType = interactionIdOrOptions.agentType || "triage";
+    sAction = interactionIdOrOptions.suggestedAction || "";
+    cAction = interactionIdOrOptions.clinicianAction || "";
+    oReason = interactionIdOrOptions.overrideReason || "";
+    cId = interactionIdOrOptions.clinicianId || "clinician_01";
+  }
+
+  const sClean = (sAction || "").trim().toLowerCase();
+  const cClean = (cAction || "").trim().toLowerCase();
   const isOverride = sClean !== cClean && !cClean.includes("approve") && !cClean.includes("accept");
 
   const record: ClinicianFeedbackRecord = {
     id: `fb_${Date.now()}_${FEEDBACK_HISTORY.length + 1}`,
-    interactionId: interactionId || `int_${FEEDBACK_HISTORY.length + 1}`,
-    patientId,
-    agentType,
-    suggestedAction,
-    clinicianAction,
+    interactionId: iId || `int_${FEEDBACK_HISTORY.length + 1}`,
+    patientId: pId,
+    agentType: aType,
+    suggestedAction: sAction,
+    clinicianAction: cAction,
     isOverride,
-    overrideReason,
-    clinicianId,
+    overrideReason: oReason,
+    clinicianId: cId,
     timestamp: new Date().toISOString()
   };
 

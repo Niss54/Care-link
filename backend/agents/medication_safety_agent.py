@@ -165,3 +165,16 @@ class MedicationSafetyAgent:
         )
 
         return state
+
+    evaluate = run
+
+
+# Singleton instance
+_medication_safety_instance = None
+
+
+def get_medication_safety_agent() -> MedicationSafetyAgent:
+    global _medication_safety_instance
+    if _medication_safety_instance is None:
+        _medication_safety_instance = MedicationSafetyAgent()
+    return _medication_safety_instance

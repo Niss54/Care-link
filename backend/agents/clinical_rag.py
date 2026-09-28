@@ -483,3 +483,9 @@ def get_clinical_rag() -> ClinicalRAGEngine:
     if _rag_instance is None:
         _rag_instance = ClinicalRAGEngine()
     return _rag_instance
+
+
+def search_clinical_guidelines(query: str, limit: int = 3) -> list[GuidelineSearchResult]:
+    """Top-level helper function to search clinical guidelines."""
+    rag = get_clinical_rag()
+    return rag.search_guidelines(query, top_k=limit)

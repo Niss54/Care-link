@@ -214,3 +214,31 @@ def get_memory_service() -> ClinicalMemoryService:
     if _memory_instance is None:
         _memory_instance = ClinicalMemoryService()
     return _memory_instance
+
+
+def remember_patient(
+    patient_id: str,
+    text: str,
+    category: str = "clinical_history",
+    session_id: Optional[str] = None
+) -> bool:
+    """Top-level helper to add patient clinical memory."""
+    return get_memory_service().remember(
+        patient_id=patient_id,
+        memory_text=text,
+        category=category,
+        session_id=session_id or ""
+    )
+
+
+def recall_patient(
+    patient_id: str,
+    query: str = "",
+    limit: int = 3
+) -> list[str]:
+    """Top-level helper to search and recall patient clinical memory."""
+    return get_memory_service().recall(
+        patient_id=patient_id,
+        query=query,
+        limit=limit
+    )

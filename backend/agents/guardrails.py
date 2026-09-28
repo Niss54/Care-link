@@ -198,3 +198,15 @@ def get_guardrails() -> PHIGuardrails:
     if _GLOBAL_GUARDRAILS is None:
         _GLOBAL_GUARDRAILS = PHIGuardrails()
     return _GLOBAL_GUARDRAILS
+
+
+def check_clinical_safety(text: str) -> GuardrailSafetyCheck:
+    return get_guardrails().check_safety(text)
+
+
+def anonymize_phi(text: str) -> AnonymizationResult:
+    return get_guardrails().anonymize(text)
+
+
+def de_anonymize_phi(text: str, token_map: dict[str, str]) -> str:
+    return get_guardrails().deanonymize(text, token_map)

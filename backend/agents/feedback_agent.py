@@ -179,3 +179,36 @@ def get_feedback_agent() -> ActiveLearningFeedbackAgent:
     if _feedback_agent_instance is None:
         _feedback_agent_instance = ActiveLearningFeedbackAgent()
     return _feedback_agent_instance
+
+
+def record_clinician_feedback(
+    patient_id: str,
+    agent_type: str,
+    suggested_action: str,
+    clinician_action: str,
+    override_reason: str = "",
+    clinician_id: str = "Dr. Nishant Maurya",
+    interaction_id: Optional[str] = None
+) -> ClinicianFeedback:
+    """Top-level helper to record clinician review decision."""
+    import uuid
+    inter_id = interaction_id or str(uuid.uuid4())
+    return get_feedback_agent().record_feedback(
+        interaction_id=inter_id,
+        patient_id=patient_id,
+        agent_type=agent_type,
+        suggested_action=suggested_action,
+        clinician_action=clinician_action,
+        override_reason=override_reason,
+        clinician_id=clinician_id
+    )
+
+
+def get_feedback_metrics(window_size: int = 50) -> dict[str, Any]:
+    """Top-level helper to retrieve override rate and drift metrics."""
+    return get_feedback_agent().get_metrics(window_size)
+
+
+def generate_retraining_payload() -> dict[str, Any]:
+    """Top-level helper to generate fine-tuning retraining payload."""
+    return get_feedback_agent().generate_retraining_payload()

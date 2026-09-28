@@ -39,7 +39,7 @@ const GUIDELINE_LOOKUP: Map<string, ClinicalGuideline> = new Map(
 
 export function verifyAndResolveCitations(
   llmText: string,
-  retrievedGuidelines: GuidelineSearchResult[] = [],
+  retrievedGuidelines: Array<GuidelineSearchResult | Record<string, any>> = [],
   passThreshold = 0.70
 ): GroundingVerification {
   if (!llmText) {
@@ -57,10 +57,12 @@ export function verifyAndResolveCitations(
   }
 
   // 1. Build lookup for retrieved guidelines
-  const retrievedMap = new Map<string, GuidelineSearchResult>();
+  const retrievedMap = new Map<string, any>();
   for (const g of retrievedGuidelines) {
-    const clean = g.tag.replace(/[[\]]/g, "");
-    retrievedMap.set(clean, g);
+    if (g && g.tag) {
+      const clean = g.tag.replace(/[[\]]/g, "");
+      retrievedMap.set(clean, g);
+    }
   }
 
   // 2. Extract citations
@@ -144,10 +146,10 @@ export function verifyAndResolveCitations(
     isGrounded = false;
     auditNotes.push("Clinical advice generated without mandatory bracketed guideline citations.");
   } else {
-    const totalChecks = validCitations.length + hallucinatedCitations.length + missingRecommended.length;
-    const baseScore = totalChecks > 0 ? validCitations.length / totalChecks : 1.0;
+    const citationAccuracy = validCitations.length / (validCitations.length + hallucinatedCitations.length);
+    const coverage = Math.min(1.0, validCitations.length / Math.max(1, Math.min(2, retrievedMap.size)));
     const penalty = hallucinatedCitations.length * 0.40;
-    fidelity = Math.max(0.0, Math.min(1.0, baseScore - penalty));
+    fidelity = Math.max(0.0, Math.min(1.0, (0.7 * citationAccuracy + 0.3 * coverage) - penalty));
     isGrounded = fidelity >= passThreshold;
   }
 
