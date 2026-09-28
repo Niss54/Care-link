@@ -18,6 +18,7 @@ import { LoginView } from './views/LoginView';
 import { ResetPasswordView } from './views/ResetPasswordView';
 import { NotFoundView } from './views/NotFoundView';
 import { LandingView } from './views/LandingView';
+import { AgentCockpitView } from './views/AgentCockpitView';
 
 export function App() {
   const { user, loading, signOut } = useAuth();
@@ -236,6 +237,13 @@ export function App() {
           )}
 
           {activeTab === 'analytics' && <AnalyticsView />}
+
+          {activeTab === 'cockpit' && (
+            <AgentCockpitView
+              patients={patients}
+              onShowToast={addToast}
+            />
+          )}
 
           {activeTab === 'settings' && <SettingsView onShowToast={addToast} />}
         </main>

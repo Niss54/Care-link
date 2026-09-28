@@ -7,6 +7,7 @@ export type TabType =
   | "patients"
   | "calendar"
   | "analytics"
+  | "cockpit"
   | "settings"
   | "login"
   | "reset-password"

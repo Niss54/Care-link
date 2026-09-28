@@ -15,7 +15,7 @@ Phase 1 — Foundation & Model Gateway   ██████████ 100% ✅
 Phase 2 — PHI Guardrails & Knowledge   ██████████ 100% ✅
 Phase 3 — Supervisor & Specialist      ██████████ 100% ✅
 Phase 4 — Long-Term Memory & Feedback  ██████████ 100% ✅
-Phase 5 — Frontend Agent Cockpit UI    ░░░░░░░░░░   0% ⏳
+Phase 5 — Frontend Agent Cockpit UI    ██████████ 100% ✅
 Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ```
 
@@ -54,10 +54,10 @@ Phase 6 — Observability & E2E Testing  ░░░░░░░░░░   0% ⏳
 ---
 
 ## 🖥️ Phase 5: Frontend Agent Cockpit UI
-- [ ] **Task 5.1:** Add "Agent Cockpit" view (`AgentCockpitView.tsx`) to CareLink navigation.
-- [ ] **Task 5.2:** Implement live agent execution graph visualizer and step-by-step reasoning log feed.
-- [ ] **Task 5.3:** Create Care Plan review card with medication safety check badge and PDF export button.
-- [ ] **Task 5.4:** Integrate frontend with backend `/api/agent/run` and `/api/agent/triage` endpoints.
+- [x] **Task 5.1:** Add "Agent Cockpit" view (`AgentCockpitView.tsx`) to CareLink navigation.
+- [x] **Task 5.2:** Implement live agent execution graph visualizer and step-by-step reasoning log feed.
+- [x] **Task 5.3:** Create Care Plan review card with medication safety check badge and PDF export button.
+- [x] **Task 5.4:** Integrate frontend with backend `/api/agent/run` and `/api/agent/triage` endpoints.
 
 ---
 

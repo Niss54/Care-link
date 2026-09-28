@@ -9,7 +9,8 @@ import {
   Stethoscope,
   BookOpen,
   Globe,
-  ShieldCheck
+  ShieldCheck,
+  Bot
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -31,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const mainNavItems = [
     { id: 'home' as TabType, label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'cockpit' as TabType, label: 'Agent Cockpit', icon: Bot, badge: 'AI' },
     { id: 'patients' as TabType, label: 'Patients', icon: Users, badge: '247' },
     { id: 'calendar' as TabType, label: 'Calendar', icon: Calendar, badge: '6' },
     { id: 'analytics' as TabType, label: 'Analytics', icon: BarChart3 }
