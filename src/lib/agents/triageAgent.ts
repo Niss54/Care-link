@@ -98,6 +98,12 @@ export async function runTriageAgent(state: CareLinkAgentState): Promise<CareLin
     `Retrieved ${retrieved.length} guideline(s): ${retrieved.map((r) => r.tag).join(", ") || "None"}`
   );
 
+  const hindiInstruction = state.isHindi
+    ? `\n\nIMPORTANT BHARAT LOCALIZATION: The user/ASHA health worker requested Hindi output.
+Generate the entire response in simple, respectful Hindi (Devanagari script), easily understood by rural ASHA workers and Indian families (e.g. आपातकालीन स्थिति, तत्काल अस्पताल भर्ती, ऑक्सीजन का स्तर, दवाइयों का सेवन).
+Retain guideline tags in brackets like [ICMR-HF-01] intact.`
+    : "";
+
   const systemPrompt = `You are CareLink's Clinical Triage Specialist Agent.
 Evaluate patient status using the Manchester Triage System (MTS).
 Your output must follow this format:
@@ -109,7 +115,7 @@ Your output must follow this format:
 
 MANDATORY REQUIREMENT: Whenever referencing clinical recommendations, embed the appropriate bracketed citation (e.g. [ICMR-HF-01], [WHO-SEPSIS-01], [AHA-HTN-01]).
 
-${promptContext}`;
+${promptContext}${hindiInstruction}`;
 
   const userMessage = `Patient Query/Notes: ${state.userQuery}
 Vitals: ${JSON.stringify(state.vitals)}
@@ -118,11 +124,15 @@ Generate the clinical triage assessment now.`;
 
   const topTag = retrieved.length > 0 ? retrieved[0].tag : "[ICMR-HF-01]";
 
+  const fallbackText = state.isHindi
+    ? `### आपातकालीन ट्राइएज मूल्यांकन\n- **प्राथमिकता स्तर**: ${level === "Emergency" ? "आपातकालीन (Emergency)" : level === "Urgent" ? "अति-आवश्यक (Urgent)" : "सामान्य (Routine)"}\n- **शारीरिक लक्षण**: ${triggers.join(", ") || "कोई गंभीर लक्षण नहीं"}\n- **तत्काल चिकित्सकीय कार्रवाई**: मरीज़ की तुरंत क्लिनिकल जाँच करें और ऑक्सीजन स्तर मापें ${topTag}।\n- **अस्पताल हस्तांतरण**: ${level === "Emergency" ? "तत्काल आपातकालीन विभाग (ER) ले जाएं" : "24 से 48 घंटे के भीतर डॉक्टर को दिखाएं"}`
+    : `### CLINICAL TRIAGE ASSESSMENT\n- **Triage Urgency Level**: ${level}\n- **Physiological Triggers**: ${triggers.join(", ") || "None reported"}\n- **Immediate Clinical Action**: Conduct targeted clinical review and monitor patient status ${topTag}.\n- **Escalation Window**: ${level === "Emergency" ? "Immediate ER transfer" : "24 to 48 hours"}`;
+
   const result = await callWithFailover({
     systemPrompt,
     userMessage,
     maxTokens: 500,
-    fallbackText: `### CLINICAL TRIAGE ASSESSMENT\n- **Triage Urgency Level**: ${level}\n- **Physiological Triggers**: ${triggers.join(", ") || "None reported"}\n- **Immediate Clinical Action**: Conduct targeted clinical review and monitor patient status ${topTag}.\n- **Escalation Window**: ${level === "Emergency" ? "Immediate ER transfer" : "24 to 48 hours"}`
+    fallbackText
   });
 
   state.agentResponse = result.data;

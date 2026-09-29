@@ -16,6 +16,8 @@ import { runTriageAgent } from "./triageAgent";
 import { runRiskAnalystAgent } from "./riskAnalystAgent";
 import { runCarePlanAgent } from "./carePlanAgent";
 import { runMedicationSafetyAgent, checkDeterministicDdi } from "./medicationSafetyAgent";
+import { evaluatePMJAYEligibility } from "./pmjayAgent";
+import { lookupAbhaProfile } from "./abhaAgent";
 import { verifyAndResolveCitations } from "../citationResolver";
 import { callWithFailover } from "../failoverLlm";
 
@@ -25,6 +27,22 @@ export async function classifyClinicalIntent(
   const qLower = query.toLowerCase();
 
   // Fast deterministic heuristics
+  if (
+    ["pmjay", "pm-jay", "ayushman", "coverage", "bpl", "insurance", "cashless", "5 lakh", "500000", "golden card"].some((k) =>
+      qLower.includes(k)
+    )
+  ) {
+    return { intent: "pmjay", confidence: 0.95 };
+  }
+
+  if (
+    ["abha", "abdm", "health id", "aadhaar", "linked record", "longitudinal ehr", "ndhm"].some((k) =>
+      qLower.includes(k)
+    )
+  ) {
+    return { intent: "abha", confidence: 0.94 };
+  }
+
   if (
     ["interaction", "contraindicat", "warfarin", "nsaid", "ibuprofen", "metformin", "drug safety", "side effect", "pill", "taking with"].some((k) =>
       qLower.includes(k)
@@ -109,6 +127,44 @@ export async function runSupervisor(state: CareLinkAgentState): Promise<CareLink
 
   // ── STEP 2: Specialist Execution ──
   switch (routedAgent) {
+    case "pmjay": {
+      const pmjay = await evaluatePMJAYEligibility(
+        {
+          patientId: state.patientId,
+          age: state.patientDemographics?.age,
+          gender: state.patientDemographics?.gender,
+          admissionType: state.patientDemographics?.admission_type,
+          riskTier: state.patientDemographics?.risk_tier,
+          diagnosis: state.userQuery
+        },
+        state.isHindi
+      );
+      state.pmjayStatus = pmjay;
+      state.agentResponse = state.isHindi
+        ? `### आयुष्मान भारत PM-JAY पात्रता परिणाम\n- **पात्रता स्थिति**: ${pmjay.eligible ? "✅ योजना हेतु पूर्णतः पात्र" : "❌ अपात्र"}\n- **उपलब्ध वार्षिक बीमा कवर**: ${pmjay.coverageAmount}\n- **लाभार्थी श्रेणी**: ${pmjay.beneficiaryCategory}\n- **अस्पताल कैशलेस स्थिति**: ${pmjay.copayRequirement}\n- **पात्र उपचार व प्रक्रियाएं**: ${pmjay.eligibleProcedures.map(p => p.procedureName).join("; ")}\n- **आशा दीदी निर्देश**: ${pmjay.ashaGuidance}\n- **हेल्पलाइन**: ${pmjay.nationalHelpline}`
+        : `### AYUSHMAN BHARAT PM-JAY ELIGIBILITY VERIFICATION\n- **Eligibility Status**: ${pmjay.eligible ? "ELIGIBLE" : "INELIGIBLE"}\n- **Annual Cashless Coverage**: ${pmjay.coverageAmount}\n- **Beneficiary Tier**: ${pmjay.beneficiaryCategory}\n- **Pre-Auth Status**: ${pmjay.claimPreAuthStatus}\n- **Empanelled Benefit Packages**: ${pmjay.eligibleProcedures.map(p => p.procedureName).join(", ")}\n- **Patient Copay**: ${pmjay.copayRequirement}\n- **National 24x7 Helpline**: ${pmjay.nationalHelpline}\n\n${pmjay.ashaGuidance}`;
+      addAgentExecutionStep(
+        state,
+        "PMJAYAgent",
+        "eligibility_check",
+        `Verified PM-JAY entitlement: ${pmjay.coverageAmount} coverage (${pmjay.claimPreAuthStatus}).`
+      );
+      break;
+    }
+
+    case "abha": {
+      const abha = await lookupAbhaProfile(state.patientId || state.userQuery, state.isHindi);
+      state.abhaProfile = abha;
+      state.agentResponse = abha.displayText;
+      addAgentExecutionStep(
+        state,
+        "ABHAAgent",
+        "identity_discovery",
+        `Resolved ABHA Identity ${abha.abhaId} (${abha.linkedFacilities.length} linked health records found).`
+      );
+      break;
+    }
+
     case "medication_safety":
       state = await runMedicationSafetyAgent(state);
       break;
@@ -122,6 +178,34 @@ export async function runSupervisor(state: CareLinkAgentState): Promise<CareLink
     default:
       state = await runTriageAgent(state);
       break;
+  }
+
+  // ── STEP 2B: Automatic Bharat Health Profile Enrichment ──
+  // Enrich state with ABHA profile and PM-JAY eligibility if not already resolved
+  if (!state.abhaProfile && state.patientId) {
+    try {
+      state.abhaProfile = await lookupAbhaProfile(state.patientId, state.isHindi);
+    } catch {
+      // Non-blocking enrichment
+    }
+  }
+
+  if (!state.pmjayStatus) {
+    try {
+      state.pmjayStatus = await evaluatePMJAYEligibility(
+        {
+          patientId: state.patientId,
+          age: state.patientDemographics?.age,
+          gender: state.patientDemographics?.gender,
+          admissionType: state.patientDemographics?.admission_type,
+          riskTier: state.patientDemographics?.risk_tier,
+          diagnosis: state.userQuery
+        },
+        state.isHindi
+      );
+    } catch {
+      // Non-blocking enrichment
+    }
   }
 
   // ── STEP 3: Secondary Medication Safety Screen ──

@@ -3,7 +3,17 @@
  * Single source of truth for the multi-agent state shape.
  */
 
-export const CLINICAL_INTENTS = ["triage", "risk_analyst", "care_plan", "medication_safety"] as const;
+import type { PMJAYEligibilityResult } from "./pmjayAgent";
+import type { AbhaProfileResult } from "./abhaAgent";
+
+export const CLINICAL_INTENTS = [
+  "triage",
+  "risk_analyst",
+  "care_plan",
+  "medication_safety",
+  "pmjay",
+  "abha"
+] as const;
 export type ClinicalIntent = (typeof CLINICAL_INTENTS)[number];
 export const DEFAULT_INTENT: ClinicalIntent = "triage";
 export const CONFIDENCE_FLOOR = 0.60;
@@ -35,6 +45,9 @@ export interface CareLinkAgentState {
   intent: string;
   routingConfidence: number;
   routedAgent: string;
+  isHindi?: boolean;
+  pmjayStatus?: PMJAYEligibilityResult;
+  abhaProfile?: AbhaProfileResult;
   retrievedGuidelines: Array<Record<string, any>>;
   agentResponse: string;
   citations: string[];
@@ -62,6 +75,9 @@ export function createInitialAgentState(
     intent: "",
     routingConfidence: 0.0,
     routedAgent: "",
+    isHindi: options.isHindi || false,
+    pmjayStatus: options.pmjayStatus,
+    abhaProfile: options.abhaProfile,
     retrievedGuidelines: [],
     agentResponse: "",
     citations: [],

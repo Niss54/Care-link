@@ -19,7 +19,7 @@ Phase 4 — Long-Term Memory & Feedback     ██████████ 100% 
 Phase 5 — Frontend Agent Cockpit UI       ██████████ 100% ✅ (Completed)
 Phase 6 — Observability & E2E Testing     ██████████ 100% ✅ (Completed)
 Phase 7 — Security & Config Hardening     ██████████ 100% ✅ (Completed)
-Phase 8 — Bharat Health Stack Agents      ░░░░░░░░░░   0% 🟡 (Ready for command)
+Phase 8 — Bharat Health Stack Agents      ██████████ 100% ✅ (Completed)
 Phase 9 — Function Calling & Autonomy     ░░░░░░░░░░   0% 🟡 (Ready for command)
 Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 🟡 (Ready for command)
 ```
@@ -72,11 +72,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 
 - [x] **Task 7.4:** Commit Phase 7 changes locally (no push).
 
 ### 🇮🇳 Phase 8: Bharat Health Stack & Linguistic Accessibility
-- [ ] **Task 8.1:** Build `src/lib/agents/pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 coverage check).
-- [ ] **Task 8.2:** Build `src/lib/agents/abhaAgent.ts` — Ayushman Bharat Digital Mission (ABDM) mock ID lookup agent with health record linking.
-- [ ] **Task 8.3:** Add Hindi Language Output Mode (Devanagari script) in Agent Cockpit with prompt optimization for ASHA workers.
-- [ ] **Task 8.4:** Mount Bharat agents in `server.ts` and test with Indian patient profiles.
-- [ ] **Task 8.5:** Commit Phase 8 changes locally (no push).
+- [x] **Task 8.1:** Build `src/lib/agents/pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 coverage check).
+- [x] **Task 8.2:** Build `src/lib/agents/abhaAgent.ts` — Ayushman Bharat Digital Mission (ABDM) mock ID lookup agent with health record linking.
+- [x] **Task 8.3:** Add Hindi Language Output Mode (Devanagari script) in Agent Cockpit with prompt optimization for ASHA workers.
+- [x] **Task 8.4:** Mount Bharat agents in `server.ts` and test with Indian patient profiles.
+- [x] **Task 8.5:** Commit Phase 8 changes locally (no push).
 
 ### 🤖 Phase 9: Real Function Calling & Autonomous Action Agents
 - [ ] **Task 9.1:** Upgrade `triageAgent.ts` to real Gemini Function Calling / Tool Use (`check_vitals`, `lookup_guideline`, `recommend_escalation`).

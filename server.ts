@@ -8,6 +8,8 @@ import { searchClinicalGuidelines, formatGuidelinesForPrompt, CLINICAL_GUIDELINE
 import { verifyAndResolveCitations } from "./src/lib/citationResolver";
 import { runSupervisor } from "./src/lib/agents/supervisor";
 import { createInitialAgentState } from "./src/lib/agents/state";
+import { evaluatePMJAYEligibility } from "./src/lib/agents/pmjayAgent";
+import { lookupAbhaProfile } from "./src/lib/agents/abhaAgent";
 import { rememberPatient, recallPatient, formatMemoryContext } from "./src/lib/memory";
 import { recordClinicianFeedback, getFeedbackMetrics, generateRetrainingPayload } from "./src/lib/feedbackAgent";
 import { recordRunTrace, getRecentTraces, getObservabilitySummary, type RunTrace, type TraceSpan } from "./src/lib/agents/observability";
@@ -142,7 +144,7 @@ Vitals: ${JSON.stringify(vitals || {})}`;
   app.post("/api/agent/run", async (req, res) => {
     const startTime = Date.now();
     try {
-      const { query, patientId, demographics, vitals, medications, sessionId, memoryContext } = req.body || {};
+      const { query, patientId, demographics, vitals, medications, sessionId, memoryContext, isHindi } = req.body || {};
 
       if (!query) {
         return res.status(400).json({ error: "Missing required 'query' parameter" });
@@ -191,6 +193,7 @@ Vitals: ${JSON.stringify(vitals || {})}`;
         patientDemographics: demographics || {},
         vitals: vitals || {},
         medications: medications || [],
+        isHindi: Boolean(isHindi),
         sessionId,
         memoryContext: resolvedMemory
       });
@@ -246,6 +249,30 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Agent Execution Error:", error);
       res.status(500).json({ error: error.message || "Multi-agent execution failed" });
+    }
+  });
+
+  // Bharat Health Stack: Ayushman Bharat PM-JAY Eligibility Endpoint
+  app.post("/api/agent/bharat/pmjay", async (req, res) => {
+    try {
+      const { patient, isHindi } = req.body || {};
+      const result = await evaluatePMJAYEligibility(patient || {}, Boolean(isHindi));
+      res.json(result);
+    } catch (error: any) {
+      console.error("PM-JAY Verification Error:", error);
+      res.status(500).json({ error: error.message || "PM-JAY eligibility check failed" });
+    }
+  });
+
+  // Bharat Health Stack: ABDM ABHA Identity & Longitudinal Record Discovery
+  app.post("/api/agent/bharat/abha", async (req, res) => {
+    try {
+      const { identifier, isHindi } = req.body || {};
+      const result = await lookupAbhaProfile(identifier || "", Boolean(isHindi));
+      res.json(result);
+    } catch (error: any) {
+      console.error("ABHA Lookup Error:", error);
+      res.status(500).json({ error: error.message || "ABHA profile lookup failed" });
     }
   });
 

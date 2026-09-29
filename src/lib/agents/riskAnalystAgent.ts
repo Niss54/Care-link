@@ -39,6 +39,12 @@ export async function runRiskAnalystAgent(state: CareLinkAgentState): Promise<Ca
     `Retrieved ${retrieved.length} guideline(s) for risk mitigation: ${retrieved.map((r) => r.tag).join(", ") || "None"}`
   );
 
+  const hindiInstruction = state.isHindi
+    ? `\n\nIMPORTANT BHARAT LOCALIZATION: The user/ASHA health worker requested Hindi output.
+Explain the readmission risk in simple, respectful Hindi (Devanagari script) suitable for ASHA workers and families (e.g. दोबारा अस्पताल भर्ती होने का जोखिम, मुख्य कारण, बचाव के उपाय).
+Ensure bracketed citations like [ICMR-HF-01] and [KDIGO-CKD-01] remain intact.`
+    : "";
+
   const systemPrompt = `You are CareLink's Clinical Risk Analyst Agent.
 Your role is to explain XGBoost 30-day hospital readmission predictions and SHAP feature attributions.
 Structure your response strictly as follows:
@@ -48,7 +54,7 @@ Structure your response strictly as follows:
 - **Protective & Stabilizing Factors**: [Highlight any positive mitigating factors]
 - **Targeted Readmission Mitigation Protocol**: [Actionable steps with mandatory bracketed citations, e.g. [ICMR-HF-01], [KDIGO-CKD-01]]
 
-${promptContext}`;
+${promptContext}${hindiInstruction}`;
 
   const userMessage = `Clinical Query: ${state.userQuery}
 Patient Risk Profile: Tier=${riskTier}, Probability=${riskPct}%
@@ -56,7 +62,9 @@ SHAP Attributions: ${JSON.stringify(shapFactors)}
 Patient Demographics: ${JSON.stringify(demographics)}
 Generate the clinical risk analysis report now.`;
 
-  const fallbackText = `### 30-DAY READMISSION RISK & SHAP ANALYSIS\n- **Predicted Readmission Risk**: ${riskTier} (${riskPct}%)\n- **Primary Risk Drivers (SHAP Explanation)**: Recurrent admissions and declining renal clearance drove +0.42 total positive risk attribution.\n- **Protective & Stabilizing Factors**: Adherence to scheduled outpatient review reduces risk by -0.12.\n- **Targeted Readmission Mitigation Protocol**: Mandate cardiology follow-up within 7-10 days [ICMR-HF-01] and renal surveillance [KDIGO-CKD-01].`;
+  const fallbackText = state.isHindi
+    ? `### 30 दिनों में दोबारा अस्पताल भर्ती का जोखिम व कारण\n- **अनुमानित जोखिम स्तर**: ${riskTier} (${riskPct}%)\n- **जोखिम बढ़ाने वाले मुख्य कारण**: बार-बार अस्पताल भर्ती होना और गुर्दे की कार्यक्षमता में कमी।\n- **सुरक्षात्मक कारक**: नियमित क्लिनिक जांच जोखिम को कम करती है।\n- **बचाव व मार्गदर्शन**: 7 से 10 दिन में हृदय रोग विशेषज्ञ से जांच कराएं [ICMR-HF-01] और गुर्दे की निगरानी रखें [KDIGO-CKD-01]।`
+    : `### 30-DAY READMISSION RISK & SHAP ANALYSIS\n- **Predicted Readmission Risk**: ${riskTier} (${riskPct}%)\n- **Primary Risk Drivers (SHAP Explanation)**: Recurrent admissions and declining renal clearance drove +0.42 total positive risk attribution.\n- **Protective & Stabilizing Factors**: Adherence to scheduled outpatient review reduces risk by -0.12.\n- **Targeted Readmission Mitigation Protocol**: Mandate cardiology follow-up within 7-10 days [ICMR-HF-01] and renal surveillance [KDIGO-CKD-01].`;
 
   const result = await callWithFailover({
     systemPrompt,

@@ -182,11 +182,11 @@ The roadmap is structured into 10 testable phases. Phases 1–6 are verified and
 - [x] **Task 7.4:** Git commit Phase 7 changes locally (no push).
 
 ### Phase 8: Bharat Health Stack & Linguistic Accessibility
-- [ ] **Task 8.1:** Build `pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 benefit & covered procedures).
-- [ ] **Task 8.2:** Build `abhaAgent.ts` — Ayushman Bharat Digital Mission (ABDM) mock ID lookup agent with health record linking.
-- [ ] **Task 8.3:** Add Hindi Language Output Mode (Devanagari script) in Agent Cockpit with specialized prompts for ASHA workers.
-- [ ] **Task 8.4:** Mount Bharat agents in `server.ts` and test with Indian patient profiles.
-- [ ] **Task 8.5:** Git commit Phase 8 changes locally (no push).
+- [x] **Task 8.1:** Build `pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 benefit & covered procedures).
+- [x] **Task 8.2:** Build `abhaAgent.ts` — Ayushman Bharat Digital Mission (ABDM) mock ID lookup agent with health record linking.
+- [x] **Task 8.3:** Add Hindi Language Output Mode (Devanagari script) in Agent Cockpit with specialized prompts for ASHA workers.
+- [x] **Task 8.4:** Mount Bharat agents in `server.ts` and test with Indian patient profiles.
+- [x] **Task 8.5:** Git commit Phase 8 changes locally (no push).
 
 ### Phase 9: Real Function Calling & Autonomous Action Agents
 - [ ] **Task 9.1:** Upgrade `triageAgent.ts` to real Gemini Function Calling / Tool Use (`check_vitals`, `lookup_guideline`, `recommend_escalation`).

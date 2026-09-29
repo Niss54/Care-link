@@ -21,7 +21,10 @@ import {
   Heart,
   Pill,
   Send,
-  Lock
+  Lock,
+  Globe,
+  CreditCard,
+  Award
 } from 'lucide-react';
 import gsap from 'gsap';
 import { Patient } from '../types';
@@ -81,6 +84,28 @@ const CLINICAL_PRESETS = [
     intent: 'medication_safety'
   },
   {
+    id: 'pmjay_eligibility',
+    label: '🇮🇳 Ayushman Bharat PM-JAY ₹5L Cashless Eligibility',
+    patientName: 'Kameshwar Yadav (MRN-10492)',
+    patientId: 'patient_kameshwar_10',
+    query: 'Verify Ayushman Bharat PM-JAY eligibility for ₹5,00,000 cashless pre-authorization for emergency cardiac catheterization and stent. Patient holds BPL ration card.',
+    vitals: { spo2: 94, systolic: 152, diastolic: 96, heart_rate: 92, temp: 98.6 },
+    medications: ['Aspirin 150mg', 'Clopidogrel 75mg', 'Atorvastatin 80mg'],
+    demographics: { age: 62, gender: 'Male', admission_type: 'Emergency', risk_tier: 'High', rationCardType: 'BPL' },
+    intent: 'pmjay'
+  },
+  {
+    id: 'abha_discovery',
+    label: '🇮🇳 ABDM ABHA ID & Longitudinal Health Records',
+    patientName: 'Sunita Sharma (ABHA: 91-8842-9012-7741)',
+    patientId: 'patient_sunita_91',
+    query: 'Lookup Ayushman Bharat Health Account (ABHA ID 91-8842-9012-7741). Pull linked longitudinal hospital discharge summaries, prior PCI stent reports, and drug allergies across AIIMS and Safdarjung Hospital.',
+    vitals: { spo2: 97, systolic: 126, diastolic: 76, heart_rate: 74, temp: 98.4 },
+    medications: ['Warfarin 5mg', 'Metoprolol 50mg'],
+    demographics: { age: 72, gender: 'Female', admission_type: 'Outpatient', risk_tier: 'Medium' },
+    intent: 'abha'
+  },
+  {
     id: 'shap_readmission_risk',
     label: 'High Readmission Risk & SHAP Analysis',
     patientName: 'Anil Verma (MRN-72319)',
@@ -135,6 +160,11 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
   const [isBlockedBySafety, setIsBlockedBySafety] = useState<boolean>(false);
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [activeNode, setActiveNode] = useState<string>('idle');
+
+  // Bharat Health Stack & Localization State
+  const [isHindi, setIsHindi] = useState<boolean>(false);
+  const [pmjayStatus, setPmjayStatus] = useState<any>(null);
+  const [abhaProfile, setAbhaProfile] = useState<any>(null);
 
   // Clinician Feedback
   const [feedbackAction, setFeedbackAction] = useState<'Approve' | 'Override'>('Approve');
@@ -195,7 +225,8 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
         patientId,
         vitals,
         medications: medicationsArray,
-        demographics: (selectedPreset as any).demographics || {}
+        demographics: (selectedPreset as any).demographics || {},
+        isHindi
       };
 
       const res = await fetch('/api/agent/run', {
@@ -221,9 +252,17 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
       setMedicationAlerts(data.medicationAlerts || []);
       setIsBlockedBySafety(data.isBlockedBySafety || false);
       setExecutionSteps(data.executionSteps || []);
+      setPmjayStatus(data.pmjayStatus || null);
+      setAbhaProfile(data.abhaProfile || null);
       setActiveNode(data.routedAgent || 'triage');
 
-      onShowToast('Agent Orchestration Complete', `Successfully routed to ${data.routedAgent} with ${Math.round((data.groundingFidelity || 1) * 100)}% grounding fidelity.`, 'success');
+      onShowToast(
+        isHindi ? 'एजेंट प्रक्रिया संपन्न' : 'Agent Orchestration Complete',
+        isHindi
+          ? `${data.routedAgent} को सफलतापूर्वक रूट किया गया (${Math.round((data.groundingFidelity || 1) * 100)}% विश्वसनीयता)`
+          : `Successfully routed to ${data.routedAgent} with ${Math.round((data.groundingFidelity || 1) * 100)}% grounding fidelity.`,
+        'success'
+      );
     } catch (err: any) {
       console.error('Agent execution error:', err);
       onShowToast('Execution Error', err.message || 'Failed to complete agent run.', 'error');
@@ -285,7 +324,7 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
             <div className="flex items-center space-x-2">
               <h1 className="text-lg font-bold text-[#0f172a] tracking-tight">CareLink Agent Cockpit</h1>
               <span className="px-2 py-0.5 text-xs font-semibold bg-[#0f766e]/10 text-[#0f766e] rounded-full border border-[#0f766e]/20">
-                Autonomous 9-Layer
+                Autonomous 12-Layer
               </span>
             </div>
             <p className="text-xs text-[#64748b]">Multi-Agent Supervisor & Clinical Grounding Engine • Bharat Agentic 2026</p>
@@ -294,6 +333,21 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
 
         {/* Status Badges */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
+          {/* Bharat Linguistic Accessibility Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsHindi(!isHindi)}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all cursor-pointer shadow-xs ${
+              isHindi
+                ? 'bg-[#0f766e] border-[#0f766e] text-white ring-2 ring-[#0f766e]/30'
+                : 'bg-[#f8fafc] border-[#e2e8f0] text-[#334155] hover:border-[#0f766e]/40'
+            }`}
+            title="Toggle between English and Hindi ASHA Worker mode"
+          >
+            <Globe className={`w-3.5 h-3.5 ${isHindi ? 'text-white' : 'text-[#0f766e]'}`} />
+            <span>{isHindi ? '🇮🇳 हिन्दी (ASHA Worker Mode)' : '🌐 English Mode'}</span>
+          </button>
+
           <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-[#f8fafc] border border-[#e2e8f0] text-[#334155]">
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             <span className="font-medium">Dual-LLM Gateway:</span>
@@ -653,6 +707,105 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
               </div>
             )}
           </div>
+
+          {/* ── BHARAT HEALTH STACK: AYUSHMAN BHARAT PM-JAY CARD ── */}
+          {pmjayStatus && (
+            <div className="cockpit-anim bg-gradient-to-br from-amber-50/60 via-white to-emerald-50/50 border border-amber-200/80 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="w-4 h-4 text-amber-600" />
+                  <span className="font-bold text-xs text-[#0f172a]">{pmjayStatus.schemeName}</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  {pmjayStatus.eligible ? 'ELIGIBLE' : 'INELIGIBLE'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-white border border-amber-100">
+                  <span className="text-[10px] text-slate-500 block">Annual Cashless Cover</span>
+                  <span className="font-bold text-emerald-700 text-sm">{pmjayStatus.coverageAmount}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white border border-amber-100">
+                  <span className="text-[10px] text-slate-500 block">Hospital Pre-Auth</span>
+                  <span className="font-bold text-indigo-700 text-xs">{pmjayStatus.claimPreAuthStatus}</span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-700 leading-relaxed bg-white/80 p-2.5 rounded-xl border border-slate-200">
+                {pmjayStatus.empanelledHospitalNotice}
+              </p>
+
+              {pmjayStatus.eligibleProcedures && pmjayStatus.eligibleProcedures.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Covered Benefit Packages:</span>
+                  <div className="space-y-1">
+                    {pmjayStatus.eligibleProcedures.slice(0, 3).map((proc: any, pIdx: number) => (
+                      <div key={pIdx} className="text-[11px] flex items-center justify-between text-slate-800 bg-white/60 px-2 py-1 rounded border border-slate-100">
+                        <span className="truncate max-w-[200px]">{proc.procedureName}</span>
+                        <span className="text-[10px] font-mono font-bold text-emerald-600 shrink-0">{proc.standardRate}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-1 border-t border-amber-100 text-[10px] text-slate-500">
+                <span>Helpline: <strong className="text-slate-700">{pmjayStatus.nationalHelpline}</strong></span>
+                <span className="font-medium text-emerald-800">{pmjayStatus.copayRequirement}</span>
+              </div>
+            </div>
+          )}
+
+          {/* ── BHARAT HEALTH STACK: ABDM ABHA IDENTITY PROFILE CARD ── */}
+          {abhaProfile && (
+            <div className="cockpit-anim bg-gradient-to-br from-teal-50/50 via-white to-sky-50/40 border border-teal-200/80 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Award className="w-4 h-4 text-teal-600" />
+                  <span className="font-bold text-xs text-[#0f172a]">ABDM Verified Health ID</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-300">
+                  {abhaProfile.kycVerificationStatus}
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-white border border-teal-100 text-xs space-y-1">
+                <div className="flex items-center justify-between font-mono font-bold text-[#0f766e]">
+                  <span>ABHA: {abhaProfile.abhaId}</span>
+                  <span className="text-[10px] text-slate-500 font-sans">{abhaProfile.abhaAddress}</span>
+                </div>
+                <div className="text-[11px] text-slate-600">
+                  Beneficiary: <strong className="text-slate-900">{abhaProfile.fullName}</strong> ({abhaProfile.gender}, Born {abhaProfile.yearOfBirth})
+                </div>
+              </div>
+
+              {abhaProfile.linkedFacilities && abhaProfile.linkedFacilities.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                    Linked Longitudinal EHR Records ({abhaProfile.linkedFacilities.length}):
+                  </span>
+                  <div className="space-y-1 max-h-[140px] overflow-y-auto pr-1">
+                    {abhaProfile.linkedFacilities.map((fac: any, fIdx: number) => (
+                      <div key={fIdx} className="text-[11px] bg-white p-2 rounded-lg border border-teal-50 text-slate-700 space-y-0.5">
+                        <div className="flex items-center justify-between font-semibold text-slate-900 text-[10px]">
+                          <span className="truncate max-w-[210px]">{fac.facilityName}</span>
+                          <span className="font-mono text-slate-500">{fac.visitDate}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-600 line-clamp-2">{fac.summary}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {abhaProfile.knownAllergies && abhaProfile.knownAllergies.length > 0 && (
+                <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-rose-800">
+                  <strong>Allergy Alert:</strong> {abhaProfile.knownAllergies.join(', ')}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Clinician Review & Active Learning Feedback Loop */}
           <div className="cockpit-anim bg-white border border-[#e8e6df] rounded-2xl p-5 shadow-sm space-y-3">
