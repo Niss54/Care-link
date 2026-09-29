@@ -200,12 +200,48 @@ export async function callWithFailover(options: LlmCallOptions): Promise<LlmCall
     jsonMode = false
   } = options;
 
-  const geminiKey = process.env.GEMINI_API_KEY || (typeof window !== 'undefined' ? (window as any)._ENV_?.GEMINI_API_KEY : '');
-  const groqKey = process.env.GROQ_API_KEY || (typeof window !== 'undefined' ? (window as any)._ENV_?.GROQ_API_KEY : '');
-
   const startTime = Date.now();
   let failoverOccurred = false;
   let failoverReason: string | undefined;
+
+  // ── Browser Client Security Shield ──
+  // When running inside a browser, delegate directly to the secure server endpoint.
+  // This guarantees zero API keys (GEMINI_API_KEY, GROQ_API_KEY) are ever exposed in client bundles or window.
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch('/api/agent/llm-call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(options)
+      });
+      if (res.ok) {
+        return (await res.json()) as LlmCallResult<string>;
+      }
+    } catch (browserErr) {
+      console.warn('[FailoverGateway] Client-side proxy call failed, falling back to safe local response:', browserErr);
+    }
+
+    const latencyMs = Date.now() - startTime;
+    return {
+      data: fallbackText,
+      rawText: fallbackText,
+      metrics: {
+        provider: 'fallback',
+        model: 'deterministic-clinical-v1',
+        latencyMs,
+        inputTokens: estimateTokens(systemPrompt + " " + userMessage),
+        outputTokens: estimateTokens(fallbackText),
+        costUsd: 0,
+        failoverOccurred: true,
+        failoverReason: 'Client-side proxy fallback'
+      }
+    };
+  }
+
+  // ── Server-Side Execution (Node.js) ──
+  // Keys are read solely from process.env on the secure server
+  const geminiKey = process.env.GEMINI_API_KEY || '';
+  const groqKey = process.env.GROQ_API_KEY || '';
 
   // ── Step 1: Attempt Gemini (Primary LLM) ──
   if (geminiKey) {

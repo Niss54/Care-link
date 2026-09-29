@@ -69,6 +69,20 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     });
   });
 
+  // Secure Server-Side LLM Call Proxy (Zero API Keys in Browser)
+  app.post("/api/agent/llm-call", async (req, res) => {
+    try {
+      const options = req.body || {};
+      const result = await callWithFailover(options);
+      gatewayLogs.unshift(result.metrics);
+      if (gatewayLogs.length > 50) gatewayLogs.pop();
+      res.json(result);
+    } catch (error: any) {
+      console.error("LLM Call Proxy Error:", error);
+      res.status(500).json({ error: error.message || "LLM Gateway inference error" });
+    }
+  });
+
   // PHI Guardrails: Check Clinical Safety Non-Negotiables
   app.post("/api/agent/guardrails/check-safety", (req, res) => {
     const { text } = req.body || {};

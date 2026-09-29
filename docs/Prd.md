@@ -176,10 +176,10 @@ The roadmap is structured into 10 testable phases. Phases 1–6 are verified and
 ### 🚀 UPCOMING PHASES (Winning Upgrades from Deep Audit)
 
 ### Phase 7: Critical Security & Configuration Hardening
-- [ ] **Task 7.1:** Move all direct LLM calls to `server.ts` via `/api/agent/run` and sanitize `failoverLlm.ts` to eliminate client-side key leakage.
+- [x] **Task 7.1:** Move all direct LLM calls to `server.ts` via `/api/agent/run` and `/api/agent/llm-call`, and sanitize `failoverLlm.ts` to eliminate client-side key leakage.
 - [x] **Task 7.2:** Update `.env.example` with all production keys (`GROQ_API_KEY`, `MEM0_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `LANGSMITH_API_KEY`).
 - [x] **Task 7.3:** Clean all placeholder tokens (`[Project Name]`, `[Developer Name]`, `[YYYY-MM-DD]`, `XX`) from documentation files (`Architecture.md`, `TECHNICAL_ARCHITECTURE.md`, `FEATURE_TICKET_LIST.md`, `DEMO_SCRIPT.md`, `PRD_CLOSURE.md`).
-- [ ] **Task 7.4:** Git commit Phase 7 changes locally (no push).
+- [x] **Task 7.4:** Git commit Phase 7 changes locally (no push).
 
 ### Phase 8: Bharat Health Stack & Linguistic Accessibility
 - [ ] **Task 8.1:** Build `pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 benefit & covered procedures).

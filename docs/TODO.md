@@ -18,7 +18,7 @@ Phase 3 — Supervisor & 4 Specialists      ██████████ 100% 
 Phase 4 — Long-Term Memory & Feedback     ██████████ 100% ✅ (Completed)
 Phase 5 — Frontend Agent Cockpit UI       ██████████ 100% ✅ (Completed)
 Phase 6 — Observability & E2E Testing     ██████████ 100% ✅ (Completed)
-Phase 7 — Security & Config Hardening     ░░░░░░░░░░   0% 🟡 (Ready for command)
+Phase 7 — Security & Config Hardening     ██████████ 100% ✅ (Completed)
 Phase 8 — Bharat Health Stack Agents      ░░░░░░░░░░   0% 🟡 (Ready for command)
 Phase 9 — Function Calling & Autonomy     ░░░░░░░░░░   0% 🟡 (Ready for command)
 Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 🟡 (Ready for command)
@@ -66,10 +66,10 @@ Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 
 ## 🟡 NEW ROADMAP FROM DEEP AUDIT (Phases 7–10)
 
 ### 🔒 Phase 7: Critical Security & Configuration Hardening
-- [ ] **Task 7.1:** Eliminate client-side API key leakage — route all LLM requests through `server.ts` endpoint `/api/agent/run`.
+- [x] **Task 7.1:** Eliminate client-side API key leakage — route all LLM requests through `server.ts` endpoint `/api/agent/run` and `/api/agent/llm-call`.
 - [x] **Task 7.2:** Update `.env.example` to document all production keys (`GROQ_API_KEY`, `MEM0_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `LANGSMITH_API_KEY`).
 - [x] **Task 7.3:** Clean all placeholder tokens (`[Project Name]`, `[Developer Name]`, `[YYYY-MM-DD]`, `XX`) from documentation files (`Architecture.md`, `TECHNICAL_ARCHITECTURE.md`, `FEATURE_TICKET_LIST.md`, `DEMO_SCRIPT.md`, `PRD_CLOSURE.md`).
-- [ ] **Task 7.4:** Commit Phase 7 changes locally (no push).
+- [x] **Task 7.4:** Commit Phase 7 changes locally (no push).
 
 ### 🇮🇳 Phase 8: Bharat Health Stack & Linguistic Accessibility
 - [ ] **Task 8.1:** Build `src/lib/agents/pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 coverage check).
