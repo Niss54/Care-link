@@ -18,5 +18,12 @@ aurag/
 # Python cache & artifacts
 __pycache__/
 *.pyc
+*.pyo
 .pytest_cache/
 .runtime/
+
+# Python Virtual Environments
+.venv/
+venv/
+backend/.venv/
+env/
