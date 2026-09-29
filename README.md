@@ -11,7 +11,7 @@
 
 # 🏥 CareLink
 
-> **Autonomous 9-layer multi-agent clinical copilot that predicts readmissions, blocks lethal drug interactions, and never leaks patient data.**
+> **Autonomous 12-layer multi-agent clinical copilot that predicts readmissions, blocks lethal drug interactions, and never leaks patient data.**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
@@ -29,7 +29,7 @@
 
 </div>
 
-Every year, **millions of patients** are discharged from hospitals only to be readmitted within 30 days because subtle warning signs slipped through overstretched clinical teams. Conventional LLMs cannot be trusted at the bedside — they hallucinate dangerous dosages, leak protected health information across API boundaries, and crash when free-tier rate limits hit during critical moments. **CareLink** is the answer: an autonomous 9-layer multi-agent platform that wraps XGBoost readmission prediction, SHAP explainability, and Gemini clinical triage inside a privacy-first, evidence-grounded, pharmacovigilance-gated architecture where **zero raw PHI ever leaves the local firewall**, every recommendation cites peer-reviewed guidelines, and lethal drug interactions are blocked deterministically before an LLM ever generates a single token.
+Every year, **millions of patients** are discharged from hospitals only to be readmitted within 30 days because subtle warning signs slipped through overstretched clinical teams. Conventional LLMs cannot be trusted at the bedside — they hallucinate dangerous dosages, leak protected health information across API boundaries, and crash when free-tier rate limits hit during critical moments. **CareLink** is the answer: an autonomous 12-layer multi-agent platform that wraps XGBoost readmission prediction, SHAP explainability, and Gemini clinical triage inside a privacy-first, evidence-grounded, pharmacovigilance-gated architecture where **zero raw PHI ever leaves the local firewall**, every recommendation cites peer-reviewed guidelines, and lethal drug interactions are blocked deterministically before an LLM ever generates a single token.
 
 ---
 
@@ -73,17 +73,31 @@ Every year, **millions of patients** are discharged from hospitals only to be re
 
 ### 🤖 Autonomous Multi-Agent System
 
-- 🧠 **LangGraph Supervisor Router** — StateGraph-based intent classifier with ≥0.60 confidence floor, automatically dispatching to 4 specialist clinical agents
-- 🩺 **Triage Agent (MTS)** — Manchester Triage System physiological vital evaluation with SpO2, BP, and weight-change triggers
+- 🧠 **LangGraph Supervisor Router** — StateGraph-based intent classifier with ≥0.60 confidence floor, automatically dispatching to specialist clinical agents
+- 🩺 **Triage Agent with Real Tool-Calling** — ReAct tool-use execution (`check_vitals`, `lookup_guideline`, `recommend_escalation`) under Manchester Triage System
 - 📊 **Risk Analyst Agent** — XGBoost 30-day readmission prediction (ROC-AUC 0.727) with SHAP feature attribution narratives
 - 📋 **Care Plan Agent** — Autonomous 4-part post-discharge planning: medications, follow-ups, diet, and red-flag warnings
 - 💊 **Medication Safety Agent** — Deterministic DDI scanner blocking Warfarin+NSAID, Metformin+eGFR<30, and DAPT interruptions
 
+### 🇮🇳 Bharat Health Stack & Linguistic Accessibility
+
+- 💳 **Ayushman Bharat PM-JAY Scheme Agent** — Verifies ₹5,00,000 annual cashless coverage, deprivation entitlement criteria, and maps HBP 2.2 surgical packages
+- 🪪 **ABDM ABHA Health ID Agent** — 14-digit ABHA identity discovery, UIDAI KYC verification, and longitudinal multi-hospital health record aggregation
+- 🌐 **Devanagari Hindi Mode (ASHA Worker Interface)** — Seamless one-click bilingual translation delivering dosage instructions in simple Hindi for rural community caregivers
+
+### ⚡ Autonomous Action & Telemetry Agents
+
+- 💬 **Patient Communication Agent** — Formulates structured bilingual WhatsApp/SMS discharge notifications with instant click-to-dispatch `wa.me` links
+- 🚨 **Autonomous Vitals Monitor Loop** — Continuous telemetry stream evaluator detecting acute deterioration (SpO2 ≤ 88% / Hypertensive crisis) with <5-min emergency SLA
+- 📅 **Hospital EHR Appointment Scheduler** — Automatically reserves priority outpatient specialist review slots (`APT-2026-XXXX`) for high-risk patients
+- ⏱️ **Progressive Streaming Cockpit UX** — Staggered reasoning disclosure (110ms) and live typewriter response streaming (18ms) with skip-stream controls
+
 ### 🔒 Privacy & Safety
 
-- 🛡️ **Zero-PHI Guardrails** — Regex + NER tokenizer scrubs patient names, MRNs, phone numbers, and SSNs before any external API call
+- 🛡️ **Zero-PHI Guardrails** — Regex + NER tokenizer scrubs patient names, MRNs, phone numbers, and Aadhaar numbers before any external API call
 - 🚫 **Lethal Dosage Gate** — Hard-coded pharmacovigilance rules that block fatal drug interactions *before* LLM generation
 - 🏛️ **HIPAA-by-Architecture** — Supabase Row-Level Security + differential privacy (ε=1.2, δ=10⁻⁵) + federated XGBoost across 3 hospital nodes
+- 🔒 **Server-Side API Proxy** — Node.js Express proxy endpoint (`/api/agent/llm-call`) ensuring zero client-side credential exposure
 
 ### 🧬 Intelligence Engine
 

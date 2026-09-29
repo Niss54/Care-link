@@ -4,6 +4,20 @@
 > Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)  
 > Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html)  
 
+## [3.1.0-Autonomous] — 2026-09-29 🤖 Full Autonomous & Bharat Health Stack Release
+
+### ✨ Added
+- **Server-Side API Key Proxy:** Zero-leak backend endpoint `/api/agent/llm-call` insulating Gemini and Groq API keys completely from client bundles.
+- **Ayushman Bharat PM-JAY Agent:** Seamless ₹5,00,000 cashless entitlement verification, deprivation criteria check, and HBP 2.2 procedure rate packages mapping.
+- **ABDM ABHA Health ID Agent:** 14-digit ABHA identity verification, UIDAI KYC status verification, and longitudinal multi-hospital EHR record discovery.
+- **Linguistic Accessibility (Hindi ASHA Mode):** One-click bilingual Devanagari Hindi output across Triage, Care Plan, and Risk Analyst prompts tailored for grassroots ASHA community workers.
+- **Real Tool Calling TriageAgent:** Real multi-step tool execution with `check_vitals`, `lookup_guideline`, and `recommend_escalation`.
+- **Autonomous Patient Communication Agent:** Bilingual WhatsApp/SMS post-discharge instruction generator with direct click-to-dispatch `wa.me` deep links and medication schedule mapping.
+- **Autonomous Telemetry Anomaly Loop:** Continuous telemetry monitoring detecting acute SpO2 drops ($\le 88\%$) or hypertensive emergencies with $< 5\text{ min}$ SLA alerts.
+- **Autonomous Hospital EHR Scheduler:** Auto-books post-discharge outpatient follow-up specialist slots (`APT-2026-XXXX`) for high-risk patients.
+- **Progressive Streaming Cockpit UX:** Animated step-by-step reasoning trace disclosure (110ms staggered delay), typewriter response streaming (18ms chunks) with pulsing terminal cursor, and instantaneous `⚡ Skip Stream` action.
+- **AuRAG Industrial Pruning:** Cleaned non-health CAD parsers and Bitcoin LNbits modules while preserving 100% of CareLink healthcare features.
+
 ---
 
 ## [3.0.0-Agentic] — 2026-09-29 🏆 Bharat Agentic 2026 Major Upgrade
