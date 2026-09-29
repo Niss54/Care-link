@@ -97,11 +97,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% 
 ## 🚀 TRACK 2: LIVEKIT VOICE ESCALATION & SARVAM AI (Phases 11–15)
 
 ### 🎙️ Phase 11: LiveKit Docs MCP Integration & Telephony SDK Setup
-- [ ] **Task 11.1:** Register official LiveKit Docs MCP server (`https://docs.livekit.io/mcp`) in `.vscode/mcp.json`, `.cursor/mcp.json`, and `mcp_servers.json`.
-- [ ] **Task 11.2:** Install `livekit-server-sdk` and real-time telephony packages.
-- [ ] **Task 11.3:** Create server-side telephony client adapter (`src/lib/telephony/livekitClient.ts`) supporting mock and live modes.
-- [ ] **Task 11.4:** Update `.env.example` with LiveKit and SIP configuration keys.
-- [ ] **Task 11.5:** Commit Phase 11 changes locally (no push).
+- [x] **Task 11.1:** Register official LiveKit Docs MCP server (`https://docs.livekit.io/mcp`) in `.vscode/mcp.json`, `.cursor/mcp.json`, and `mcp_servers.json`.
+- [x] **Task 11.2:** Install `livekit-server-sdk` and real-time telephony packages.
+- [x] **Task 11.3:** Create server-side telephony client adapter (`src/lib/telephony/livekitClient.ts`) supporting mock and live modes.
+- [x] **Task 11.4:** Update `.env.example` with LiveKit and SIP configuration keys.
+- [x] **Task 11.5:** Commit Phase 11 changes locally (no push).
 
 ### 🇮🇳 Phase 12: Sarvam AI Indic Multi-Language Translation & Voice System
 - [ ] **Task 12.1:** Create `src/lib/agents/sarvamIndicAgent.ts` supporting Sarvam AI Indic API (`SARVAM_API_KEY`) across 10 Indian languages.
