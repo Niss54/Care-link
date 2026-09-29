@@ -136,6 +136,11 @@ export function normalizeLanguageCode(code: string): string {
   return found || 'hi-IN';
 }
 
+export function isSarvamConfigured(): boolean {
+  const key = process.env.SARVAM_API_KEY;
+  return Boolean(key && key.trim() !== '' && !key.includes('your-sarvam'));
+}
+
 export interface TranslateRequest {
   text: string;
   sourceLang?: string;

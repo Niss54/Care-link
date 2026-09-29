@@ -193,6 +193,8 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
   const [callDuration, setCallDuration] = useState<number>(0);
   const [isDialing, setIsDialing] = useState<boolean>(false);
   const [selectedVoiceLang, setSelectedVoiceLang] = useState<string>('en-IN');
+  const [selectedIndicProvider, setSelectedIndicProvider] = useState<'auto' | 'bhashini' | 'sarvam'>('auto');
+  const [indicProviderStatus, setIndicProviderStatus] = useState<any>(null);
   const [clinicianPhone, setClinicianPhone] = useState<string>('+919876543210');
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const [supportedLangs, setSupportedLangs] = useState<any[]>([]);
@@ -237,15 +239,29 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
       })
       .catch(() => {});
 
-    // Fetch Sarvam Indic Languages
-    fetch('/api/agent/sarvam/languages')
+    // Fetch Bhashini 22 Scheduled Indian Languages & Provider Status
+    fetch('/api/agent/indic/providers')
+      .then((res) => res.json())
+      .then((data) => setIndicProviderStatus(data))
+      .catch(() => {});
+
+    fetch('/api/agent/bhashini/languages')
       .then((res) => res.json())
       .then((data) => {
-        if (data?.languages) {
+        if (data?.languages && data.languages.length > 0) {
           setSupportedLangs(data.languages);
+        } else {
+          throw new Error('Fallback to Sarvam');
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        fetch('/api/agent/sarvam/languages')
+          .then((res) => res.json())
+          .then((data) => {
+            if (data?.languages) setSupportedLangs(data.languages);
+          })
+          .catch(() => {});
+      });
 
     return () => {
       if (streamingTimerRef.current) {
@@ -508,13 +524,13 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
       });
       const promptData = await promptRes.json();
 
-      const ttsRes = await fetch('/api/agent/sarvam/tts', {
+      const ttsRes = await fetch('/api/agent/indic/tts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: promptData.spokenText,
           targetLang: selectedVoiceLang,
-          speaker: 'meera',
+          provider: selectedIndicProvider,
         }),
       });
       const ttsData = await ttsRes.json();
@@ -525,9 +541,12 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
         audio.onended = () => setIsPlayingAudio(false);
         audio.onerror = () => setIsPlayingAudio(false);
         await audio.play();
+        const providerName = ttsData.provider === 'bhashini'
+          ? 'Digital India Bhashini (MeitY)'
+          : 'Sarvam AI';
         onShowToast(
           '🔊 VOICE ALERT PLAYING',
-          `Sarvam AI (${selectedVoiceLang}) synthesized audio playing.`,
+          `${providerName} (${selectedVoiceLang}) synthesized audio playing.`,
           'info'
         );
       }
@@ -1404,16 +1423,20 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
               <PhoneCall className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                 <h2 className="text-base sm:text-lg font-bold tracking-tight">
                   LiveKit Closed-Loop Critical Telephony Escalation
                 </h2>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
                   Mission Critical
                 </span>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  <span>Digital India Bhashini ⚡ Sarvam AI</span>
+                </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Autonomous SIP Outbound Dialing • Sarvam AI Indic Voice Synthesis • Closed-Loop Clinician Verification
+                Autonomous SIP Outbound Dialing • 22 Indic Scheduled Languages • Closed-Loop Clinician Verification
               </p>
             </div>
           </div>
@@ -1445,9 +1468,9 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
         </div>
 
         {/* Telephony Control Strip */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800/60 text-xs">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800/60 text-xs">
           {/* Destination Clinician */}
-          <div className="md:col-span-4 space-y-1">
+          <div className="md:col-span-3 space-y-1">
             <label className="text-[11px] font-medium text-slate-400 block">
               On-Call Intensivist Contact (E.164)
             </label>
@@ -1463,61 +1486,99 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
             </div>
           </div>
 
-          {/* Sarvam AI Indic Language Selector */}
+          {/* Indic AI Provider Selector */}
+          <div className="md:col-span-3 space-y-1">
+            <label className="text-[11px] font-medium text-slate-400 block flex items-center justify-between">
+              <span>Indic AI Provider</span>
+              <span className="text-[10px] text-amber-400 font-semibold">
+                {selectedIndicProvider === 'auto'
+                  ? '⚡ Dual-Engine'
+                  : selectedIndicProvider === 'bhashini'
+                  ? '🇮🇳 MeitY Bhashini'
+                  : '⚡ Sarvam AI'}
+              </span>
+            </label>
+            <select
+              value={selectedIndicProvider}
+              onChange={(e) => setSelectedIndicProvider(e.target.value as any)}
+              className="w-full bg-slate-950/80 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+            >
+              <option value="auto">🇮🇳 Auto-Failover (Bhashini ⚡ Sarvam)</option>
+              <option value="bhashini">🇮🇳 Digital India Bhashini (MeitY)</option>
+              <option value="sarvam">⚡ Sarvam AI Foundation</option>
+            </select>
+          </div>
+
+          {/* Indic Language Selector */}
           <div className="md:col-span-3 space-y-1">
             <label className="text-[11px] font-medium text-slate-400 block flex items-center justify-between">
               <span>Voice Language</span>
-              <span className="text-[10px] text-amber-400 font-semibold">Sarvam AI</span>
+              <span className="text-[10px] text-indigo-400 font-mono">
+                {supportedLangs.length > 0 ? `${supportedLangs.length} Langs` : '22 Scheduled'}
+              </span>
             </label>
             <select
               value={selectedVoiceLang}
               onChange={(e) => setSelectedVoiceLang(e.target.value)}
               className="w-full bg-slate-950/80 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
             >
-              <option value="en-IN">English (India)</option>
-              <option value="hi-IN">हिन्दी (Hindi)</option>
-              <option value="ta-IN">தமிழ் (Tamil)</option>
-              <option value="te-IN">తెలుగు (Telugu)</option>
-              <option value="bn-IN">বাংলা (Bengali)</option>
-              <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
-              <option value="mr-IN">मराठी (Marathi)</option>
-              <option value="gu-IN">ગુજરાતી (Gujarati)</option>
-              <option value="ml-IN">മലയാളം (Malayalam)</option>
-              <option value="od-IN">ଓଡ଼ିଆ (Odia)</option>
-              <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
+              {supportedLangs.length > 0 ? (
+                supportedLangs.map((lang: any) => (
+                  <option key={lang.code} value={lang.code}>
+                    {lang.nativeName ? `${lang.nativeName} (${lang.name})` : lang.name}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="en-IN">English (India)</option>
+                  <option value="hi-IN">हिन्दी (Hindi)</option>
+                  <option value="ta-IN">தமிழ் (Tamil)</option>
+                  <option value="te-IN">తెలుగు (Telugu)</option>
+                  <option value="bn-IN">বাংলা (Bengali)</option>
+                  <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
+                  <option value="mr-IN">मराठी (Marathi)</option>
+                  <option value="gu-IN">ગુજરાતી (Gujarati)</option>
+                  <option value="ml-IN">മലയാളം (Malayalam)</option>
+                  <option value="od-IN">ଓଡ଼ିଆ (Odia)</option>
+                  <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
+                  <option value="as-IN">অসমীয়া (Assamese)</option>
+                  <option value="ur-IN">اردو (Urdu)</option>
+                  <option value="sa-IN">संस्कृतम् (Sanskrit)</option>
+                </>
+              )}
             </select>
           </div>
 
           {/* Action Buttons */}
-          <div className="md:col-span-5 flex items-center space-x-2 pt-4 md:pt-0">
+          <div className="md:col-span-3 flex items-center space-x-2 pt-4 md:pt-0">
             <button
               onClick={() => handleTriggerEscalationCall(true)}
               disabled={isDialing}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-lg shadow-rose-900/30 transition-all cursor-pointer disabled:opacity-50"
+              className="flex-1 py-2 px-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center space-x-1 shadow-lg shadow-rose-900/30 transition-all cursor-pointer disabled:opacity-50"
             >
               <PhoneCall className="w-3.5 h-3.5" />
-              <span>{isDialing ? 'Dialing...' : '🚨 Trigger Escalation Call'}</span>
+              <span>{isDialing ? 'Dialing...' : '🚨 Escalation'}</span>
             </button>
 
             {activeCall && (activeCall.status === 'RINGING' || activeCall.status === 'IN_PROGRESS') && (
               <button
                 onClick={handleDoctorAcknowledge}
-                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer animate-pulse"
+                className="py-2 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer animate-pulse"
                 title="Simulate doctor speaking verbal affirmation: 'Acknowledged, attending bed'"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Doctor Says "Acknowledge"</span>
+                <span>Ack</span>
               </button>
             )}
 
             <button
               onClick={handlePlaySarvamVoicePreview}
               disabled={isPlayingAudio}
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
-              title="Preview synthesized voice alert in chosen Indic language"
+              className="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium flex items-center justify-center space-x-1 transition-all cursor-pointer disabled:opacity-50"
+              title="Preview synthesized voice alert in chosen Indic engine & language"
             >
               <Volume2 className={`w-3.5 h-3.5 ${isPlayingAudio ? 'text-amber-400 animate-spin' : 'text-slate-300'}`} />
-              <span className="hidden sm:inline">{isPlayingAudio ? 'Playing...' : 'Audio Preview'}</span>
+              <span className="hidden sm:inline">{isPlayingAudio ? 'Playing...' : 'Audio'}</span>
             </button>
           </div>
         </div>

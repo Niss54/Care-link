@@ -137,4 +137,14 @@ Phase 15 — Escalation Cockpit & Timeline  ██████████ 100% 
 
 ---
 
+## 🇮🇳 EXTENSION: DIGITAL INDIA BHASHINI (MeitY) & SARVAM AI DUAL-ENGINE
+- [x] **Task B.1:** Integrate Government of India's Digital India Bhashini API (`src/lib/agents/bhashiniAgent.ts`) with ULCA/Dhruva pipeline resolution and IndicTrans2 NMT + Indic-TTS.
+- [x] **Task B.2:** Support all 22 official scheduled Indian languages under the 8th Schedule of the Constitution of India.
+- [x] **Task B.3:** Build Unified Indic Gateway (`src/lib/agents/indicUnifiedGateway.ts`) with zero-latency auto-failover (`auto` | `bhashini` | `sarvam`).
+- [x] **Task B.4:** Mount Express endpoints (`/api/agent/bhashini/*`, `/api/agent/indic/*`) and update `AgentCockpitView.tsx` with dual-engine provider selector and audio preview.
+- [x] **Task B.5:** Build automated test suite (`scripts/test_bhashini_integration.ts`) passing 28/28 tests (100% green).
+- [x] **Task B.6:** Local git commit without pushing.
+
+---
+
 *Master Task Tracker updated for Bharat Agentic 2026 by Nishant Maurya.*

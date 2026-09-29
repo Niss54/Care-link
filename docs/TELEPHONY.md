@@ -2,7 +2,7 @@
 
 > **Bharat Agentic 2026 Hackathon** — Critical Voice Escalation Specification  
 > **Author:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
-> **SDK:** `livekit-server-sdk` v2.16.1 | **Speech/Translation:** Sarvam AI Indic API (`mayura:v1`, `bulbul:v1`)
+> **SDK:** `livekit-server-sdk` v2.16.1 | **Speech/Translation:** Digital India Bhashini (MeitY / NLTM) ⚡ Sarvam AI Indic API (`mayura:v1`, `bulbul:v1`)
 
 ---
 
@@ -10,7 +10,7 @@
 
 CareLink implements a production-grade, zero-delay **Closed-Loop Critical Voice Escalation Layer**. When acute clinical deterioration occurs (e.g., patient $\text{SpO}_2 \le 88\%$, lethal DDI, or sudden decompensation), traditional alerts (SMS, push notifications, EHR banners) suffer from alert fatigue and median acknowledgement delays of 14–45 minutes.
 
-CareLink solves this by autonomously placing an outbound telephony call via **LiveKit SIP Outbound Trunking** directly to the on-call physician's mobile phone, briefing them in natural spoken language (English or 10 Indic languages via **Sarvam AI**), and listening for verbal acknowledgement (*"I'm on it"* or DTMF 1) to definitively close the loop in under 20 seconds.
+CareLink solves this by autonomously placing an outbound telephony call via **LiveKit SIP Outbound Trunking** directly to the on-call physician's mobile phone, briefing them in natural spoken language (English or 22 scheduled Indian languages via **Digital India Bhashini** & **Sarvam AI**), and listening for verbal acknowledgement (*"I'm on it"* or DTMF 1) to definitively close the loop in under 20 seconds.
 
 ```
        ┌───────────────────────────────┐

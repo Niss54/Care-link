@@ -23,6 +23,16 @@ import {
   getSupportedIndicLanguages,
 } from "./src/lib/agents/sarvamIndicAgent";
 import {
+  translateBhashini,
+  synthesizeBhashiniSpeech,
+  getBhashiniLanguages,
+} from "./src/lib/agents/bhashiniAgent";
+import {
+  translateIndicUnified,
+  synthesizeIndicUnifiedSpeech,
+  getIndicProvidersStatus,
+} from "./src/lib/agents/indicUnifiedGateway";
+import {
   escalationService,
   callPolicy,
   livekitWebhookHandler,
@@ -389,6 +399,101 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Sarvam TTS Error:", error);
       res.status(500).json({ error: error.message || "Failed to synthesize speech" });
+    }
+  });
+
+  // Digital India Bhashini (MeitY) Endpoints
+  app.get("/api/agent/bhashini/languages", (_req, res) => {
+    try {
+      const languages = getBhashiniLanguages();
+      res.json({ languages, count: languages.length });
+    } catch (error: any) {
+      console.error("Bhashini Languages Error:", error);
+      res.status(500).json({ error: error.message || "Failed to get Bhashini languages" });
+    }
+  });
+
+  app.post("/api/agent/bhashini/translate", async (req, res) => {
+    try {
+      const { text, sourceLang, targetLang } = req.body || {};
+      if (!text || !targetLang) {
+        return res.status(400).json({ error: "Missing required 'text' or 'targetLang'" });
+      }
+      const result = await translateBhashini({
+        text,
+        sourceLang: sourceLang || 'en',
+        targetLang,
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bhashini Translation Error:", error);
+      res.status(500).json({ error: error.message || "Failed to translate with Bhashini" });
+    }
+  });
+
+  app.post("/api/agent/bhashini/tts", async (req, res) => {
+    try {
+      const { text, targetLang, gender } = req.body || {};
+      if (!text) {
+        return res.status(400).json({ error: "Missing required 'text'" });
+      }
+      const result = await synthesizeBhashiniSpeech({
+        text,
+        targetLang: targetLang || 'hi',
+        gender: gender || 'female',
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Bhashini TTS Error:", error);
+      res.status(500).json({ error: error.message || "Failed to synthesize with Bhashini" });
+    }
+  });
+
+  // Unified Indic Linguistic Gateway (Bhashini + Sarvam AI)
+  app.get("/api/agent/indic/providers", (_req, res) => {
+    try {
+      const status = getIndicProvidersStatus();
+      res.json(status);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to get Indic providers status" });
+    }
+  });
+
+  app.post("/api/agent/indic/translate", async (req, res) => {
+    try {
+      const { text, sourceLang, targetLang, provider } = req.body || {};
+      if (!text || !targetLang) {
+        return res.status(400).json({ error: "Missing required 'text' or 'targetLang'" });
+      }
+      const result = await translateIndicUnified({
+        text,
+        sourceLang: sourceLang || 'en',
+        targetLang,
+        provider: provider || 'auto',
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Unified Indic Translation Error:", error);
+      res.status(500).json({ error: error.message || "Failed to translate via Indic gateway" });
+    }
+  });
+
+  app.post("/api/agent/indic/tts", async (req, res) => {
+    try {
+      const { text, targetLang, provider, gender } = req.body || {};
+      if (!text) {
+        return res.status(400).json({ error: "Missing required 'text'" });
+      }
+      const result = await synthesizeIndicUnifiedSpeech({
+        text,
+        targetLang: targetLang || 'hi',
+        provider: provider || 'auto',
+        gender: gender || 'female',
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Unified Indic TTS Error:", error);
+      res.status(500).json({ error: error.message || "Failed to synthesize speech via Indic gateway" });
     }
   });
 
