@@ -4,65 +4,94 @@
 > **Project:** CareLink Autonomous Multi-Agent HealthTech Platform  
 > **Lead:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 > **PRD Reference:** [`docs/Prd.md`](file:///c:/Users/nisha/OneDrive/Documents/Downloads/carelink/docs/Prd.md)  
-> **Status:** 🟢 All 6 Phases 100% Complete & Verified  
+> **Pre-Hackathon Score Baseline:** 68/100 ➔ **Target Score:** 96/100 (Top-4 / Winner Contender)  
+> **Status:** 🟢 Phases 1–6 Complete (Verified) | 🟡 Phases 7–10 Sprint Ready  
 
 ---
 
 ## 📊 Progress Overview
 
 ```
-Phase 1 — Foundation & Model Gateway   ██████████ 100% ✅
-Phase 2 — PHI Guardrails & Knowledge   ██████████ 100% ✅
-Phase 3 — Supervisor & Specialist      ██████████ 100% ✅
-Phase 4 — Long-Term Memory & Feedback  ██████████ 100% ✅
-Phase 5 — Frontend Agent Cockpit UI    ██████████ 100% ✅
-Phase 6 — Observability & E2E Testing  ██████████ 100% ✅
+Phase 1 — Dual-Model Failover Engine      ██████████ 100% ✅ (Completed)
+Phase 2 — PHI Guardrails & Knowledge RAG  ██████████ 100% ✅ (Completed)
+Phase 3 — Supervisor & 4 Specialists      ██████████ 100% ✅ (Completed)
+Phase 4 — Long-Term Memory & Feedback     ██████████ 100% ✅ (Completed)
+Phase 5 — Frontend Agent Cockpit UI       ██████████ 100% ✅ (Completed)
+Phase 6 — Observability & E2E Testing     ██████████ 100% ✅ (Completed)
+Phase 7 — Security & Config Hardening     ░░░░░░░░░░   0% 🟡 (Ready for command)
+Phase 8 — Bharat Health Stack Agents      ░░░░░░░░░░   0% 🟡 (Ready for command)
+Phase 9 — Function Calling & Autonomy     ░░░░░░░░░░   0% 🟡 (Ready for command)
+Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 🟡 (Ready for command)
 ```
 
 ---
 
-## 🚀 Phase 1: Foundation & Dual-Model Failover Engine
-- [x] **Task 1.1:** Set up agent module structure in `backend/agents/`.
-- [x] **Task 1.2:** Build `gateway.py` (Multi-LLM gateway supporting Gemini with instant auto-failover to Groq on HTTP 429/quota limits).
-- [x] **Task 1.3:** Add token usage and latency telemetry tracking to all model calls.
-- [x] **Task 1.4:** Verify failover resilience with live test script simulating primary quota exhaustion.
+## ✅ COMPLETED PHASES (Phases 1–6)
+
+### 🚀 Phase 1: Dual-Model Failover Engine
+- [x] **Task 1.1:** Build `failoverLlm.ts` & `gateway.py` (Gemini 2.5 Flash ⚡ Groq Llama-3.3-70b auto-failover in <500ms).
+- [x] **Task 1.2:** Implement token usage calculation, estimated USD cost, and latency tracking.
+- [x] **Task 1.3:** Test failover live with simulated HTTP 429 quota exhaustion.
+
+### 🛡️ Phase 2: PHI Guardrails & Clinical RAG Engine
+- [x] **Task 2.1:** Build `guardrails.ts` & `guardrails.py` (Regex + NER tokenizer for HIPAA PHI scrubbing and lethal dosage gate).
+- [x] **Task 2.2:** Build `clinicalRag.ts` & `clinical_rag.py` (Qdrant Cloud vector search with 10 evidence-based guidelines).
+- [x] **Task 2.3:** Build `citationResolver.ts` & `citation_resolver.py` (Verifies `[TAG]` citations and emits Grounding Fidelity score).
+
+### 🧠 Phase 3: LangGraph Supervisor & Specialist Agents
+- [x] **Task 3.1:** Define `state.ts` & `state.py` (StateGraph `AgentState` schema).
+- [x] **Task 3.2:** Build `supervisor.ts` & `supervisor.py` (Intent routing with confidence floor $\ge 0.60$).
+- [x] **Task 3.3:** Build `triageAgent.ts` & `triage_agent.py` (Manchester Triage System physiological rules).
+- [x] **Task 3.4:** Build `riskAnalystAgent.ts` & `risk_analyst_agent.py` (XGBoost 30-day readmission + SHAP factors).
+- [x] **Task 3.5:** Build `carePlanAgent.ts` & `care_plan_agent.py` (Autonomous 4-part post-discharge schedule).
+- [x] **Task 3.6:** Build `medicationSafetyAgent.ts` & `medication_safety_agent.py` (Warfarin+NSAID, Metformin/eGFR blocker).
+
+### 💾 Phase 4: Long-Term Memory & Active Learning
+- [x] **Task 4.1:** Build `memory.ts` & `memory.py` (Mem0 Cloud REST API + local JSON mirror for patient-scoped recall).
+- [x] **Task 4.2:** Build `feedbackAgent.ts` & `feedback_agent.py` (Clinician override tracking and $>15\%$ drift detection).
+
+### 🖥️ Phase 5: Frontend Agent Cockpit UI
+- [x] **Task 5.1:** Build `AgentCockpitView.tsx` with live StateGraph visualizer and 4 clinical test scenarios.
+- [x] **Task 5.2:** Add multi-step reasoning log feed, citation badge inspector, and clinician review modal.
+- [x] **Task 5.3:** Connect UI to Express API routes (`/api/agent/execute`, `/api/agent/feedback`).
+
+### 📈 Phase 6: Observability, E2E Testing & Hackathon Packaging
+- [x] **Task 6.1:** Build `observability.ts` (LangSmith-compatible run traces in `.runtime/traces/`).
+- [x] **Task 6.2:** Build `evalRagas.ts` (RAGAS benchmark runner scoring Faithfulness, Context Precision, Relevancy).
+- [x] **Task 6.3:** Write full E2E test suites in Python and TypeScript (`test_phase6_e2e.ts`).
+- [x] **Task 6.4:** Generate `HACKATHON_SUBMISSION.md` and winning `README.md`.
 
 ---
 
-## 🛡️ Phase 2: PHI Guardrails & Clinical RAG Engine
-- [x] **Task 2.1:** Build `guardrails.py` & `src/lib/guardrails.ts` (HIPAA zero-leak anonymizer with Regex + NER detection, token map roundtrip, and medical hazard filter).
-- [x] **Task 2.2:** Build `clinical_rag.py` & `src/lib/clinicalRag.ts` (Qdrant Cloud vector index with local in-memory cosine fallback).
-- [x] **Task 2.3:** Seed 10 clinical guidelines (ICMR, WHO, NICE, AHA, KDIGO, IAP protocols with evidence tiers).
-- [x] **Task 2.4:** Build `citation_resolver.py` & `src/lib/citationResolver.ts` (Enforces bracketed citations `[ICMR-HF-01]`, computes grounding fidelity score, and generates UI evidence badges).
+## 🟡 NEW ROADMAP FROM DEEP AUDIT (Phases 7–10)
+
+### 🔒 Phase 7: Critical Security & Configuration Hardening
+- [ ] **Task 7.1:** Eliminate client-side API key leakage — route all LLM requests through `server.ts` endpoint `/api/agent/run`.
+- [x] **Task 7.2:** Update `.env.example` to document all production keys (`GROQ_API_KEY`, `MEM0_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`, `LANGSMITH_API_KEY`).
+- [x] **Task 7.3:** Clean all placeholder tokens (`[Project Name]`, `[Developer Name]`, `[YYYY-MM-DD]`, `XX`) from documentation files (`Architecture.md`, `TECHNICAL_ARCHITECTURE.md`, `FEATURE_TICKET_LIST.md`, `DEMO_SCRIPT.md`, `PRD_CLOSURE.md`).
+- [ ] **Task 7.4:** Commit Phase 7 changes locally (no push).
+
+### 🇮🇳 Phase 8: Bharat Health Stack & Linguistic Accessibility
+- [ ] **Task 8.1:** Build `src/lib/agents/pmjayAgent.ts` — Ayushman Bharat PM-JAY eligibility verification agent (₹5,00,000 coverage check).
+- [ ] **Task 8.2:** Build `src/lib/agents/abhaAgent.ts` — Ayushman Bharat Digital Mission (ABDM) mock ID lookup agent with health record linking.
+- [ ] **Task 8.3:** Add Hindi Language Output Mode (Devanagari script) in Agent Cockpit with prompt optimization for ASHA workers.
+- [ ] **Task 8.4:** Mount Bharat agents in `server.ts` and test with Indian patient profiles.
+- [ ] **Task 8.5:** Commit Phase 8 changes locally (no push).
+
+### 🤖 Phase 9: Real Function Calling & Autonomous Action Agents
+- [ ] **Task 9.1:** Upgrade `triageAgent.ts` to real Gemini Function Calling / Tool Use (`check_vitals`, `lookup_guideline`, `recommend_escalation`).
+- [ ] **Task 9.2:** Build `src/lib/agents/patientCommunicationAgent.ts` — Autonomous bilingual WhatsApp/SMS discharge & reminder draft generator with one-click send.
+- [ ] **Task 9.3:** Build `src/lib/agents/vitalsMonitorAgent.ts` — Autonomous background monitoring loop detecting simulated vitals deterioration (SpO2 drop to 88%) with instant alerts.
+- [ ] **Task 9.4:** Build `src/lib/agents/appointmentAgent.ts` — Autonomous follow-up appointment booking in the CareLink calendar for high-risk patients.
+- [ ] **Task 9.5:** Commit Phase 9 changes locally (no push).
+
+### 🎨 Phase 10: Streaming Cockpit UX, AuRAG Pruning & Hackathon Polish
+- [ ] **Task 10.1:** Implement animated step-by-step agent execution visualization and typewriter response streaming in `AgentCockpitView.tsx`.
+- [ ] **Task 10.2:** Display PM-JAY card, ABHA ID badge, and WhatsApp follow-up preview inside the Cockpit.
+- [ ] **Task 10.3:** Prune unwanted industrial modules from `aurag/` (CAD parser, Bitcoin LNbits, pump SCADA) while keeping core agent references safe.
+- [ ] **Task 10.4:** Rehearse the 3-minute winning demo flow (CHF $\rightarrow$ Vitals Alert $\rightarrow$ Hindi Plan $\rightarrow$ WhatsApp Send).
+- [ ] **Task 10.5:** Final git commit locally (no push).
 
 ---
 
-## 🧠 Phase 3: LangGraph Supervisor & Specialist Agents
-- [x] **Task 3.1:** Define `state.py` & `src/lib/agents/state.ts` (`CareLinkAgentState` with patient demographics, vitals, SHAP values, risk scores, care plans).
-- [x] **Task 3.2:** Build `supervisor.py` & `src/lib/agents/supervisor.ts` (StateGraph router with intent classification, confidence floor $\ge 0.60$, and fallback routing).
-- [x] **Task 3.3:** Build `triage_agent.py` & `src/lib/agents/triageAgent.ts` (ReAct loop: vitals tool + MTS severity rules + RAG protocol + self-critique).
-- [x] **Task 3.4:** Build `risk_analyst_agent.py` & `src/lib/agents/riskAnalystAgent.ts` (XGBoost ML interpretation + SHAP factor narrative + similar patient cohort search).
-- [x] **Task 3.5:** Build `care_plan_agent.py` & `src/lib/agents/carePlanAgent.ts` (Autonomous 4-part post-discharge plan generator: meds, visits, diet, warning signs).
-- [x] **Task 3.6:** Build `medication_safety_agent.py` & `src/lib/agents/medicationSafetyAgent.ts` (Drug-drug interaction safety checker with CRITICAL blocker).
-
----
-
-## 💾 Phase 4: Long-Term Memory & Active Learning
-- [x] **Task 4.1:** Build `memory.py` & `src/lib/memory.ts` (Mem0 Cloud REST + local JSON mirror cross-session memory service to recall patient chronic history, allergies, and clinician directives).
-- [x] **Task 4.2:** Build `feedback_agent.py` & `src/lib/feedbackAgent.ts` (Active learning feedback monitor with $>15\%$ override drift detection and fine-tuning dataset generation).
-
----
-
-## 🖥️ Phase 5: Frontend Agent Cockpit UI
-- [x] **Task 5.1:** Add "Agent Cockpit" view (`AgentCockpitView.tsx`) to CareLink navigation.
-- [x] **Task 5.2:** Implement live agent execution graph visualizer and step-by-step reasoning log feed.
-- [x] **Task 5.3:** Create Care Plan review card with medication safety check badge and PDF export button.
-- [x] **Task 5.4:** Integrate frontend with backend `/api/agent/run` and `/api/agent/triage` endpoints.
-
----
-
-## 📈 Phase 6: Observability, End-to-End Testing & Git Checkpoint
-- [x] **Task 6.1:** Configure LangSmith trace exports and RAGAS faithfulness benchmark runner ($>0.85$ target).
-- [x] **Task 6.2:** Execute full End-to-End pipeline test:
-  - Ingest patient $\rightarrow$ Supervisor router $\rightarrow$ Triage ReAct loop $\rightarrow$ Care Plan generation $\rightarrow$ Drug safety check $\rightarrow$ UI telemetry.
-- [x] **Task 6.3:** Commit verified changes to git repository locally (do not push to remote).
+*Master Task Tracker updated for Bharat Agentic 2026 by Nishant Maurya.*

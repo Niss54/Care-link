@@ -1,651 +1,119 @@
-# 🎫 Feature Ticket List
+# 🎫 CareLink — Feature Ticket & Sprint Milestone List
 
-> **Project:** [Project Name]
-> **Sprint:** [Sprint Number / Milestone Name]
-> **Version Target:** v[X.Y.Z]
-> **Last Updated:** [YYYY-MM-DD]
-> **Maintained By:** [Product Manager / Tech Lead]
-> **Status:** 🟢 Active
-
----
-
-## 📌 Quick Reference
-
-| Symbol | Meaning        | Symbol | Meaning           |
-|--------|----------------|--------|-------------------|
-| 🔴     | Critical / P0  | 🟠     | High / P1         |
-| 🟡     | Medium / P2    | 🟢     | Low / P3          |
-| ⬜     | Not Started    | 🔄     | In Progress       |
-| 🧪     | In QA / Review | ✅     | Done              |
-| 🚫     | Blocked        | ❄️     | Icebox / Deferred |
+> **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
+> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
+> **Version Target:** v3.0.0-Bharat-Agentic  
+> **Last Updated:** 2026-09-29  
+> **Lead Architect & Developer:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
+> **Status:** 🟢 Active Sprint  
 
 ---
 
-## 📊 Sprint Overview
+## 📌 Status Legend
 
-| Metric              | Count |
-|---------------------|-------|
-| **Total Tickets**   | XX    |
-| **Not Started** ⬜  | XX    |
-| **In Progress** 🔄  | XX    |
-| **In QA** 🧪        | XX    |
-| **Done** ✅          | XX    |
-| **Blocked** 🚫       | XX    |
-
-**Sprint Goal:**
-> [One line describing what we want to achieve by end of this sprint]
+| Symbol | Meaning | Symbol | Meaning |
+|:---:|---|:---:|---|
+| 🔴 | Critical / P0 | ✅ | Done & Verified |
+| 🟠 | High / P1 | 🔄 | In Progress |
+| 🟡 | Medium / P2 | ⬜ | Ready for Next Phase |
 
 ---
 
-## 🔐 EPIC-01: Authentication & Authorization
+## 📊 Milestone Summary
 
-> **Goal:** Secure user registration, login, session management, and role-based access.
-> **Epic Owner:** [Name] | **Target:** v1.0.0
-
----
-
-### TICKET-001 — User Registration
-
-| Field          | Details                                |
-|----------------|----------------------------------------|
-| **ID**         | TICKET-001                             |
-| **Title**      | User Registration with Email & Password|
-| **Epic**       | EPIC-01: Authentication                |
-| **Priority**   | 🔴 Critical                            |
-| **Status**     | ⬜ Not Started                          |
-| **Assignee**   | [Developer Name]                       |
-| **Estimate**   | 3 SP (Story Points)                    |
-| **Labels**     | `backend` `frontend` `auth`            |
-
-**User Story:**
-> *As a new visitor, I want to create an account using my email and password so that I can access the platform.*
-
-**Acceptance Criteria:**
-- [ ] User can register with: name, email, password, confirm password
-- [ ] Zod validation runs on submit (client-side)
-- [ ] Backend validates email uniqueness — returns 409 if already exists
-- [ ] Password is hashed with bcrypt (cost factor: 12) before saving
-- [ ] On success: verification email sent, user redirected to `/verify-email` page
-- [ ] On failure: descriptive error message shown inline (not toast)
-- [ ] Rate limiting: max 5 registration attempts per IP per hour
-
-**Technical Notes:**
-```
-POST /api/auth/register
-Body: { name, email, password }
-Response: { message: "Verification email sent" }
-```
-
-**Dependencies:** None
-**Blocked By:** —
-**Related:** TICKET-002 (Login), TICKET-005 (Email Verification)
+| Epic ID | Epic Title | Priority | Status | Tickets Done / Total |
+|---|---|:---:|:---:|:---:|
+| **EPIC-01** | Dual-Model Resilient Failover Gateway | 🔴 Critical | ✅ Done | 4 / 4 |
+| **EPIC-02** | HIPAA & Aadhaar PHI Guardrails Engine | 🔴 Critical | ✅ Done | 3 / 3 |
+| **EPIC-03** | Qdrant Cloud Clinical RAG & Citations | 🔴 Critical | ✅ Done | 4 / 4 |
+| **EPIC-04** | LangGraph Supervisor & Specialist Agents | 🔴 Critical | ✅ Done | 6 / 6 |
+| **EPIC-05** | Mem0 Long-Term Memory & Active Learning | 🟠 High | ✅ Done | 3 / 3 |
+| **EPIC-06** | Agent Cockpit UI & Observability Engine | 🟠 High | ✅ Done | 4 / 4 |
+| **EPIC-07** | Critical Security Hardening & Zero-Leak Proxy | 🔴 Critical | 🔄 In Progress | 2 / 4 |
+| **EPIC-08** | Bharat Health Stack (ABHA, PM-JAY & Hindi) | 🔴 Critical | ⬜ Sprint Ready | 0 / 4 |
+| **EPIC-09** | Gemini Tool-Use & Autonomous Action Agents | 🔴 Critical | ⬜ Sprint Ready | 0 / 4 |
+| **EPIC-10** | Streaming UX, AuRAG Pruning & Demo Polish | 🟠 High | ⬜ Sprint Ready | 0 / 4 |
 
 ---
 
-### TICKET-002 — User Login
-
-| Field          | Details                                |
-|----------------|----------------------------------------|
-| **ID**         | TICKET-002                             |
-| **Title**      | Email + Password Login with JWT        |
-| **Epic**       | EPIC-01: Authentication                |
-| **Priority**   | 🔴 Critical                            |
-| **Status**     | ⬜ Not Started                          |
-| **Assignee**   | [Developer Name]                       |
-| **Estimate**   | 2 SP                                   |
-| **Labels**     | `backend` `frontend` `auth`            |
-
-**User Story:**
-> *As a registered user, I want to log in with my email and password so that I can access my account.*
-
-**Acceptance Criteria:**
-- [ ] Login form: email + password fields
-- [ ] On success: JWT access token in memory + refresh token in HttpOnly cookie
-- [ ] Access token expiry: 15 minutes
-- [ ] Refresh token expiry: 7 days
-- [ ] Max 5 failed attempts → account locked for 15 minutes
-- [ ] "Remember me" option extends refresh token to 30 days
-- [ ] Redirect to `/dashboard` after successful login
-- [ ] If account not verified → show "verify your email" error
-
-**Technical Notes:**
-```
-POST /api/auth/login
-Body: { email, password, rememberMe?: boolean }
-Response: { accessToken, user: { id, name, email, role } }
-Set-Cookie: refreshToken (HttpOnly, Secure, SameSite=Strict)
-```
-
-**Dependencies:** TICKET-001
-**Blocked By:** —
+## 🔐 EPIC-01: Dual-Model Resilient Failover Gateway
+- **TICKET-101 (✅ Done):** Implement `failoverLlm.ts` wrapping Gemini 2.5 Flash with Groq Cloud failover.
+- **TICKET-102 (✅ Done):** Add latency timer, token consumption estimation, and USD cost tracking.
+- **TICKET-103 (✅ Done):** Configure secondary models (`llama-3.3-70b-versatile`, `openai/gpt-oss-120b`).
+- **TICKET-104 (✅ Done):** Write unit test suite `test_failover.ts` verifying $<500\text{ ms}$ failover on HTTP 429.
 
 ---
 
-### TICKET-003 — Google OAuth Login
-
-| Field          | Details                                |
-|----------------|----------------------------------------|
-| **ID**         | TICKET-003                             |
-| **Title**      | Google OAuth 2.0 Sign-In               |
-| **Epic**       | EPIC-01: Authentication                |
-| **Priority**   | 🟠 High                                |
-| **Status**     | ⬜ Not Started                          |
-| **Assignee**   | [Developer Name]                       |
-| **Estimate**   | 3 SP                                   |
-| **Labels**     | `backend` `frontend` `auth` `oauth`    |
-
-**User Story:**
-> *As a user, I want to sign in with my Google account so that I don't need to remember another password.*
-
-**Acceptance Criteria:**
-- [ ] "Continue with Google" button on login + register page
-- [ ] OAuth flow: redirect to Google → callback → create/find user → issue JWT
-- [ ] If Google email already exists as local account → merge accounts (prompt user)
-- [ ] Avatar from Google profile picture stored
-- [ ] New OAuth users skip email verification step
-- [ ] Works in Safari (no third-party cookie issues)
-
-**Dependencies:** TICKET-001, TICKET-002
-**Blocked By:** —
+## 🛡️ EPIC-02: HIPAA & Aadhaar PHI Guardrails Engine
+- **TICKET-201 (✅ Done):** Build regex and NER tokenizers in `guardrails.ts` scrubbing names, MRNs, phone numbers.
+- **TICKET-202 (✅ Done):** Add Indian 12-digit Aadhaar number detection and masking pattern (`[AADHAAR_XXXX]`).
+- **TICKET-203 (✅ Done):** Implement in-memory token map for local round-trip de-tokenization.
 
 ---
 
-### TICKET-004 — Logout & Token Refresh
-
-| Field          | Details                                |
-|----------------|----------------------------------------|
-| **ID**         | TICKET-004                             |
-| **Title**      | Logout + Silent Token Refresh          |
-| **Epic**       | EPIC-01: Authentication                |
-| **Priority**   | 🔴 Critical                            |
-| **Status**     | ⬜ Not Started                          |
-| **Assignee**   | [Developer Name]                       |
-| **Estimate**   | 2 SP                                   |
-| **Labels**     | `backend` `frontend` `auth`            |
-
-**User Story:**
-> *As a logged-in user, I want my session to stay active without re-logging in every 15 minutes, and I want to be able to log out securely.*
-
-**Acceptance Criteria:**
-- [ ] Axios interceptor silently refreshes token on 401 response
-- [ ] Refresh happens at most once (queue concurrent requests during refresh)
-- [ ] If refresh fails → clear auth state → redirect to `/login`
-- [ ] Logout: clears access token from memory + calls `POST /api/auth/logout` to invalidate refresh token cookie
-- [ ] "Logout from all devices" option in settings
-
-**Technical Notes:**
-```
-POST /api/auth/refresh  → new accessToken (uses HttpOnly cookie)
-POST /api/auth/logout   → clears refresh token cookie + Redis blacklist
-```
-
-**Dependencies:** TICKET-002
-**Blocked By:** —
+## 📚 EPIC-03: Qdrant Cloud Clinical RAG & Citations
+- **TICKET-301 (✅ Done):** Connect Qdrant Cloud vector collection `carelink_guidelines` with cosine distance.
+- **TICKET-302 (✅ Done):** Seed 10 clinical guidelines (ICMR, WHO, NICE, AHA, KDIGO, IAP, GOLD).
+- **TICKET-303 (✅ Done):** Implement in-memory cosine fallback for zero-offline downtime.
+- **TICKET-304 (✅ Done):** Build `citationResolver.ts` computing Grounding Fidelity ($0.0 - 1.0$) with evidence badges.
 
 ---
 
-### TICKET-005 — Email Verification
-
-| Field          | Details                    |
-|----------------|----------------------------|
-| **ID**         | TICKET-005                 |
-| **Title**      | Email Verification Flow    |
-| **Priority**   | 🟠 High                    |
-| **Status**     | ⬜ Not Started              |
-| **Assignee**   | [Developer Name]           |
-| **Estimate**   | 2 SP                       |
-| **Labels**     | `backend` `email`          |
-
-**Acceptance Criteria:**
-- [ ] Verification email sent on registration (Resend / SendGrid)
-- [ ] Email contains unique token link (expiry: 24 hours)
-- [ ] Clicking link → account verified → redirect to `/dashboard`
-- [ ] Resend verification email button (rate limited: once per minute)
-- [ ] Expired token → user can request new one
-
-**Dependencies:** TICKET-001
-**Blocked By:** Email service setup
+## 🧠 EPIC-04: LangGraph Supervisor & Specialist Agents
+- **TICKET-401 (✅ Done):** Build `supervisor.ts` StateGraph router with confidence floor $\ge 0.60$.
+- **TICKET-402 (✅ Done):** Build `triageAgent.ts` for Manchester Triage System physiological evaluation.
+- **TICKET-403 (✅ Done):** Build `riskAnalystAgent.ts` translating XGBoost + SHAP feature attributions into narrative.
+- **TICKET-404 (✅ Done):** Build `carePlanAgent.ts` creating 4-part discharge schedule (meds, visits, diet, red flags).
+- **TICKET-405 (✅ Done):** Build `medicationSafetyAgent.ts` blocking Warfarin+NSAIDs and Metformin/eGFR contraindications.
+- **TICKET-406 (✅ Done):** Write E2E test verification scripts in TypeScript and Python.
 
 ---
 
-### TICKET-006 — Forgot / Reset Password
-
-| Field          | Details                      |
-|----------------|------------------------------|
-| **ID**         | TICKET-006                   |
-| **Title**      | Password Reset Flow          |
-| **Priority**   | 🟠 High                      |
-| **Status**     | ⬜ Not Started                |
-| **Assignee**   | [Developer Name]             |
-| **Estimate**   | 2 SP                         |
-| **Labels**     | `backend` `frontend` `email` |
-
-**Acceptance Criteria:**
-- [ ] "Forgot password?" link on login page
-- [ ] User enters email → reset link sent (even if email doesn't exist, show same success message — security)
-- [ ] Reset token: 1-hour expiry, one-time use
-- [ ] New password must meet strength requirements
-- [ ] After reset → all existing refresh tokens invalidated
-- [ ] Confirmation email after successful reset
+## 💾 EPIC-05: Mem0 Long-Term Memory & Active Learning
+- **TICKET-501 (✅ Done):** Connect Mem0 Cloud REST API with local `.runtime/mem0/` JSON mirror fallback.
+- **TICKET-502 (✅ Done):** Build `feedbackAgent.ts` tracking clinician approvals vs. overrides.
+- **TICKET-503 (✅ Done):** Implement moving drift alert when override rate $\rho > 15\%$.
 
 ---
 
-## 📊 EPIC-02: Dashboard & Core UI
-
-> **Goal:** Deliver the primary dashboard interface with navigation, stats, and key data views.
-> **Epic Owner:** [Name] | **Target:** v1.0.0
-
----
-
-### TICKET-010 — Dashboard Layout & Navigation
-
-| Field          | Details                                      |
-|----------------|----------------------------------------------|
-| **ID**         | TICKET-010                                   |
-| **Title**      | Sidebar Navigation + Responsive Dashboard Layout |
-| **Epic**       | EPIC-02: Dashboard                           |
-| **Priority**   | 🔴 Critical                                  |
-| **Status**     | 🔄 In Progress                               |
-| **Assignee**   | [Frontend Dev Name]                          |
-| **Estimate**   | 5 SP                                         |
-| **Labels**     | `frontend` `ui`                              |
-
-**Acceptance Criteria:**
-- [ ] Left sidebar: logo, nav items, user avatar + name at bottom
-- [ ] Sidebar collapsible (icon-only mode) on desktop
-- [ ] Sidebar becomes drawer (overlay) on mobile
-- [ ] Active route highlighted in sidebar
-- [ ] Topbar: breadcrumb, global search (stub), notification bell, user menu
-- [ ] User menu: Profile, Settings, Logout options
-- [ ] Dark mode toggle functional
-
-**Dependencies:** TICKET-002 (auth state needed)
-**Blocked By:** —
+## 🖥️ EPIC-06: Agent Cockpit UI & Observability Engine
+- **TICKET-601 (✅ Done):** Build `AgentCockpitView.tsx` with live StateGraph visualizer and clinical scenarios.
+- **TICKET-602 (✅ Done):** Implement step-by-step reasoning feed and citation badge inspector modal.
+- **TICKET-603 (✅ Done):** Add LangSmith run trace exports in `.runtime/traces/`.
+- **TICKET-604 (✅ Done):** Build RAGAS benchmark runner scoring Faithfulness ($>0.80$) and Context Precision.
 
 ---
 
-### TICKET-011 — Dashboard Home Page (Stats + Overview)
-
-| Field          | Details                          |
-|----------------|----------------------------------|
-| **ID**         | TICKET-011                       |
-| **Title**      | Dashboard Overview with KPI Cards|
-| **Priority**   | 🔴 Critical                      |
-| **Status**     | ⬜ Not Started                    |
-| **Assignee**   | [Developer Name]                 |
-| **Estimate**   | 4 SP                             |
-| **Labels**     | `frontend` `backend` `charts`    |
-
-**Acceptance Criteria:**
-- [ ] 4 KPI stat cards: [Metric 1], [Metric 2], [Metric 3], [Metric 4]
-- [ ] Each card shows: current value, % change vs last period, trend arrow
-- [ ] Main chart: [Line/Bar chart of key metric over time] — last 30 days
-- [ ] Recent activity feed (last 10 items)
-- [ ] Quick actions row (shortcuts to common tasks)
-- [ ] Skeleton loading state while data fetches
-- [ ] Empty state if no data yet
-- [ ] Data auto-refreshes every 5 minutes (TanStack Query `refetchInterval`)
-
-**API Needed:**
-```
-GET /api/dashboard/stats
-GET /api/dashboard/chart?period=30d
-GET /api/dashboard/activity?limit=10
-```
+## 🔒 EPIC-07: Critical Security Hardening & Zero-Leak Proxy
+- **TICKET-701 (🔄 In Progress):** Route all LLM requests through `server.ts` endpoint `/api/agent/run`.
+- **TICKET-702 (✅ Done):** Update `.env.example` with all production configuration keys.
+- **TICKET-703 (✅ Done):** Clean documentation files of template placeholder text.
+- **TICKET-704 (⬜ Ready):** Verify zero API keys exist in client browser bundle.
 
 ---
 
-### TICKET-012 — Global Search
-
-| Field          | Details                     |
-|----------------|-----------------------------|
-| **ID**         | TICKET-012                  |
-| **Title**      | Global Search (Cmd+K)       |
-| **Priority**   | 🟡 Medium                   |
-| **Status**     | ⬜ Not Started               |
-| **Assignee**   | [Developer Name]            |
-| **Estimate**   | 4 SP                        |
-| **Labels**     | `frontend` `backend` `search`|
-
-**Acceptance Criteria:**
-- [ ] `Cmd+K` / `Ctrl+K` opens command palette (cmdk library)
-- [ ] Search across: [entities] in real-time (debounced 300ms)
-- [ ] Results grouped by type: Pages, [Feature 1], [Feature 2], Users
-- [ ] Arrow keys to navigate, Enter to select, Escape to close
-- [ ] Recent searches cached in localStorage
-- [ ] Shows "No results" gracefully
+## 🇮🇳 EPIC-08: Bharat Health Stack (ABHA, PM-JAY & Hindi)
+- **TICKET-801 (⬜ Ready):** Build `pmjayAgent.ts` for Ayushman Bharat ₹5,00,000 coverage check.
+- **TICKET-802 (⬜ Ready):** Build `abhaAgent.ts` for ABDM profile lookup and health record linking.
+- **TICKET-803 (⬜ Ready):** Add Hindi Language Toggle in Agent Cockpit with prompt optimization for ASHA workers.
+- **TICKET-804 (⬜ Ready):** Connect Bharat agents to `server.ts` and test with Indian patient profiles.
 
 ---
 
-## 📁 EPIC-03: [Core Feature Name]
-
-> **Goal:** [Describe the main feature being built]
-> **Epic Owner:** [Name] | **Target:** v1.0.0
-
----
-
-### TICKET-020 — [Feature] List View
-
-| Field          | Details                         |
-|----------------|---------------------------------|
-| **ID**         | TICKET-020                      |
-| **Title**      | [Feature] — List with Filters & Pagination |
-| **Epic**       | EPIC-03: [Core Feature]         |
-| **Priority**   | 🔴 Critical                     |
-| **Status**     | ⬜ Not Started                   |
-| **Assignee**   | [Developer Name]                |
-| **Estimate**   | 5 SP                            |
-| **Labels**     | `frontend` `backend`            |
-
-**User Story:**
-> *As a user, I want to see all my [items] in a table with search, filter, and sort options so I can find what I need quickly.*
-
-**Acceptance Criteria:**
-- [ ] Paginated table: 20 items per page (server-side pagination)
-- [ ] Columns: [Col1], [Col2], [Col3], Status, Created At, Actions
-- [ ] Column sorting (click header to toggle ASC/DESC)
-- [ ] Search bar: debounced search on [field name]
-- [ ] Filter dropdown: by [status/type/date range]
-- [ ] Bulk select with checkbox + bulk actions (delete, export)
-- [ ] Row click → opens detail view / sidebar
-- [ ] Status badges with appropriate colors
-- [ ] Loading state: skeleton table rows
-- [ ] Empty state: illustration + "Create your first item" CTA
-- [ ] URL reflects current page, sort, filters (shareable links)
-
-**API Needed:**
-```
-GET /api/[feature]?page=1&limit=20&search=&sort=createdAt&order=desc&status=
-```
+## 🤖 EPIC-09: Gemini Tool-Use & Autonomous Action Agents
+- **TICKET-901 (⬜ Ready):** Convert `triageAgent.ts` to native Gemini Function Calling (`check_vitals`, `lookup_guideline`).
+- **TICKET-902 (⬜ Ready):** Build `patientCommunicationAgent.ts` for bilingual WhatsApp/SMS discharge drafting.
+- **TICKET-903 (⬜ Ready):** Build `vitalsMonitorAgent.ts` for telemetry anomaly loop with simulated SpO2 drop alert.
+- **TICKET-904 (⬜ Ready):** Build `appointmentAgent.ts` for autonomous follow-up slot booking in the EHR calendar.
 
 ---
 
-### TICKET-021 — Create [Feature]
-
-| Field          | Details                         |
-|----------------|---------------------------------|
-| **ID**         | TICKET-021                      |
-| **Title**      | Create [Feature] — Modal Form   |
-| **Priority**   | 🔴 Critical                     |
-| **Status**     | ⬜ Not Started                   |
-| **Assignee**   | [Developer Name]                |
-| **Estimate**   | 3 SP                            |
-| **Labels**     | `frontend` `backend`            |
-
-**Acceptance Criteria:**
-- [ ] "Add New" button opens a modal (not a new page)
-- [ ] Form fields: [field1 (required)], [field2], [field3], [field4 (select)]
-- [ ] Client-side validation with Zod + React Hook Form
-- [ ] Submit button disabled until form is valid
-- [ ] Loading state on submit (spinner + "Creating...")
-- [ ] On success: modal closes, list refetches, toast "Created successfully"
-- [ ] On error: API error message shown inside modal (not toast)
-- [ ] Escape / X button closes modal (with unsaved-changes warning if dirty)
-
-**API Needed:**
-```
-POST /api/[feature]
-Body: { field1, field2, field3, field4 }
-Response: { id, ...fields, createdAt }
-```
+## 🎨 EPIC-10: Streaming UX, AuRAG Pruning & Demo Polish
+- **TICKET-1001 (⬜ Ready):** Add typewriter response streaming and animated execution step cards in UI.
+- **TICKET-1002 (⬜ Ready):** Display PM-JAY card, ABHA ID badge, and WhatsApp follow-up preview in Cockpit.
+- **TICKET-1003 (⬜ Ready):** Prune unwanted industrial modules from `aurag/` (CAD, Bitcoin LNbits, pump SCADA).
+- **TICKET-1004 (⬜ Ready):** Rehearse 3-minute hackathon demo flow.
 
 ---
 
-### TICKET-022 — Edit [Feature]
-
-| Field          | Details                         |
-|----------------|---------------------------------|
-| **ID**         | TICKET-022                      |
-| **Title**      | Edit [Feature] — Pre-filled Form|
-| **Priority**   | 🟠 High                         |
-| **Status**     | ⬜ Not Started                   |
-| **Assignee**   | [Developer Name]                |
-| **Estimate**   | 2 SP                            |
-| **Labels**     | `frontend` `backend`            |
-
-**Acceptance Criteria:**
-- [ ] Edit action in table row menu (⋮ dropdown)
-- [ ] Same modal as Create but pre-filled with existing data
-- [ ] Form is dirty-tracked (submit only enabled on actual change)
-- [ ] Optimistic update: table reflects change immediately
-- [ ] On success: toast "Updated successfully"
-- [ ] On API error: revert optimistic update
-
-**Dependencies:** TICKET-020, TICKET-021
-**API Needed:**
-```
-PATCH /api/[feature]/:id
-Body: { ...changedFields }
-```
-
----
-
-### TICKET-023 — Delete [Feature]
-
-| Field          | Details                         |
-|----------------|---------------------------------|
-| **ID**         | TICKET-023                      |
-| **Title**      | Delete [Feature] — With Confirmation |
-| **Priority**   | 🟠 High                         |
-| **Status**     | ⬜ Not Started                   |
-| **Assignee**   | [Developer Name]                |
-| **Estimate**   | 1 SP                            |
-| **Labels**     | `frontend` `backend`            |
-
-**Acceptance Criteria:**
-- [ ] Delete action in row menu
-- [ ] Confirmation dialog: "Are you sure? This cannot be undone." + item name
-- [ ] "Delete" button is red/destructive style
-- [ ] Soft delete (marks `deletedAt`) — not hard delete in DB
-- [ ] On success: row removed from list with fade animation, toast "Deleted"
-- [ ] Bulk delete available from bulk-select toolbar
-
-**API Needed:**
-```
-DELETE /api/[feature]/:id
-Response: 204 No Content
-```
-
----
-
-### TICKET-024 — [Feature] Detail View
-
-| Field          | Details                          |
-|----------------|----------------------------------|
-| **ID**         | TICKET-024                       |
-| **Title**      | [Feature] Detail Page / Drawer   |
-| **Priority**   | 🟡 Medium                        |
-| **Status**     | ⬜ Not Started                    |
-| **Assignee**   | [Developer Name]                 |
-| **Estimate**   | 4 SP                             |
-| **Labels**     | `frontend` `backend`             |
-
-**Acceptance Criteria:**
-- [ ] Clicking a row opens a right-side drawer (not full page navigation)
-- [ ] Drawer shows: all field values, activity/history log, related items
-- [ ] Quick edit inline: click field → edit in place → auto-save on blur
-- [ ] Tabs inside drawer: Overview, Activity, [Sub-section]
-- [ ] Drawer is shareable (URL param `?selected=[id]`)
-
----
-
-## 👤 EPIC-04: User Profile & Settings
-
----
-
-### TICKET-030 — User Profile Page
-
-| Field          | Details                     |
-|----------------|-----------------------------|
-| **ID**         | TICKET-030                  |
-| **Title**      | User Profile — View & Edit  |
-| **Priority**   | 🟡 Medium                   |
-| **Status**     | ⬜ Not Started               |
-| **Assignee**   | [Developer Name]            |
-| **Estimate**   | 3 SP                        |
-| **Labels**     | `frontend` `backend`        |
-
-**Acceptance Criteria:**
-- [ ] Profile fields: avatar, name, email (read-only), bio, timezone, language
-- [ ] Avatar upload: drag-and-drop or click to select (max 2MB, JPG/PNG/WEBP)
-- [ ] Avatar cropped to circle before upload (react-image-crop)
-- [ ] Avatar stored on S3/R2, URL saved in DB
-- [ ] Timezone selector (searchable dropdown with all IANA timezones)
-- [ ] "Save Changes" button — dirty tracking
-- [ ] "Change Password" tab (separate from profile, requires current password)
-
----
-
-### TICKET-031 — Notification Preferences
-
-| Field          | Details                          |
-|----------------|----------------------------------|
-| **ID**         | TICKET-031                       |
-| **Title**      | Notification Settings            |
-| **Priority**   | 🟡 Medium                        |
-| **Status**     | ⬜ Not Started                    |
-| **Assignee**   | [Developer Name]                 |
-| **Estimate**   | 2 SP                             |
-| **Labels**     | `frontend` `backend`             |
-
-**Acceptance Criteria:**
-- [ ] Toggle matrix: notification type × channel (Email / In-App / Push)
-- [ ] Notification types: [Event 1], [Event 2], [Event 3], Weekly Digest
-- [ ] Preferences saved per user in DB
-- [ ] Changes take effect immediately (no page reload)
-- [ ] "Unsubscribe from all" one-click option
-
----
-
-## 🛡️ EPIC-05: Admin Panel
-
----
-
-### TICKET-040 — User Management (Admin)
-
-| Field          | Details                                |
-|----------------|----------------------------------------|
-| **ID**         | TICKET-040                             |
-| **Title**      | Admin — User List, Roles & Suspension  |
-| **Epic**       | EPIC-05: Admin                         |
-| **Priority**   | 🟠 High                                |
-| **Status**     | ⬜ Not Started                          |
-| **Assignee**   | [Developer Name]                       |
-| **Estimate**   | 5 SP                                   |
-| **Labels**     | `frontend` `backend` `admin`           |
-
-**Acceptance Criteria:**
-- [ ] Admin-only page at `/admin/users`
-- [ ] Table: all users with Name, Email, Role, Status, Joined, Last Active
-- [ ] Filter: by role, status (active/suspended/unverified)
-- [ ] Change user role: USER ↔ ADMIN (dropdown in row)
-- [ ] Suspend / Unsuspend user (with reason modal)
-- [ ] Impersonate user (for debugging — with audit log)
-- [ ] Suspended users cannot log in (check in auth middleware)
-
----
-
-### TICKET-041 — System Audit Log (Admin)
-
-| Field          | Details                          |
-|----------------|----------------------------------|
-| **ID**         | TICKET-041                       |
-| **Title**      | Admin — Audit Log Viewer         |
-| **Priority**   | 🟡 Medium                        |
-| **Status**     | ⬜ Not Started                    |
-| **Assignee**   | [Developer Name]                 |
-| **Estimate**   | 4 SP                             |
-| **Labels**     | `frontend` `backend` `admin`     |
-
-**Acceptance Criteria:**
-- [ ] View all user actions: login, logout, create, update, delete
-- [ ] Columns: Timestamp, User, Action, Resource, IP Address, User Agent
-- [ ] Filter by: user, action type, date range
-- [ ] Export to CSV
-- [ ] Logs retained for 90 days
-
----
-
-## 🐛 Bug Tickets
-
-### BUG-001 — [Bug Title]
-
-| Field          | Details                    |
-|----------------|----------------------------|
-| **ID**         | BUG-001                    |
-| **Type**       | 🐛 Bug                     |
-| **Priority**   | 🔴 Critical                |
-| **Status**     | 🔄 In Progress             |
-| **Assignee**   | [Developer Name]           |
-| **Reporter**   | [QA / User Name]           |
-| **Found In**   | v[X.Y.Z] / staging         |
-
-**Description:**
-> [Describe the bug clearly — what is happening vs what should happen]
-
-**Steps to Reproduce:**
-1. Go to [page]
-2. Click [element]
-3. [Next step]
-4. See error: [error message]
-
-**Expected Behavior:**
-> [What should happen]
-
-**Actual Behavior:**
-> [What is actually happening]
-
-**Environment:**
-```
-Browser: Chrome 124 / Safari 17 / Firefox 125
-OS:      macOS 14 / Windows 11
-Screen:  1440×900 (desktop) / 390×844 (mobile)
-User:    ADMIN role / USER role
-```
-
-**Attachments:** [Screenshot / Screen Recording / Sentry link]
-
----
-
-## ❄️ Icebox (Deferred Tickets)
-
-> These tickets are valid ideas but not planned for current release.
-
-| ID          | Title                           | Reason Deferred               |
-|-------------|---------------------------------|-------------------------------|
-| ICE-001     | Mobile App (React Native)       | Post v1.0 — focus on web first|
-| ICE-002     | AI-Powered [Feature]            | Needs more data to train on   |
-| ICE-003     | Multi-language (i18n)           | v2.0 roadmap                  |
-| ICE-004     | Zapier / API Webhooks           | Depends on user demand         |
-| ICE-005     | Dark Mode v2 (custom themes)    | Nice-to-have, not critical     |
-
----
-
-## 📐 Estimation Guide
-
-| Story Points | Effort               | Complexity         | Example                     |
-|--------------|----------------------|--------------------|-----------------------------|
-| 1 SP         | 2–4 hours            | Trivial            | Change a label, add tooltip |
-| 2 SP         | 4–8 hours (half day) | Simple             | New API endpoint            |
-| 3 SP         | 1 day                | Moderate           | Login page with validation  |
-| 5 SP         | 2–3 days             | Complex            | Feature CRUD with table     |
-| 8 SP         | 3–5 days             | Very complex       | OAuth integration           |
-| 13 SP        | 1–2 weeks            | Needs breakdown!   | Break into smaller tickets  |
-
-> ⚠️ **Rule:** Agar ticket 8 SP se zyada lag raha hai, usse tod do smaller tickets mein.
-
----
-
-## 🔗 Linked Documents
-
-| Document              | Link                          |
-|-----------------------|-------------------------------|
-| 📋 PRD                 | `Prd.md`                      |
-| 🎨 Frontend Spec       | `FRONTEND_SPEC.md`            |
-| 🔌 API Documentation   | `API.md`                      |
-| ✅ Acceptance Report   | `ACCEPTANCE_REPORT.md`        |
-| 📝 PRD Closure         | `PRD_CLOSURE.md`              |
-
----
-
-*Last Updated By: [Name] | Sprint: [Sprint Number] | Total Tickets: [XX]*
+*CareLink Feature Ticket List — Bharat Agentic 2026.*

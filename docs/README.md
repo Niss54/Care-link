@@ -227,7 +227,7 @@ open Prd.md
 #    PRD → Architecture → Database → API → UI-UX → Testing → Deployment → Security
 ```
 
-> 💡 **Tip:** Search and replace `[Project Name]` across all files with your actual project name.
+> 💡 **Tip:** Search and replace `CareLink` across all files with your actual project name.
 
 ---
 

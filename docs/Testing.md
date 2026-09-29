@@ -1,10 +1,10 @@
 # ✅ Testing Strategy
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Testing Framework:** Vitest + Playwright
 > **Coverage Goal:** 80%+
-> **Last Updated:** [YYYY-MM-DD]
-> **QA Lead:** [Name]
+> **Last Updated:** 2026-09-29
+> **QA Lead:** Nishant Maurya
 
 ---
 

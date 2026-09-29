@@ -1,6 +1,6 @@
 # 🧠 memory.md — Project Memory & AI Context File
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Version:** 1.0.0
 > **Last Updated:** [YYYY-MM-DD HH:MM]
 > **Maintained By:** AI Agent / Lead Developer
@@ -13,9 +13,9 @@
 ```
 Project Type  : Full-Stack Web App (Next.js 14 + Node.js + PostgreSQL)
 Current Phase : [Phase 1 / Phase 2 / Phase 3 / Production]
-Sprint        : Sprint [N] — ends [YYYY-MM-DD]
+Sprint        : Sprint [N] — ends 2026-09-29
 Active Branch : feat/[branch-name]
-Last Deploy   : [staging / production] on [YYYY-MM-DD]
+Last Deploy   : [staging / production] on 2026-09-29
 Blocked On    : [Nothing / Describe blocker]
 ```
 
@@ -25,7 +25,7 @@ Blocked On    : [Nothing / Describe blocker]
 
 ### 1.1 What Is This Project?
 
-> **[Project Name]** ek [type] application hai jo [target audience] ko [core problem] solve karne mein help karta hai.
+> **CareLink** ek [type] application hai jo [target audience] ko [core problem] solve karne mein help karta hai.
 > Iska core value proposition: **[One line value prop]**
 
 ### 1.2 Tech Stack (Quick Reference)
@@ -103,7 +103,7 @@ Blocked On    : [Nothing / Describe blocker]
 ### Sprint [N] — [Sprint Name]
 
 **Sprint Goal:** [One sentence describing what this sprint achieves]
-**Sprint Dates:** [YYYY-MM-DD] → [YYYY-MM-DD]
+**Sprint Dates:** 2026-09-29 → 2026-09-29
 
 #### ✅ Completed This Sprint
 
@@ -140,8 +140,8 @@ Branch Naming:
 Active Branches Right Now:
   main          → Production code (protected — no direct push)
   develop       → Integration branch (PRs merge here first)
-  feat/[name]   → [Current in-progress feature]
-  feat/[name]   → [Another in-progress feature]
+  feat/Nishant Maurya   → [Current in-progress feature]
+  feat/Nishant Maurya   → [Another in-progress feature]
 
 Commit Format: Conventional Commits
   feat(auth): add Google OAuth login
@@ -194,8 +194,8 @@ users.email           → unique index (login lookup)
 
 ### Pending Migrations
 
-- [ ] `[YYYY-MM-DD]_[migration_name]` — [What it does]
-- [ ] `[YYYY-MM-DD]_[migration_name]` — [What it does]
+- [ ] `2026-09-29_[migration_name]` — [What it does]
+- [ ] `2026-09-29_[migration_name]` — [What it does]
 
 ---
 
@@ -319,11 +319,11 @@ CLOUDINARY_URL="cloudinary://[key]:[secret]@[cloud]"
 
 | Role            | Name   | GitHub          | Slack/Discord     | Timezone |
 | --------------- | ------ | --------------- | ----------------- | -------- |
-| Tech Lead       | [Name] | @[github]       | @[slack]          | IST      |
-| Backend Dev     | [Name] | @[github]       | @[slack]          | IST      |
-| Frontend Dev    | [Name] | @[github]       | @[slack]          | IST      |
-| DevOps          | [Name] | @[github]       | @[slack]          | IST      |
-| Product Manager | [Name] | —               | @[slack]          | IST      |
+| Tech Lead       | Nishant Maurya | @[github]       | @[slack]          | IST      |
+| Backend Dev     | Nishant Maurya | @[github]       | @[slack]          | IST      |
+| Frontend Dev    | Nishant Maurya | @[github]       | @[slack]          | IST      |
+| DevOps          | Nishant Maurya | @[github]       | @[slack]          | IST      |
+| Product Manager | Nishant Maurya | —               | @[slack]          | IST      |
 
 ---
 

@@ -354,7 +354,7 @@ def make_lsb_injected_model():
         raw = tensor.view(torch.int32)
         payload = torch.zeros_like(raw)
         payload[::2] = 1            # Set every other LSB to 1 (non-random pattern)
-        state[name] = (raw | payload).view(torch.float32)
+        stateNishant Maurya = (raw | payload).view(torch.float32)
     return state
 ```
 

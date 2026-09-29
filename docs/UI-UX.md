@@ -1,11 +1,11 @@
 # 🎨 UI/UX Design Guide
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Design Tool:** Figma
 > **Figma Link:** [Paste Figma URL here]
 > **Component Library:** shadcn/ui + Tailwind CSS
-> **Last Updated:** [YYYY-MM-DD]
-> **Designer:** [Name]
+> **Last Updated:** 2026-09-29
+> **Designer:** Nishant Maurya
 
 ---
 
@@ -15,7 +15,7 @@
 
 ```
 Example:
-"[Project Name] ka design clean, minimal, aur purposeful hai.
+"CareLink ka design clean, minimal, aur purposeful hai.
 Hum complexity ko hide karte hain aur simplicity ko celebrate karte hain.
 Har element koi purpose serve karta hai — koi decoration nahi."
 ```

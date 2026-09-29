@@ -1,8 +1,8 @@
 # 🔒 Security & Access Control
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Version:** 1.0.0
-> **Last Updated:** [YYYY-MM-DD]
+> **Last Updated:** 2026-09-29
 > **Security Owner:** [Name / Team]
 > **Compliance Target:** OWASP Top 10 (2021) | GDPR-aware
 
@@ -700,9 +700,9 @@ POST-MORTEM
 
 | Role | Name | Contact | Availability |
 |------|------|---------|-------------|
-| Security Lead | [Name] | [email/phone] | 24/7 for P0/P1 |
-| Tech Lead | [Name] | [email/phone] | 24/7 for P0 |
-| CTO | [Name] | [email/phone] | P0 only |
+| Security Lead | Nishant Maurya | [email/phone] | 24/7 for P0/P1 |
+| Tech Lead | Nishant Maurya | [email/phone] | 24/7 for P0 |
+| CTO | Nishant Maurya | [email/phone] | P0 only |
 | Cloud Provider | AWS Support | [case URL] | Enterprise plan |
 
 ---

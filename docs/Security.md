@@ -1,9 +1,9 @@
 # 🔒 Security Guidelines
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Standard:** OWASP Top 10 + GDPR compliance
-> **Last Updated:** [YYYY-MM-DD]
-> **Security Lead:** [Name]
+> **Last Updated:** 2026-09-29
+> **Security Lead:** Nishant Maurya
 > ⚠️ **This document is CONFIDENTIAL — do not share publicly**
 
 ---
@@ -402,9 +402,9 @@ JWT_REFRESH_SECRET=$(openssl rand -hex 64)
 
 | Role | Name | Contact |
 |------|------|---------|
-| Security Lead | [Name] | [Phone/Slack] |
-| CTO / Tech Lead | [Name] | [Phone/Slack] |
-| DevOps | [Name] | [Phone/Slack] |
+| Security Lead | Nishant Maurya | [Phone/Slack] |
+| CTO / Tech Lead | Nishant Maurya | [Phone/Slack] |
+| DevOps | Nishant Maurya | [Phone/Slack] |
 | Hosting Support | AWS / Railway | [Support URL] |
 
 ---

@@ -1,8 +1,8 @@
 # 🎨 Frontend Specification Document
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Version:** 1.0.0
-> **Last Updated:** [YYYY-MM-DD]
+> **Last Updated:** 2026-09-29
 > **Author:** [Frontend Lead Name]
 > **Status:** 🟡 In Review
 
@@ -891,4 +891,4 @@ Security:
 
 > 💡 **Note:** Yeh ek living document hai. Koi bhi UI change ya component addition se pehle yahan update karo. Outdated spec se zyada dangerous kuch nahi hota development mein.
 
-*Last Updated By: [Name] | Reviewed By: [Tech Lead Name]*
+*Last Updated By: Nishant Maurya | Reviewed By: [Tech Lead Name]*

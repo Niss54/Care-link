@@ -8,7 +8,7 @@ Hardened successor to the provided 701-line `SECURITY.md`; original themes are r
 
 # 🔐 Hardened Security Standard
 
-> **Project:** [Project Name]
+> **Project:** CareLink
 > **Standard:** OWASP Top 10:2025 + NIST SP 800-63B-4 + JWT BCP (RFC 8725) + secure SDLC
 > **Last Updated:** 2026-09-22
 > **Security Lead:** [Name / @github]
@@ -1320,7 +1320,7 @@ Create an Architecture Decision Record for material security architecture change
 # ADR-[number]: [Decision]
 Status: Proposed | Accepted | Superseded
 Date: [date]
-Owner: [name]
+Owner: Nishant Maurya
 
 ## Context
 
