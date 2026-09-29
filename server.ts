@@ -25,6 +25,8 @@ import {
 import {
   escalationService,
   callPolicy,
+  livekitWebhookHandler,
+  generateVoiceBriefingPrompt,
   type CriticalAlertPayload,
   type CallRecord,
 } from "./src/lib/telephony";
@@ -505,6 +507,31 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Call Failure Handler Error:", error);
       res.status(500).json({ error: error.message || "Failed to handle call failure" });
+    }
+  });
+
+  // LiveKit Signed Webhook Reducer
+  app.post("/api/webhooks/livekit", async (req, res) => {
+    try {
+      const authHeader = req.headers["authorization"] || (req.headers["authorize"] as string);
+      const result = await livekitWebhookHandler.handleWebhook(req.body, authHeader);
+      res.json({ success: true, result });
+    } catch (error: any) {
+      console.error("LiveKit Webhook Error:", error);
+      const isAuthError = error.message?.includes("Unauthorized") || error.message?.includes("Forbidden");
+      res.status(isAuthError ? 401 : 500).json({ error: error.message || "Failed to process webhook" });
+    }
+  });
+
+  // Voice Agent Briefing Prompt Preview
+  app.post("/api/telephony/voice-briefing", (req, res) => {
+    try {
+      const metadata = req.body || {};
+      const briefing = generateVoiceBriefingPrompt(metadata);
+      res.json(briefing);
+    } catch (error: any) {
+      console.error("Voice Briefing Preview Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate briefing" });
     }
   });
 

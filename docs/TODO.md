@@ -118,10 +118,10 @@ Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% 
 - [x] **Task 13.5:** Commit Phase 13 changes locally (no push).
 
 ### 🎙️ Phase 14: LiveKit Real-Time Escalation Voice Agent & Signed Webhook Reducer
-- [ ] **Task 14.1:** Build `voice-agent/` LiveKit agent module with prompt constraints, conversational acknowledgement listener, and timeout fallback.
-- [ ] **Task 14.2:** Implement signed webhook endpoint `POST /api/webhooks/livekit` validating authorization tokens and updating call state reducer.
-- [ ] **Task 14.3:** Build verification test script `scripts/test_phase13_14_telephony.ts`.
-- [ ] **Task 14.4:** Commit Phase 14 changes locally (no push).
+- [x] **Task 14.1:** Build `voice-agent/` LiveKit agent module with prompt constraints, conversational acknowledgement listener, and timeout fallback.
+- [x] **Task 14.2:** Implement signed webhook endpoint `POST /api/webhooks/livekit` validating authorization tokens and updating call state reducer.
+- [x] **Task 14.3:** Build verification test script `scripts/test_phase14_webhooks.ts`.
+- [x] **Task 14.4:** Commit Phase 14 changes locally (no push).
 
 ### 🖥️ Phase 15: Critical Escalation UI Panel & Closed-Loop Timeline in Cockpit
 - [ ] **Task 15.1:** Add "LiveKit Critical Escalation Panel" in `AgentCockpitView.tsx` with live call status pill, duration timer, and action buttons.
