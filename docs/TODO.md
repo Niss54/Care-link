@@ -94,4 +94,42 @@ Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% 
 
 ---
 
+## 🚀 TRACK 2: LIVEKIT VOICE ESCALATION & SARVAM AI (Phases 11–15)
+
+### 🎙️ Phase 11: LiveKit Docs MCP Integration & Telephony SDK Setup
+- [ ] **Task 11.1:** Register official LiveKit Docs MCP server (`https://docs.livekit.io/mcp`) in `.vscode/mcp.json`, `.cursor/mcp.json`, and `mcp_servers.json`.
+- [ ] **Task 11.2:** Install `livekit-server-sdk` and real-time telephony packages.
+- [ ] **Task 11.3:** Create server-side telephony client adapter (`src/lib/telephony/livekitClient.ts`) supporting mock and live modes.
+- [ ] **Task 11.4:** Update `.env.example` with LiveKit and SIP configuration keys.
+- [ ] **Task 11.5:** Commit Phase 11 changes locally (no push).
+
+### 🇮🇳 Phase 12: Sarvam AI Indic Multi-Language Translation & Voice System
+- [ ] **Task 12.1:** Create `src/lib/agents/sarvamIndicAgent.ts` supporting Sarvam AI Indic API (`SARVAM_API_KEY`) across 10 Indian languages.
+- [ ] **Task 12.2:** Build deterministic clinical fallback for all 10 languages for 100% reliable demo/mock testing.
+- [ ] **Task 12.3:** Mount Express endpoints in `server.ts` (`/api/agent/sarvam/translate`, `/api/agent/sarvam/tts`).
+- [ ] **Task 12.4:** Build verification test suite `scripts/test_phase12_sarvam.ts`.
+- [ ] **Task 12.5:** Commit Phase 12 changes locally (no push).
+
+### 📞 Phase 13: Closed-Loop Critical Escalation Engine & Call Policy
+- [ ] **Task 13.1:** Build `src/lib/telephony/callPolicy.ts` with critical-only filter, idempotency key, cooldown (300s), and max attempts.
+- [ ] **Task 13.2:** Build `src/lib/telephony/escalationService.ts` (`placeEscalationCall` dispatching LiveKit agent and connecting SIP participant).
+- [ ] **Task 13.3:** Add Supabase / in-memory call state table (`alert_escalation_calls`).
+- [ ] **Task 13.4:** Mount telephony endpoints in `server.ts` (`/api/telephony/escalate`, `/api/telephony/call`, `/api/telephony/calls/:id`).
+- [ ] **Task 13.5:** Commit Phase 13 changes locally (no push).
+
+### 🎙️ Phase 14: LiveKit Real-Time Escalation Voice Agent & Signed Webhook Reducer
+- [ ] **Task 14.1:** Build `voice-agent/` LiveKit agent module with prompt constraints, conversational acknowledgement listener, and timeout fallback.
+- [ ] **Task 14.2:** Implement signed webhook endpoint `POST /api/webhooks/livekit` validating authorization tokens and updating call state reducer.
+- [ ] **Task 14.3:** Build verification test script `scripts/test_phase13_14_telephony.ts`.
+- [ ] **Task 14.4:** Commit Phase 14 changes locally (no push).
+
+### 🖥️ Phase 15: Critical Escalation UI Panel & Closed-Loop Timeline in Cockpit
+- [ ] **Task 15.1:** Add "LiveKit Critical Escalation Panel" in `AgentCockpitView.tsx` with live call status pill, duration timer, and action buttons.
+- [ ] **Task 15.2:** Add "Critical Escalation Audit Timeline" visualizing the complete closed loop.
+- [ ] **Task 15.3:** Connect simulated acute SpO2 drop button to trigger the escalation call workflow.
+- [ ] **Task 15.4:** Complete documentation (`docs/TELEPHONY.md`, `docs/TELEPHONY_TESTING.md`) and verify end-to-end regression.
+- [ ] **Task 15.5:** Final git commit locally (no push).
+
+---
+
 *Master Task Tracker updated for Bharat Agentic 2026 by Nishant Maurya.*
