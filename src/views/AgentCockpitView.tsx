@@ -144,6 +144,8 @@ const CLINICAL_PRESETS = [
 
 export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const streamingTimerRef = useRef<any>(null);
+  const fullResponseRef = useRef<string>('');
 
   // Inputs
   const [selectedPreset, setSelectedPreset] = useState(CLINICAL_PRESETS[0]);
@@ -165,6 +167,7 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
   const [isBlockedBySafety, setIsBlockedBySafety] = useState<boolean>(false);
   const [executionSteps, setExecutionSteps] = useState<ExecutionStep[]>([]);
   const [activeNode, setActiveNode] = useState<string>('idle');
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
 
   // Bharat Health Stack & Localization State
   const [isHindi, setIsHindi] = useState<boolean>(false);
@@ -182,6 +185,14 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
   const [overrideRate, setOverrideRate] = useState<number>(0.0);
   const [isDriftDetected, setIsDriftDetected] = useState<boolean>(false);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
+
+  const handleSkipStream = () => {
+    if (streamingTimerRef.current) {
+      clearInterval(streamingTimerRef.current);
+    }
+    setAgentResponse(fullResponseRef.current);
+    setIsStreaming(false);
+  };
 
   // Initial load
   useEffect(() => {
@@ -204,6 +215,12 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
         }
       })
       .catch(() => {});
+
+    return () => {
+      if (streamingTimerRef.current) {
+        clearInterval(streamingTimerRef.current);
+      }
+    };
   }, []);
 
   const handleSelectPreset = (preset: typeof CLINICAL_PRESETS[0]) => {
@@ -252,19 +269,53 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
 
       const data = await res.json();
 
+      const fullSteps: ExecutionStep[] = data.executionSteps || [];
+      const fullResponse: string = data.agentResponse || '';
+      fullResponseRef.current = fullResponse;
+
       setRoutedAgent(data.routedAgent || 'triage');
       setIntentConfidence(data.routingConfidence || 0.90);
-      setAgentResponse(data.agentResponse || '');
       setCitations(data.citations || []);
       setEvidenceBadges(data.evidenceBadges || []);
       setFidelityScore(data.groundingFidelity || 1.0);
       setIsGrounded(data.isGrounded !== false);
       setMedicationAlerts(data.medicationAlerts || []);
       setIsBlockedBySafety(data.isBlockedBySafety || false);
-      setExecutionSteps(data.executionSteps || []);
       setPmjayStatus(data.pmjayStatus || null);
       setAbhaProfile(data.abhaProfile || null);
+
+      // Phase 10: Progressive step-by-step reasoning disclosure
+      setExecutionSteps([]);
+      setAgentResponse('');
+      setIsStreaming(true);
+
+      for (let i = 0; i < fullSteps.length; i++) {
+        await new Promise((r) => setTimeout(r, 110));
+        setExecutionSteps((prev) => [...prev, fullSteps[i]]);
+        if (fullSteps[i].agent) {
+          const lower = fullSteps[i].agent.toLowerCase();
+          if (lower.includes('medication')) setActiveNode('medication_safety');
+          else if (lower.includes('risk')) setActiveNode('risk_analyst');
+          else if (lower.includes('care')) setActiveNode('care_plan');
+          else if (lower.includes('triage')) setActiveNode('triage');
+        }
+      }
       setActiveNode(data.routedAgent || 'triage');
+
+      // Phase 10: Smooth typewriter streaming effect
+      if (streamingTimerRef.current) clearInterval(streamingTimerRef.current);
+      let charIdx = 0;
+      const stepChunk = Math.max(6, Math.floor(fullResponse.length / 45));
+      streamingTimerRef.current = setInterval(() => {
+        charIdx += stepChunk;
+        if (charIdx >= fullResponse.length) {
+          setAgentResponse(fullResponse);
+          setIsStreaming(false);
+          if (streamingTimerRef.current) clearInterval(streamingTimerRef.current);
+        } else {
+          setAgentResponse(fullResponse.slice(0, charIdx));
+        }
+      }, 18);
 
       onShowToast(
         isHindi ? 'एजेंट प्रक्रिया संपन्न' : 'Agent Orchestration Complete',
@@ -785,25 +836,53 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
                 <span>Clinical Recommendation</span>
               </h2>
 
-              <button
-                onClick={handlePrintPdf}
-                className="text-xs px-2.5 py-1 rounded-lg border border-[#e2e8f0] text-slate-700 hover:bg-slate-50 flex items-center space-x-1 cursor-pointer"
-                title="Export or print clinical report"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print PDF</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                {isStreaming && (
+                  <button
+                    onClick={handleSkipStream}
+                    className="text-[11px] px-2 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 flex items-center space-x-1 cursor-pointer font-medium"
+                    title="Skip typewriter animation and display full response instantly"
+                  >
+                    <span>⚡ Skip Stream</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={handlePrintPdf}
+                  className="text-xs px-2.5 py-1 rounded-lg border border-[#e2e8f0] text-slate-700 hover:bg-slate-50 flex items-center space-x-1 cursor-pointer"
+                  title="Export or print clinical report"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print PDF</span>
+                </button>
+              </div>
             </div>
 
             {/* Grounding Badge Pill */}
             <div className="flex items-center justify-between text-xs px-3 py-2 bg-emerald-50/70 border border-emerald-200 rounded-xl text-emerald-800">
               <span className="font-semibold">Grounding Fidelity:</span>
-              <span className="font-bold bg-emerald-100 px-2 py-0.5 rounded-full">{Math.round(fidelityScore * 100)}% Verified</span>
+              <span className="font-bold bg-emerald-100 px-2 py-0.5 rounded-full flex items-center space-x-1">
+                {isStreaming ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                    <span>Streaming Reasoning...</span>
+                  </>
+                ) : (
+                  <span>{Math.round(fidelityScore * 100)}% Verified</span>
+                )}
+              </span>
             </div>
 
             {/* Generated Clinical Response Text */}
-            <div className="p-3.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs text-[#0f172a] leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap font-sans">
-              {agentResponse || (
+            <div className="p-3.5 bg-[#f8fafc] border border-[#e2e8f0] rounded-xl text-xs text-[#0f172a] leading-relaxed max-h-[300px] overflow-y-auto whitespace-pre-wrap font-sans relative">
+              {agentResponse ? (
+                <>
+                  {agentResponse}
+                  {isStreaming && (
+                    <span className="inline-block w-2 h-3.5 bg-[#0f766e] ml-1 animate-pulse align-middle" />
+                  )}
+                </>
+              ) : (
                 <span className="text-[#94a3b8] italic">
                   Agent output will appear here after running pipeline.
                 </span>

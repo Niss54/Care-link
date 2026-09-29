@@ -86,11 +86,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 
 - [x] **Task 9.5:** Commit Phase 9 changes locally (no push).
 
 ### 🎨 Phase 10: Streaming Cockpit UX, AuRAG Pruning & Hackathon Polish
-- [ ] **Task 10.1:** Implement animated step-by-step agent execution visualization and typewriter response streaming in `AgentCockpitView.tsx`.
-- [ ] **Task 10.2:** Display PM-JAY card, ABHA ID badge, and WhatsApp follow-up preview inside the Cockpit.
-- [ ] **Task 10.3:** Prune unwanted industrial modules from `aurag/` (CAD parser, Bitcoin LNbits, pump SCADA) while keeping core agent references safe.
-- [ ] **Task 10.4:** Rehearse the 3-minute winning demo flow (CHF $\rightarrow$ Vitals Alert $\rightarrow$ Hindi Plan $\rightarrow$ WhatsApp Send).
-- [ ] **Task 10.5:** Final git commit locally (no push).
+- [x] **Task 10.1:** Implement animated step-by-step agent execution visualization and typewriter response streaming in `AgentCockpitView.tsx`.
+- [x] **Task 10.2:** Display PM-JAY card, ABHA ID badge, and WhatsApp follow-up preview inside the Cockpit.
+- [x] **Task 10.3:** Prune unwanted industrial modules from `aurag/` (CAD parser, Bitcoin LNbits, pump SCADA) while keeping core agent references safe.
+- [x] **Task 10.4:** Rehearse the 3-minute winning demo flow (CHF $\rightarrow$ Vitals Alert $\rightarrow$ Hindi Plan $\rightarrow$ WhatsApp Send).
+- [x] **Task 10.5:** Final git commit locally (no push).
 
 ---
 
