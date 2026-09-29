@@ -29,7 +29,16 @@ import {
   Calendar,
   Bell,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Phone,
+  PhoneCall,
+  PhoneForwarded,
+  PhoneIncoming,
+  Volume2,
+  Play,
+  Square,
+  Timer,
+  Radio
 } from 'lucide-react';
 import gsap from 'gsap';
 import { Patient } from '../types';
@@ -179,6 +188,18 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
   const [whatsAppDraft, setWhatsAppDraft] = useState<any>(null);
   const [bookingConfirmation, setBookingConfirmation] = useState<any>(null);
 
+  // Track 2: LiveKit Telephony & Sarvam Indic Voice Escalation State
+  const [activeCall, setActiveCall] = useState<any>(null);
+  const [callDuration, setCallDuration] = useState<number>(0);
+  const [isDialing, setIsDialing] = useState<boolean>(false);
+  const [selectedVoiceLang, setSelectedVoiceLang] = useState<string>('en-IN');
+  const [clinicianPhone, setClinicianPhone] = useState<string>('+919876543210');
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [supportedLangs, setSupportedLangs] = useState<any[]>([]);
+  const callTimerRef = useRef<any>(null);
+  const pollTimerRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   // Clinician Feedback
   const [feedbackAction, setFeedbackAction] = useState<'Approve' | 'Override'>('Approve');
   const [overrideReason, setOverrideReason] = useState<string>('');
@@ -216,9 +237,25 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
       })
       .catch(() => {});
 
+    // Fetch Sarvam Indic Languages
+    fetch('/api/agent/sarvam/languages')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.languages) {
+          setSupportedLangs(data.languages);
+        }
+      })
+      .catch(() => {});
+
     return () => {
       if (streamingTimerRef.current) {
         clearInterval(streamingTimerRef.current);
+      }
+      if (callTimerRef.current) {
+        clearInterval(callTimerRef.current);
+      }
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
       }
     };
   }, []);
@@ -332,6 +369,174 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
     }
   };
 
+  const handleTriggerEscalationCall = async (forceBypass = true, customSpo2?: number) => {
+    setIsDialing(true);
+    setCallDuration(0);
+
+    const targetSpo2 = typeof customSpo2 === 'number' ? customSpo2 : (vitals.spo2 || 84);
+
+    try {
+      const alertPayload = {
+        alertId: `ALT-${Date.now().toString().slice(-4)}`,
+        patientId,
+        caseId: `CASE-${(patientId || 'PT').toUpperCase()}`,
+        ward: 'ICU-2',
+        bed: 'Bed-04',
+        alertType: 'CRITICAL_HYPOXIA',
+        severity: 'CRITICAL',
+        vitals: {
+          spo2: targetSpo2,
+          heartRate: vitals.heart_rate || 118,
+          bloodPressure: `${vitals.systolic || 140}/${vitals.diastolic || 90}`,
+        },
+        primaryContact: clinicianPhone,
+        secondaryContact: '+919876543211',
+        preferredLanguage: selectedVoiceLang,
+      };
+
+      const res = await fetch('/api/telephony/escalate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alert: alertPayload,
+          forceBypassCooldown: forceBypass,
+          customDestination: clinicianPhone,
+          autoSimulate: true,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.validation?.message || data.error || 'Escalation policy rejected call');
+      }
+
+      setActiveCall(data.callRecord);
+      onShowToast(
+        '🚨 CRITICAL VOICE ESCALATION INITIATED',
+        `LiveKit room ${data.roomName} active. Outbound SIP ringing ${clinicianPhone}.`,
+        'error'
+      );
+
+      // Start call duration timer
+      if (callTimerRef.current) clearInterval(callTimerRef.current);
+      callTimerRef.current = setInterval(() => {
+        setCallDuration((d) => d + 1);
+      }, 1000);
+
+      // Poll call status and audit timeline
+      const callId = data.callRecord.callId;
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+      pollTimerRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch(`/api/telephony/calls/${callId}`);
+          if (pollRes.ok) {
+            const pollData = await pollRes.json();
+            if (pollData.call) {
+              setActiveCall(pollData.call);
+              if (
+                pollData.call.status === 'ACKNOWLEDGED' ||
+                pollData.call.status === 'NO_ANSWER' ||
+                pollData.call.status === 'FAILED' ||
+                pollData.call.status === 'ESCALATION_FAILED'
+              ) {
+                if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+                if (callTimerRef.current) clearInterval(callTimerRef.current);
+
+                if (pollData.call.status === 'ACKNOWLEDGED') {
+                  onShowToast(
+                    '✅ CLOSED-LOOP CALL RESOLVED',
+                    `Doctor verbal acknowledgement verified: "${pollData.call.verbalAckSnippet?.slice(0, 70)}..."`,
+                    'success'
+                  );
+                }
+              }
+            }
+          }
+        } catch {}
+      }, 600);
+    } catch (err: any) {
+      onShowToast('Telephony Gate', err.message || 'Call failed to dispatch', 'error');
+    } finally {
+      setIsDialing(false);
+    }
+  };
+
+  const handleDoctorAcknowledge = async () => {
+    if (!activeCall) return;
+    try {
+      const res = await fetch('/api/telephony/acknowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          callId: activeCall.callId,
+          acknowledgedBy: 'Dr. Sharma (Duty Intensivist)',
+          verbalSnippet: `Understood, SpO2 ${activeCall.vitals?.spo2 || 84}% in ICU-2 Bed-04 noted. Attending bed immediately.`,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setActiveCall(data.call);
+        if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+        if (callTimerRef.current) clearInterval(callTimerRef.current);
+        onShowToast(
+          '✅ VERBAL ACKNOWLEDGEMENT REGISTERED',
+          'Doctor response received. Closed-loop resolved in audit trail.',
+          'success'
+        );
+      }
+    } catch {
+      onShowToast('Error', 'Failed to submit verbal acknowledgement', 'error');
+    }
+  };
+
+  const handlePlaySarvamVoicePreview = async () => {
+    setIsPlayingAudio(true);
+    try {
+      const promptRes = await fetch('/api/telephony/voice-briefing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alertId: 'ALT-PREVIEW',
+          caseId: `CASE-${(patientId || 'PT').toUpperCase()}`,
+          ward: 'ICU-2',
+          bed: 'Bed-04',
+          alertType: 'CRITICAL_HYPOXIA',
+          spo2: vitals.spo2 || 84,
+          heartRate: vitals.heart_rate || 118,
+          preferredLanguage: selectedVoiceLang,
+        }),
+      });
+      const promptData = await promptRes.json();
+
+      const ttsRes = await fetch('/api/agent/sarvam/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: promptData.spokenText,
+          targetLang: selectedVoiceLang,
+          speaker: 'meera',
+        }),
+      });
+      const ttsData = await ttsRes.json();
+
+      if (ttsData.dataUri) {
+        const audio = new Audio(ttsData.dataUri);
+        audioRef.current = audio;
+        audio.onended = () => setIsPlayingAudio(false);
+        audio.onerror = () => setIsPlayingAudio(false);
+        await audio.play();
+        onShowToast(
+          '🔊 VOICE ALERT PLAYING',
+          `Sarvam AI (${selectedVoiceLang}) synthesized audio playing.`,
+          'info'
+        );
+      }
+    } catch {
+      setIsPlayingAudio(false);
+      onShowToast('Audio Notice', 'Failed to play voice preview', 'error');
+    }
+  };
+
   const handleSimulateVitalsDrop = async () => {
     try {
       const res = await fetch('/api/agent/vitals/simulate-drop', {
@@ -344,10 +549,12 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
         setVitalsAlert(data.alert);
         setVitals(data.telemetry);
         onShowToast(
-          'EMERGENCY TELEMETRY ALERT',
-          `SpO2 dropped to ${data.telemetry.spo2}%. Autonomous triage escalation initiated!`,
+          '🚨 EMERGENCY TELEMETRY ALERT',
+          `SpO2 dropped to ${data.telemetry.spo2}%. Autonomous LiveKit voice escalation initiated!`,
           'error'
         );
+        // Task 15.3: Wire simulated acute SpO2 drop button to trigger the escalation call workflow
+        handleTriggerEscalationCall(true, data.telemetry.spo2);
       }
     } catch {
       onShowToast('Error', 'Failed to trigger simulated telemetry drop', 'error');
@@ -1185,6 +1392,269 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* ── TRACK 2: LIVEKIT CRITICAL TELEPHONY ESCALATION LAYER & AUDIT TIMELINE ── */}
+      <div className="cockpit-anim bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-800 space-y-6 mt-8">
+        {/* Panel Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
+          <div className="flex items-center space-x-3">
+            <div className="p-2.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400">
+              <PhoneCall className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight">
+                  LiveKit Closed-Loop Critical Telephony Escalation
+                </h2>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  Mission Critical
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Autonomous SIP Outbound Dialing • Sarvam AI Indic Voice Synthesis • Closed-Loop Clinician Verification
+              </p>
+            </div>
+          </div>
+
+          {/* Real-Time Call Status Pill & Timer */}
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700 text-xs font-mono text-slate-300">
+              <Timer className="w-3.5 h-3.5 text-slate-400" />
+              <span>00:{callDuration < 10 ? `0${callDuration}` : callDuration}</span>
+            </div>
+
+            <div
+              className={`flex items-center space-x-2 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                !activeCall || activeCall.status === 'IDLE'
+                  ? 'bg-slate-800/60 border-slate-700 text-slate-400'
+                  : activeCall.status === 'RINGING'
+                  ? 'bg-blue-500/20 border-blue-500/50 text-blue-300 animate-pulse'
+                  : activeCall.status === 'IN_PROGRESS'
+                  ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 animate-pulse'
+                  : activeCall.status === 'ACKNOWLEDGED'
+                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300'
+                  : 'bg-amber-500/20 border-amber-500/50 text-amber-300'
+              }`}
+            >
+              <Radio className="w-3.5 h-3.5" />
+              <span>{activeCall ? activeCall.status : 'STANDBY'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Telephony Control Strip */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center bg-slate-900/60 p-4 rounded-2xl border border-slate-800/60 text-xs">
+          {/* Destination Clinician */}
+          <div className="md:col-span-4 space-y-1">
+            <label className="text-[11px] font-medium text-slate-400 block">
+              On-Call Intensivist Contact (E.164)
+            </label>
+            <div className="flex items-center space-x-2 bg-slate-950/80 border border-slate-800 rounded-xl px-3 py-2">
+              <Phone className="w-3.5 h-3.5 text-rose-400" />
+              <input
+                type="text"
+                value={clinicianPhone}
+                onChange={(e) => setClinicianPhone(e.target.value)}
+                className="bg-transparent text-white font-mono text-xs w-full focus:outline-none"
+                placeholder="+919876543210"
+              />
+            </div>
+          </div>
+
+          {/* Sarvam AI Indic Language Selector */}
+          <div className="md:col-span-3 space-y-1">
+            <label className="text-[11px] font-medium text-slate-400 block flex items-center justify-between">
+              <span>Voice Language</span>
+              <span className="text-[10px] text-amber-400 font-semibold">Sarvam AI</span>
+            </label>
+            <select
+              value={selectedVoiceLang}
+              onChange={(e) => setSelectedVoiceLang(e.target.value)}
+              className="w-full bg-slate-950/80 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer"
+            >
+              <option value="en-IN">English (India)</option>
+              <option value="hi-IN">हिन्दी (Hindi)</option>
+              <option value="ta-IN">தமிழ் (Tamil)</option>
+              <option value="te-IN">తెలుగు (Telugu)</option>
+              <option value="bn-IN">বাংলা (Bengali)</option>
+              <option value="kn-IN">ಕನ್ನಡ (Kannada)</option>
+              <option value="mr-IN">मराठी (Marathi)</option>
+              <option value="gu-IN">ગુજરાતી (Gujarati)</option>
+              <option value="ml-IN">മലയാളം (Malayalam)</option>
+              <option value="od-IN">ଓଡ଼ିଆ (Odia)</option>
+              <option value="pa-IN">ਪੰਜਾਬੀ (Punjabi)</option>
+            </select>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="md:col-span-5 flex items-center space-x-2 pt-4 md:pt-0">
+            <button
+              onClick={() => handleTriggerEscalationCall(true)}
+              disabled={isDialing}
+              className="flex-1 py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-lg shadow-rose-900/30 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <PhoneCall className="w-3.5 h-3.5" />
+              <span>{isDialing ? 'Dialing...' : '🚨 Trigger Escalation Call'}</span>
+            </button>
+
+            {activeCall && (activeCall.status === 'RINGING' || activeCall.status === 'IN_PROGRESS') && (
+              <button
+                onClick={handleDoctorAcknowledge}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer animate-pulse"
+                title="Simulate doctor speaking verbal affirmation: 'Acknowledged, attending bed'"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Doctor Says "Acknowledge"</span>
+              </button>
+            )}
+
+            <button
+              onClick={handlePlaySarvamVoicePreview}
+              disabled={isPlayingAudio}
+              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-medium flex items-center justify-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+              title="Preview synthesized voice alert in chosen Indic language"
+            >
+              <Volume2 className={`w-3.5 h-3.5 ${isPlayingAudio ? 'text-amber-400 animate-spin' : 'text-slate-300'}`} />
+              <span className="hidden sm:inline">{isPlayingAudio ? 'Playing...' : 'Audio Preview'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ── CRITICAL ESCALATION AUDIT TIMELINE (CLOSED-LOOP VISUALIZER) ── */}
+        <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              <span>Closed-Loop Telephony Audit Timeline</span>
+            </h3>
+            {activeCall && (
+              <span className="text-[11px] font-mono text-slate-400">
+                Room: <strong className="text-indigo-300">{activeCall.roomName}</strong>
+              </span>
+            )}
+          </div>
+
+          {/* 6-Step Visual Progression Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
+            {/* Step 1 */}
+            <div
+              className={`p-3 rounded-xl border transition-all ${
+                activeCall
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-500'
+              }`}
+            >
+              <div className="text-[10px] font-mono opacity-70">00:00</div>
+              <div className="font-bold mt-1">1. Telemetry Trigger</div>
+              <div className="text-[10px] opacity-80 mt-0.5">SpO2 ≤ 88% Anomaly</div>
+            </div>
+
+            {/* Step 2 */}
+            <div
+              className={`p-3 rounded-xl border transition-all ${
+                activeCall && activeCall.status !== 'QUEUED'
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                  : activeCall?.status === 'QUEUED'
+                  ? 'bg-amber-500/20 border-amber-500/50 text-amber-300 animate-pulse'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-500'
+              }`}
+            >
+              <div className="text-[10px] font-mono opacity-70">00:02</div>
+              <div className="font-bold mt-1">2. Agent Dispatched</div>
+              <div className="text-[10px] opacity-80 mt-0.5">LiveKit Voice Agent</div>
+            </div>
+
+            {/* Step 3 */}
+            <div
+              className={`p-3 rounded-xl border transition-all ${
+                activeCall &&
+                (activeCall.status === 'RINGING' ||
+                  activeCall.status === 'IN_PROGRESS' ||
+                  activeCall.status === 'ACKNOWLEDGED')
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                  : activeCall?.status === 'INITIATED'
+                  ? 'bg-blue-500/20 border-blue-500/50 text-blue-300 animate-pulse'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-500'
+              }`}
+            >
+              <div className="text-[10px] font-mono opacity-70">00:05</div>
+              <div className="font-bold mt-1">3. SIP Dialing</div>
+              <div className="text-[10px] opacity-80 mt-0.5">Doctor Mobile Rings</div>
+            </div>
+
+            {/* Step 4 */}
+            <div
+              className={`p-3 rounded-xl border transition-all ${
+                activeCall && (activeCall.status === 'IN_PROGRESS' || activeCall.status === 'ACKNOWLEDGED')
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                  : activeCall?.status === 'RINGING'
+                  ? 'bg-blue-500/20 border-blue-500/50 text-blue-300 animate-pulse'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-500'
+              }`}
+            >
+              <div className="text-[10px] font-mono opacity-70">00:09</div>
+              <div className="font-bold mt-1">4. Doctor Answers</div>
+              <div className="text-[10px] opacity-80 mt-0.5">WebRTC Stream Live</div>
+            </div>
+
+            {/* Step 5 */}
+            <div
+              className={`p-3 rounded-xl border transition-all ${
+                activeCall?.status === 'ACKNOWLEDGED'
+                  ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300'
+                  : activeCall?.status === 'IN_PROGRESS'
+                  ? 'bg-rose-500/20 border-rose-500/50 text-rose-300 animate-pulse'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-500'
+              }`}
+            >
+              <div className="text-[10px] font-mono opacity-70">00:18</div>
+              <div className="font-bold mt-1">5. Verbal Ack</div>
+              <div className="text-[10px] opacity-80 mt-0.5">"I am on it" / DTMF 1</div>
+            </div>
+
+            {/* Step 6 */}
+            <div
+              className={`p-3 rounded-xl border transition-all ${
+                activeCall?.status === 'ACKNOWLEDGED'
+                  ? 'bg-emerald-500/20 border-emerald-500/60 text-emerald-200 ring-1 ring-emerald-400/30'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-500'
+              }`}
+            >
+              <div className="text-[10px] font-mono opacity-70">00:20</div>
+              <div className="font-bold mt-1">6. Closed Loop</div>
+              <div className="text-[10px] opacity-80 mt-0.5">EHR Audit Logged</div>
+            </div>
+          </div>
+
+          {/* Granular Audit Event Feed */}
+          {activeCall?.timeline && activeCall.timeline.length > 0 ? (
+            <div className="space-y-1.5 max-h-48 overflow-y-auto pt-2 border-t border-slate-800/80">
+              {activeCall.timeline.map((event: any, eIdx: number) => (
+                <div
+                  key={eIdx}
+                  className="flex items-start justify-between text-[11px] p-2 rounded-xl bg-slate-950/60 border border-slate-800/80 font-mono"
+                >
+                  <div className="space-y-0.5">
+                    <span className="font-semibold text-slate-200">{event.message}</span>
+                    {event.actor && (
+                      <div className="text-[10px] text-slate-400 font-sans">
+                        Actor: <strong className="text-indigo-400">{event.actor}</strong>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[10px] text-slate-500 shrink-0 ml-2">
+                    {new Date(event.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4 text-xs text-slate-500 italic">
+              Ready for acute telemetry anomaly trigger. Click "🚨 Trigger Escalation Call" or "Simulate Acute SpO2 Drop" to initiate.
+            </div>
+          )}
         </div>
       </div>
     </div>

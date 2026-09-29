@@ -22,6 +22,11 @@ Phase 7 — Security & Config Hardening     ██████████ 100% 
 Phase 8 — Bharat Health Stack Agents      ██████████ 100% ✅ (Completed)
 Phase 9 — Function Calling & Autonomy     ██████████ 100% ✅ (Completed)
 Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% ✅ (Completed)
+Phase 11 — LiveKit Docs MCP & Telephony   ██████████ 100% ✅ (Completed)
+Phase 12 — Sarvam AI Indic Multi-Language ██████████ 100% ✅ (Completed)
+Phase 13 — Critical Escalation & Policy   ██████████ 100% ✅ (Completed)
+Phase 14 — Voice Agent & Signed Webhooks  ██████████ 100% ✅ (Completed)
+Phase 15 — Escalation Cockpit & Timeline  ██████████ 100% ✅ (Completed)
 ```
 
 ---
@@ -124,11 +129,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% 
 - [x] **Task 14.4:** Commit Phase 14 changes locally (no push).
 
 ### 🖥️ Phase 15: Critical Escalation UI Panel & Closed-Loop Timeline in Cockpit
-- [ ] **Task 15.1:** Add "LiveKit Critical Escalation Panel" in `AgentCockpitView.tsx` with live call status pill, duration timer, and action buttons.
-- [ ] **Task 15.2:** Add "Critical Escalation Audit Timeline" visualizing the complete closed loop.
-- [ ] **Task 15.3:** Connect simulated acute SpO2 drop button to trigger the escalation call workflow.
-- [ ] **Task 15.4:** Complete documentation (`docs/TELEPHONY.md`, `docs/TELEPHONY_TESTING.md`) and verify end-to-end regression.
-- [ ] **Task 15.5:** Final git commit locally (no push).
+- [x] **Task 15.1:** Add "LiveKit Critical Escalation Panel" in `AgentCockpitView.tsx` with live call status pill, duration timer, and action buttons.
+- [x] **Task 15.2:** Add "Critical Escalation Audit Timeline" visualizing the complete closed loop.
+- [x] **Task 15.3:** Connect simulated acute SpO2 drop button to trigger the escalation call workflow.
+- [x] **Task 15.4:** Complete documentation (`docs/TELEPHONY.md`, `docs/TELEPHONY_TESTING.md`) and verify end-to-end regression.
+- [x] **Task 15.5:** Final git commit locally (no push).
 
 ---
 
