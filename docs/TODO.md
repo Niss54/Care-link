@@ -111,11 +111,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% 
 - [x] **Task 12.5:** Commit Phase 12 changes locally (no push).
 
 ### 📞 Phase 13: Closed-Loop Critical Escalation Engine & Call Policy
-- [ ] **Task 13.1:** Build `src/lib/telephony/callPolicy.ts` with critical-only filter, idempotency key, cooldown (300s), and max attempts.
-- [ ] **Task 13.2:** Build `src/lib/telephony/escalationService.ts` (`placeEscalationCall` dispatching LiveKit agent and connecting SIP participant).
-- [ ] **Task 13.3:** Add Supabase / in-memory call state table (`alert_escalation_calls`).
-- [ ] **Task 13.4:** Mount telephony endpoints in `server.ts` (`/api/telephony/escalate`, `/api/telephony/call`, `/api/telephony/calls/:id`).
-- [ ] **Task 13.5:** Commit Phase 13 changes locally (no push).
+- [x] **Task 13.1:** Build `src/lib/telephony/callPolicy.ts` with critical-only filter, idempotency key, cooldown (300s), and max attempts.
+- [x] **Task 13.2:** Build `src/lib/telephony/escalationService.ts` (`placeEscalationCall` dispatching LiveKit agent and connecting SIP participant).
+- [x] **Task 13.3:** Add Supabase / in-memory call state table (`alert_escalation_calls`).
+- [x] **Task 13.4:** Mount telephony endpoints in `server.ts` (`/api/telephony/escalate`, `/api/telephony/call`, `/api/telephony/calls/:id`).
+- [x] **Task 13.5:** Commit Phase 13 changes locally (no push).
 
 ### 🎙️ Phase 14: LiveKit Real-Time Escalation Voice Agent & Signed Webhook Reducer
 - [ ] **Task 14.1:** Build `voice-agent/` LiveKit agent module with prompt constraints, conversational acknowledgement listener, and timeout fallback.

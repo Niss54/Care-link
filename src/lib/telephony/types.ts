@@ -66,9 +66,20 @@ export interface VoiceEscalationMetadata {
   cooldownWindowSec: number;
 }
 
+export interface TimelineEvent {
+  timestamp: string;
+  status: CallStatus;
+  message: string;
+  actor?: string;
+  data?: any;
+}
+
 export interface CallRecord {
   callId: string;
   alertId: string;
+  caseId: string;
+  ward: string;
+  bed: string;
   roomName: string;
   dispatchId?: string;
   sipParticipantId?: string;
@@ -84,6 +95,7 @@ export interface CallRecord {
   audioRecordingUrl?: string;
   error?: string;
   isMock: boolean;
+  timeline: TimelineEvent[];
 }
 
 /**

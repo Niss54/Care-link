@@ -22,6 +22,12 @@ import {
   synthesizeIndicSpeech,
   getSupportedIndicLanguages,
 } from "./src/lib/agents/sarvamIndicAgent";
+import {
+  escalationService,
+  callPolicy,
+  type CriticalAlertPayload,
+  type CallRecord,
+} from "./src/lib/telephony";
 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
@@ -381,6 +387,124 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Sarvam TTS Error:", error);
       res.status(500).json({ error: error.message || "Failed to synthesize speech" });
+    }
+  });
+
+  // ─── LiveKit Critical Telephony Escalation Endpoints ─────────────────────────
+
+  // Trigger Critical Voice Escalation with Safety & Policy Evaluation
+  app.post("/api/telephony/escalate", async (req, res) => {
+    try {
+      const { alert, forceBypassCooldown, customDestination, autoSimulate } = req.body || {};
+      if (!alert || !alert.alertId) {
+        return res.status(400).json({ error: "Missing required 'alert' with 'alertId'" });
+      }
+
+      const result = await escalationService.placeEscalationCall(alert, {
+        forceBypassCooldown: Boolean(forceBypassCooldown),
+        customDestination,
+        autoSimulate: autoSimulate !== undefined ? Boolean(autoSimulate) : true,
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Telephony Escalation Error:", error);
+      res.status(500).json({ error: error.message || "Failed to trigger voice escalation" });
+    }
+  });
+
+  // Direct Telephony Call Dispatch
+  app.post("/api/telephony/call", async (req, res) => {
+    try {
+      const { alertId, caseId, ward, bed, spo2, destination, alertType } = req.body || {};
+      const syntheticAlert: CriticalAlertPayload = {
+        alertId: alertId || `alert_${Date.now()}`,
+        patientId: 'PT-MANUAL',
+        caseId: caseId || 'CASE-CRITICAL-DIRECT',
+        ward: ward || 'ICU-1',
+        bed: bed || 'Bed-01',
+        alertType: alertType || 'CRITICAL_HYPOXIA',
+        severity: 'CRITICAL',
+        vitals: { spo2: typeof spo2 === 'number' ? spo2 : 84 },
+        primaryContact: destination || process.env.TELEPHONY_PRIMARY_CONTACT || '+919876543210',
+      };
+
+      const result = await escalationService.placeEscalationCall(syntheticAlert, {
+        forceBypassCooldown: true,
+        customDestination: destination,
+        autoSimulate: true,
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Direct Call Dispatch Error:", error);
+      res.status(500).json({ error: error.message || "Failed to dispatch call" });
+    }
+  });
+
+  // List All Calls or Active Calls
+  app.get("/api/telephony/calls", (req, res) => {
+    try {
+      const activeOnly = req.query.active === 'true';
+      const alertId = req.query.alertId as string;
+      const caseId = req.query.caseId as string;
+      const calls = escalationService.getCalls({ activeOnly, alertId, caseId });
+      const activeCount = escalationService.getActiveCalls().length;
+      res.json({ calls, total: calls.length, activeCount });
+    } catch (error: any) {
+      console.error("List Calls Error:", error);
+      res.status(500).json({ error: error.message || "Failed to list calls" });
+    }
+  });
+
+  // Get Single Call Record & Full Audit Timeline
+  app.get("/api/telephony/calls/:id", (req, res) => {
+    try {
+      const call = escalationService.getCall(req.params.id);
+      if (!call) {
+        return res.status(404).json({ error: `Call ${req.params.id} not found` });
+      }
+      res.json({ call });
+    } catch (error: any) {
+      console.error("Get Call Error:", error);
+      res.status(500).json({ error: error.message || "Failed to get call record" });
+    }
+  });
+
+  // Clinician Verbal Acknowledgement / DTMF 1 Receiver
+  app.post("/api/telephony/acknowledge", (req, res) => {
+    try {
+      const { callId, acknowledgedBy, verbalSnippet } = req.body || {};
+      if (!callId) {
+        return res.status(400).json({ error: "Missing required 'callId'" });
+      }
+      const call = escalationService.acknowledgeCall(callId, {
+        acknowledgedBy,
+        verbalSnippet,
+      });
+      res.json({ success: true, call });
+    } catch (error: any) {
+      console.error("Call Acknowledgement Error:", error);
+      res.status(500).json({ error: error.message || "Failed to acknowledge call" });
+    }
+  });
+
+  // Call Failure & Secondary Failover Handler
+  app.post("/api/telephony/fail", async (req, res) => {
+    try {
+      const { callId, reason, errorMessage } = req.body || {};
+      if (!callId) {
+        return res.status(400).json({ error: "Missing required 'callId'" });
+      }
+      const result = await escalationService.recordCallFailure(
+        callId,
+        reason || 'NO_ANSWER',
+        errorMessage
+      );
+      res.json(result);
+    } catch (error: any) {
+      console.error("Call Failure Handler Error:", error);
+      res.status(500).json({ error: error.message || "Failed to handle call failure" });
     }
   });
 
