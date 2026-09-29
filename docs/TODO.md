@@ -104,11 +104,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ██████████ 100% 
 - [x] **Task 11.5:** Commit Phase 11 changes locally (no push).
 
 ### 🇮🇳 Phase 12: Sarvam AI Indic Multi-Language Translation & Voice System
-- [ ] **Task 12.1:** Create `src/lib/agents/sarvamIndicAgent.ts` supporting Sarvam AI Indic API (`SARVAM_API_KEY`) across 10 Indian languages.
-- [ ] **Task 12.2:** Build deterministic clinical fallback for all 10 languages for 100% reliable demo/mock testing.
-- [ ] **Task 12.3:** Mount Express endpoints in `server.ts` (`/api/agent/sarvam/translate`, `/api/agent/sarvam/tts`).
-- [ ] **Task 12.4:** Build verification test suite `scripts/test_phase12_sarvam.ts`.
-- [ ] **Task 12.5:** Commit Phase 12 changes locally (no push).
+- [x] **Task 12.1:** Create `src/lib/agents/sarvamIndicAgent.ts` supporting Sarvam AI Indic API (`SARVAM_API_KEY`) across 10 Indian languages.
+- [x] **Task 12.2:** Build deterministic clinical fallback for all 10 languages for 100% reliable demo/mock testing.
+- [x] **Task 12.3:** Mount Express endpoints in `server.ts` (`/api/agent/sarvam/translate`, `/api/agent/sarvam/tts`).
+- [x] **Task 12.4:** Build verification test suite `scripts/test_phase12_sarvam.ts`.
+- [x] **Task 12.5:** Commit Phase 12 changes locally (no push).
 
 ### 📞 Phase 13: Closed-Loop Critical Escalation Engine & Call Policy
 - [ ] **Task 13.1:** Build `src/lib/telephony/callPolicy.ts` with critical-only filter, idempotency key, cooldown (300s), and max attempts.

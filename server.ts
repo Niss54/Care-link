@@ -17,6 +17,11 @@ import { rememberPatient, recallPatient, formatMemoryContext } from "./src/lib/m
 import { recordClinicianFeedback, getFeedbackMetrics, generateRetrainingPayload } from "./src/lib/feedbackAgent";
 import { recordRunTrace, getRecentTraces, getObservabilitySummary, type RunTrace, type TraceSpan } from "./src/lib/agents/observability";
 import { evaluateRagasMetrics, CLINICAL_BENCHMARK_CASES } from "./src/lib/agents/evalRagas";
+import {
+  translateIndicText,
+  synthesizeIndicSpeech,
+  getSupportedIndicLanguages,
+} from "./src/lib/agents/sarvamIndicAgent";
 
 process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
@@ -325,6 +330,57 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Auto-Booking Error:", error);
       res.status(500).json({ error: error.message || "Failed to auto-book appointment" });
+    }
+  });
+
+  // Sarvam AI Indic Multi-Language System: List Languages
+  app.get("/api/agent/sarvam/languages", (_req, res) => {
+    try {
+      const languages = getSupportedIndicLanguages();
+      res.json({ languages, count: languages.length });
+    } catch (error: any) {
+      console.error("Sarvam Languages Error:", error);
+      res.status(500).json({ error: error.message || "Failed to get languages" });
+    }
+  });
+
+  // Sarvam AI Indic Multi-Language System: Translate
+  app.post("/api/agent/sarvam/translate", async (req, res) => {
+    try {
+      const { text, sourceLang, targetLang, mode } = req.body || {};
+      if (!text || !targetLang) {
+        return res.status(400).json({ error: "Missing required 'text' or 'targetLang'" });
+      }
+      const result = await translateIndicText({
+        text,
+        sourceLang: sourceLang || 'en-IN',
+        targetLang,
+        mode: mode || 'formal',
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Sarvam Translation Error:", error);
+      res.status(500).json({ error: error.message || "Failed to translate text" });
+    }
+  });
+
+  // Sarvam AI Indic Multi-Language System: Text-to-Speech (TTS)
+  app.post("/api/agent/sarvam/tts", async (req, res) => {
+    try {
+      const { text, targetLang, speaker, speechSampleRate } = req.body || {};
+      if (!text) {
+        return res.status(400).json({ error: "Missing required 'text'" });
+      }
+      const result = await synthesizeIndicSpeech({
+        text,
+        targetLang: targetLang || 'hi-IN',
+        speaker: speaker || 'meera',
+        speechSampleRate: speechSampleRate || 8000,
+      });
+      res.json(result);
+    } catch (error: any) {
+      console.error("Sarvam TTS Error:", error);
+      res.status(500).json({ error: error.message || "Failed to synthesize speech" });
     }
   });
 
