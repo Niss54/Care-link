@@ -24,7 +24,12 @@ import {
   Lock,
   Globe,
   CreditCard,
-  Award
+  Award,
+  MessageSquare,
+  Calendar,
+  Bell,
+  Copy,
+  ExternalLink
 } from 'lucide-react';
 import gsap from 'gsap';
 import { Patient } from '../types';
@@ -166,6 +171,11 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
   const [pmjayStatus, setPmjayStatus] = useState<any>(null);
   const [abhaProfile, setAbhaProfile] = useState<any>(null);
 
+  // Autonomous Action States (Phase 9)
+  const [vitalsAlert, setVitalsAlert] = useState<any>(null);
+  const [whatsAppDraft, setWhatsAppDraft] = useState<any>(null);
+  const [bookingConfirmation, setBookingConfirmation] = useState<any>(null);
+
   // Clinician Feedback
   const [feedbackAction, setFeedbackAction] = useState<'Approve' | 'Override'>('Approve');
   const [overrideReason, setOverrideReason] = useState<string>('');
@@ -268,6 +278,81 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
       onShowToast('Execution Error', err.message || 'Failed to complete agent run.', 'error');
     } finally {
       setIsRunning(false);
+    }
+  };
+
+  const handleSimulateVitalsDrop = async () => {
+    try {
+      const res = await fetch('/api/agent/vitals/simulate-drop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId, anomalyType: 'hypoxemia' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setVitalsAlert(data.alert);
+        setVitals(data.telemetry);
+        onShowToast(
+          'EMERGENCY TELEMETRY ALERT',
+          `SpO2 dropped to ${data.telemetry.spo2}%. Autonomous triage escalation initiated!`,
+          'error'
+        );
+      }
+    } catch {
+      onShowToast('Error', 'Failed to trigger simulated telemetry drop', 'error');
+    }
+  };
+
+  const handleGenerateWhatsApp = async () => {
+    try {
+      const res = await fetch('/api/agent/communication/whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientName: selectedPreset.patientName,
+          patientPhone: '+919876543210',
+          medications: medsText.split(',').map(m => m.trim()).filter(Boolean),
+          isHindi
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWhatsAppDraft(data);
+        onShowToast(
+          isHindi ? 'व्हाट्सएप निर्देश तैयार' : 'WhatsApp Instructions Drafted',
+          isHindi ? 'मरीज़ और आशा कार्यकर्ता के लिए संदेश तैयार है।' : 'Bilingual WhatsApp notification generated with click-to-dispatch link.',
+          'success'
+        );
+      }
+    } catch {
+      onShowToast('Error', 'Failed to generate WhatsApp notification', 'error');
+    }
+  };
+
+  const handleAutoBookAppointment = async () => {
+    try {
+      const res = await fetch('/api/agent/appointments/auto-book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          patientId,
+          patientName: selectedPreset.patientName,
+          riskTier: 'HIGH',
+          urgencyLevel: 'Urgent',
+          specialty: 'Cardiology'
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBookingConfirmation(data);
+        onShowToast(
+          isHindi ? 'अपॉइंटमेंट आरक्षित' : 'Specialist Slot Reserved',
+          `${data.doctorName} - ${data.appointmentDate} at ${data.timeSlot}`,
+          'success'
+        );
+      }
+    } catch {
+      onShowToast('Error', 'Failed to auto-book appointment', 'error');
     }
   };
 
@@ -493,6 +578,45 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
                 </>
               )}
             </button>
+
+            {/* Autonomous Action Agents (Phase 9) */}
+            <div className="pt-3 border-t border-[#e2e8f0] space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-[#475569]">
+                <span className="flex items-center space-x-1.5">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Autonomous Actions (Phase 9)</span>
+                </span>
+                <span className="text-[10px] font-mono bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200">
+                  Zero Human Touch
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleGenerateWhatsApp}
+                  className="p-2.5 rounded-xl border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100/70 text-emerald-900 text-xs font-medium flex items-center justify-center space-x-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Draft WhatsApp</span>
+                </button>
+
+                <button
+                  onClick={handleAutoBookAppointment}
+                  className="p-2.5 rounded-xl border border-indigo-200 bg-indigo-50/60 hover:bg-indigo-100/70 text-indigo-900 text-xs font-medium flex items-center justify-center space-x-1.5 transition-all shadow-xs cursor-pointer"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Auto-Book Slot</span>
+                </button>
+              </div>
+
+              <button
+                onClick={handleSimulateVitalsDrop}
+                className="w-full py-2.5 px-3 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-xs"
+              >
+                <Bell className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+                <span>Simulate Acute SpO2 Drop (88%)</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -804,6 +928,119 @@ export const AgentCockpitView: React.FC<AgentCockpitViewProps> = ({ onShowToast 
                   <strong>Allergy Alert:</strong> {abhaProfile.knownAllergies.join(', ')}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* ── AUTONOMOUS ACTIONS: CRITICAL TELEMETRY ALERT CARD ── */}
+          {vitalsAlert && (
+            <div className="cockpit-anim bg-rose-50/90 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3 animate-pulse-once">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Bell className="w-4 h-4 text-rose-600 animate-bounce" />
+                  <span className="font-bold text-xs text-rose-950 uppercase tracking-wide">
+                    Autonomous Telemetry Alert ({vitalsAlert.severity})
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 border border-rose-300">
+                  SLA: {vitalsAlert.responseSlaMinutes || vitalsAlert.escalationWindow || '< 5 min'}
+                </span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-white/90 border border-rose-200 text-xs space-y-1">
+                <div className="flex items-center justify-between font-semibold text-rose-900">
+                  <span>Trigger: {vitalsAlert.vitalType} = {vitalsAlert.triggerValue ? `${vitalsAlert.triggerValue}%` : (vitalsAlert.readingSummary || 'Critical Anomaly')}</span>
+                  <span className="text-[10px] text-slate-500 font-mono">{vitalsAlert.alertId}</span>
+                </div>
+                <p className="text-[11px] text-rose-800 leading-snug">{vitalsAlert.clinicalConcern || vitalsAlert.clinicalSignificance}</p>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-rose-100/70 border border-rose-200 text-[11px] text-rose-950 space-y-1">
+                <div className="font-bold flex items-center space-x-1">
+                  <span>🚨 Protocol Action:</span>
+                </div>
+                <p className="leading-snug">{vitalsAlert.escalationAction || vitalsAlert.immediateAction}</p>
+                <div className="text-[10px] text-rose-700 pt-1 border-t border-rose-200/60 flex items-center justify-between">
+                  <span>Assigned: <strong>{vitalsAlert.assignedPhysician || "Dr. Nishant Maurya (ICU Lead)"}</strong></span>
+                  <span>Direct Escalation</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── AUTONOMOUS ACTIONS: WHATSAPP PATIENT DISPATCH CARD ── */}
+          {whatsAppDraft && (
+            <div className="cockpit-anim bg-gradient-to-br from-emerald-50/60 via-white to-teal-50/50 border border-emerald-300 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="w-4 h-4 text-emerald-600" />
+                  <span className="font-bold text-xs text-[#0f172a]">Autonomous WhatsApp Dispatch</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  {whatsAppDraft.language === 'hi' ? '🇮🇳 हिन्दी' : '🌐 English'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-emerald-100 text-xs font-mono text-slate-800 max-h-[160px] overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner">
+                {whatsAppDraft.whatsAppMessage || whatsAppDraft.messageText}
+              </div>
+
+              <div className="flex items-center space-x-2 pt-1">
+                <a
+                  href={whatsAppDraft.dispatchUrl || whatsAppDraft.whatsappDeepLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all shadow-xs"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Send via WhatsApp</span>
+                </a>
+
+                <button
+                  onClick={() => {
+                    const txt = whatsAppDraft.whatsAppMessage || whatsAppDraft.messageText || '';
+                    navigator.clipboard.writeText(txt);
+                    onShowToast('Copied', 'WhatsApp message copied to clipboard', 'info');
+                  }}
+                  className="py-2 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium flex items-center space-x-1 transition-all"
+                  title="Copy message text"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── AUTONOMOUS ACTIONS: EHR APPOINTMENT BOOKING CARD ── */}
+          {bookingConfirmation && (
+            <div className="cockpit-anim bg-gradient-to-br from-indigo-50/60 via-white to-sky-50/50 border border-indigo-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-indigo-600" />
+                  <span className="font-bold text-xs text-[#0f172a]">Hospital EHR Appointment Reserved</span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                  {bookingConfirmation.bookingStatus}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-white border border-indigo-100">
+                  <span className="text-[10px] text-slate-500 block">Physician</span>
+                  <span className="font-bold text-indigo-950 text-xs">{bookingConfirmation.doctorName}</span>
+                  <span className="text-[10px] text-indigo-600 block">{bookingConfirmation.specialty}</span>
+                </div>
+                <div className="p-2.5 rounded-xl bg-white border border-indigo-100">
+                  <span className="text-[10px] text-slate-500 block">Slot & Room</span>
+                  <span className="font-bold text-slate-900 text-xs">{bookingConfirmation.appointmentDate}</span>
+                  <span className="text-[10px] text-slate-600 block">{bookingConfirmation.timeSlot} ({bookingConfirmation.room})</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] text-slate-500 bg-white/70 px-2.5 py-1.5 rounded-lg border border-slate-100">
+                <span>Booking ID: <strong className="font-mono text-slate-800">{bookingConfirmation.bookingId}</strong></span>
+                <span className="text-emerald-700 font-semibold">CareLink EHR Calendar</span>
+              </div>
             </div>
           )}
 

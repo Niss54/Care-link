@@ -79,11 +79,11 @@ Phase 10 — Streaming UX & AuRAG Pruning   ░░░░░░░░░░   0% 
 - [x] **Task 8.5:** Commit Phase 8 changes locally (no push).
 
 ### 🤖 Phase 9: Real Function Calling & Autonomous Action Agents
-- [ ] **Task 9.1:** Upgrade `triageAgent.ts` to real Gemini Function Calling / Tool Use (`check_vitals`, `lookup_guideline`, `recommend_escalation`).
-- [ ] **Task 9.2:** Build `src/lib/agents/patientCommunicationAgent.ts` — Autonomous bilingual WhatsApp/SMS discharge & reminder draft generator with one-click send.
-- [ ] **Task 9.3:** Build `src/lib/agents/vitalsMonitorAgent.ts` — Autonomous background monitoring loop detecting simulated vitals deterioration (SpO2 drop to 88%) with instant alerts.
-- [ ] **Task 9.4:** Build `src/lib/agents/appointmentAgent.ts` — Autonomous follow-up appointment booking in the CareLink calendar for high-risk patients.
-- [ ] **Task 9.5:** Commit Phase 9 changes locally (no push).
+- [x] **Task 9.1:** Upgrade `triageAgent.ts` to real Gemini Function Calling / Tool Use (`check_vitals`, `lookup_guideline`, `recommend_escalation`).
+- [x] **Task 9.2:** Build `src/lib/agents/patientCommunicationAgent.ts` — Autonomous bilingual WhatsApp/SMS discharge & reminder draft generator with one-click send.
+- [x] **Task 9.3:** Build `src/lib/agents/vitalsMonitorAgent.ts` — Autonomous background monitoring loop detecting simulated vitals deterioration (SpO2 drop to 88%) with instant alerts.
+- [x] **Task 9.4:** Build `src/lib/agents/appointmentAgent.ts` — Autonomous follow-up appointment booking in the CareLink calendar for high-risk patients.
+- [x] **Task 9.5:** Commit Phase 9 changes locally (no push).
 
 ### 🎨 Phase 10: Streaming Cockpit UX, AuRAG Pruning & Hackathon Polish
 - [ ] **Task 10.1:** Implement animated step-by-step agent execution visualization and typewriter response streaming in `AgentCockpitView.tsx`.

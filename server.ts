@@ -10,6 +10,9 @@ import { runSupervisor } from "./src/lib/agents/supervisor";
 import { createInitialAgentState } from "./src/lib/agents/state";
 import { evaluatePMJAYEligibility } from "./src/lib/agents/pmjayAgent";
 import { lookupAbhaProfile } from "./src/lib/agents/abhaAgent";
+import { generatePatientWhatsAppMessage, sendWhatsAppNotification } from "./src/lib/agents/patientCommunicationAgent";
+import { evaluateTelemetryDeterioration, simulateVitalsDeterioration } from "./src/lib/agents/vitalsMonitorAgent";
+import { autoBookFollowUpAppointment } from "./src/lib/agents/appointmentAgent";
 import { rememberPatient, recallPatient, formatMemoryContext } from "./src/lib/memory";
 import { recordClinicianFeedback, getFeedbackMetrics, generateRetrainingPayload } from "./src/lib/feedbackAgent";
 import { recordRunTrace, getRecentTraces, getObservabilitySummary, type RunTrace, type TraceSpan } from "./src/lib/agents/observability";
@@ -273,6 +276,55 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("ABHA Lookup Error:", error);
       res.status(500).json({ error: error.message || "ABHA profile lookup failed" });
+    }
+  });
+
+  // Autonomous Action: Patient Communication WhatsApp Notification Generator
+  app.post("/api/agent/communication/whatsapp", async (req, res) => {
+    try {
+      const input = req.body || {};
+      const payload = generatePatientWhatsAppMessage(input);
+      if (req.query.dispatch === "true") {
+        const dispatchResult = await sendWhatsAppNotification(payload);
+        return res.json({ ...payload, dispatch: dispatchResult });
+      }
+      res.json(payload);
+    } catch (error: any) {
+      console.error("WhatsApp Generation Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate patient communication" });
+    }
+  });
+
+  // Autonomous Monitoring: Real-Time Vitals Telemetry Anomaly & Simulated Deterioration Loop
+  app.post("/api/agent/vitals/evaluate", (req, res) => {
+    try {
+      const telemetry = req.body || {};
+      const alert = evaluateTelemetryDeterioration(telemetry);
+      res.json({ isAlert: Boolean(alert), alert });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to evaluate telemetry" });
+    }
+  });
+
+  app.post("/api/agent/vitals/simulate-drop", (req, res) => {
+    try {
+      const { patientId, anomalyType } = req.body || {};
+      const result = simulateVitalsDeterioration(patientId || "patient_sunita_91", anomalyType || "hypoxemia");
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to simulate vitals drop" });
+    }
+  });
+
+  // Autonomous Action: Post-Discharge Specialist Appointment Auto-Booking
+  app.post("/api/agent/appointments/auto-book", async (req, res) => {
+    try {
+      const bookingReq = req.body || {};
+      const result = await autoBookFollowUpAppointment(bookingReq);
+      res.json(result);
+    } catch (error: any) {
+      console.error("Auto-Booking Error:", error);
+      res.status(500).json({ error: error.message || "Failed to auto-book appointment" });
     }
   });
 
