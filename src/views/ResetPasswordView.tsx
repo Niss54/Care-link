@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, ArrowLeft, CheckCircle2, Stethoscope, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle2, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 interface ResetPasswordViewProps {
@@ -93,9 +93,11 @@ export const ResetPasswordView: React.FC<ResetPasswordViewProps> = ({ onBackToLo
     <div className="min-h-screen bg-[#f7f9fb] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex flex-col items-center justify-center space-y-2 mb-8">
-          <div className="bg-[#316bf3]/10 p-3 rounded-2xl">
-            <Stethoscope className="w-8 h-8 text-[#316bf3]" />
-          </div>
+          <img
+            src="/carelink.png"
+            alt="CareLink Logo"
+            className="w-14 h-14 rounded-2xl object-contain shadow-lg shadow-sky-500/20 border border-slate-200 bg-white p-1"
+          />
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">CareLink</h1>
           <p className="text-sm font-medium text-gray-500 uppercase tracking-widest">Clinical IT Security</p>
         </div>

@@ -3,7 +3,6 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import {
-  Stethoscope,
   ArrowRight,
   ShieldCheck,
   Brain,
@@ -261,9 +260,11 @@ export const LandingView: React.FC<LandingViewProps> = ({ onLogin, onExploreDemo
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Brand */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0284c7] via-[#2563eb] to-[#4f46e5] flex items-center justify-center text-white shadow-md shadow-[#0284c7]/20 group">
-              <Stethoscope className="w-5 h-5 transition-transform group-hover:scale-110" />
-            </div>
+            <img
+              src="/carelink.png"
+              alt="CareLink Logo"
+              className="w-10 h-10 rounded-2xl object-contain shadow-md shadow-sky-500/15 border border-slate-200/80 bg-white p-0.5 hover:scale-105 transition-transform"
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-xl tracking-tight text-[#0f172a]">
@@ -1138,9 +1139,11 @@ export const LandingView: React.FC<LandingViewProps> = ({ onLogin, onExploreDemo
       {/* ── Final Call to Action ── */}
       <section className="relative z-10 py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto text-center">
         <div className="p-8 sm:p-12 rounded-3xl bg-gradient-to-r from-[#0284c7] via-[#2563eb] to-[#4f46e5] text-white shadow-2xl relative overflow-hidden">
-          <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center mx-auto mb-4 border border-white/20">
-            <Stethoscope className="w-6 h-6" />
-          </div>
+          <img
+            src="/carelink.png"
+            alt="CareLink Logo"
+            className="w-14 h-14 rounded-2xl object-contain mx-auto mb-4 border border-white/30 bg-white p-1 shadow-lg shadow-black/15"
+          />
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
             Ready to Explore the Clinical Portal?
           </h2>
@@ -1173,9 +1176,11 @@ export const LandingView: React.FC<LandingViewProps> = ({ onLogin, onExploreDemo
       <footer className="relative z-10 py-12 px-4 sm:px-8 border-t border-[#e2e8f0] text-xs text-[#64748b] bg-white">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-lg bg-[#0284c7] flex items-center justify-center text-white">
-              <Stethoscope className="w-4 h-4" />
-            </div>
+            <img
+              src="/carelink.png"
+              alt="CareLink Logo"
+              className="w-8 h-8 rounded-lg object-contain shadow-sm border border-slate-200 bg-white p-0.5"
+            />
             <span className="font-bold text-[#0f172a] text-sm">CareLink</span>
             <span className="text-[#cbd5e1]">•</span>
             <span>Federated Healthcare Machine Learning & EHR Portal</span>

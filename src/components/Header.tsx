@@ -72,6 +72,11 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Menu className="w-5 h-5" />
         </button>
+        <img
+          src="/carelink.png"
+          alt="CareLink Logo"
+          className="w-8 h-8 rounded-lg object-contain lg:hidden border border-slate-200 p-0.5 shadow-sm"
+        />
         <div>
           <h1 className="text-xl font-bold text-[#191c1e] tracking-tight">{getTitle()}</h1>
           <p className="text-xs text-[#74777f] hidden sm:block">CareLink Hospital Network • Cardiology Division</p>

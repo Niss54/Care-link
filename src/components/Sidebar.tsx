@@ -6,7 +6,6 @@ import {
   Calendar,
   BarChart3,
   LogOut,
-  Stethoscope,
   BookOpen,
   Globe,
   ShieldCheck,
@@ -66,9 +65,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div>
           {/* Brand Header */}
           <div className="p-6 flex items-center gap-3 border-b border-[#f1f5f9]">
-            <div className="w-10 h-10 rounded-xl bg-[#0284c7] flex items-center justify-center text-white shadow-md shadow-[#0284c7]/20">
-              <Stethoscope className="w-6 h-6" />
-            </div>
+            <img
+              src="/carelink.png"
+              alt="CareLink Logo"
+              className="w-10 h-10 rounded-xl object-contain shadow-md shadow-sky-500/10 border border-slate-100 bg-white p-0.5"
+            />
             <div>
               <h1 className="text-lg font-bold tracking-tight text-[#0f172a] flex items-center gap-1.5">
                 CareLink

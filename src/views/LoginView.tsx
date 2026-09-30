@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Stethoscope, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2, Building2, KeyRound, Loader2 } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, CheckCircle2, Building2, KeyRound, Loader2 } from 'lucide-react';
 import { useAuth } from '../lib/auth';
 import { supabase } from '../lib/supabase';
 
@@ -222,9 +222,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess, onNavigate
 
           <div className="relative z-10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#316bf3] flex items-center justify-center text-white shadow-lg shadow-[#316bf3]/30">
-                <Stethoscope className="w-6 h-6" />
-              </div>
+              <img
+                src="/carelink.png"
+                alt="CareLink Logo"
+                className="w-11 h-11 rounded-xl object-contain bg-white/10 p-1 shadow-lg shadow-black/20 border border-white/20"
+              />
               <h1 className="text-xl font-bold tracking-tight">CareLink</h1>
             </div>
 

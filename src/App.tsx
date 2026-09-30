@@ -116,13 +116,12 @@ export function App() {
     return (
       <div className="min-h-screen bg-[#f7f9fb] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#316bf3] flex items-center justify-center text-white">
-            <svg className="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </div>
-          <p className="text-sm font-semibold text-[#316bf3]">CareLink</p>
+          <img
+            src="/carelink.png"
+            alt="CareLink Logo"
+            className="w-14 h-14 rounded-2xl object-contain shadow-lg shadow-sky-500/20 animate-pulse border border-slate-200 bg-white p-1"
+          />
+          <p className="text-sm font-bold text-[#0284c7]">CareLink</p>
           <p className="text-xs text-[#74777f]">Loading clinical portal...</p>
         </div>
       </div>
