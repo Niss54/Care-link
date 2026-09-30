@@ -121,7 +121,7 @@ async function callGemini(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(8000)
+    signal: AbortSignal.timeout(15000)
   });
 
   if (!response.ok) {
@@ -149,13 +149,16 @@ async function callGroq(
 ): Promise<{ text: string; inTokens: number; outTokens: number }> {
   const url = "https://api.groq.com/openai/v1/chat/completions";
 
+  // For reasoning models like openai/gpt-oss-*, internal reasoning consumes tokens first.
+  const effectiveMaxTokens = model.includes('oss') ? Math.max(maxTokens, 350) : maxTokens;
+
   const payload: any = {
     model,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userMessage }
     ],
-    max_tokens: maxTokens,
+    max_tokens: effectiveMaxTokens,
     temperature: 0.2
   };
 
@@ -172,7 +175,7 @@ async function callGroq(
       Authorization: `Bearer ${apiKey}`
     },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(8000)
+    signal: AbortSignal.timeout(12000)
   });
 
   if (!response.ok) {
@@ -245,7 +248,7 @@ export async function callWithFailover(options: LlmCallOptions): Promise<LlmCall
 
   // ── Step 1: Attempt Gemini (Primary LLM) ──
   if (geminiKey) {
-    const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-1.5-flash'];
     for (const model of models) {
       try {
         const { text, inTokens, outTokens } = await callGemini(
@@ -287,6 +290,7 @@ export async function callWithFailover(options: LlmCallOptions): Promise<LlmCall
   // ── Step 2: Auto-Failover to Groq (Secondary LLM) ──
   if (groqKey) {
     const groqModels = [
+      process.env.GROQ_ROUTING_MODEL || 'qwen/qwen3.8-27b',
       process.env.GROQ_REASONING_MODEL || 'openai/gpt-oss-120b',
       'openai/gpt-oss-20b'
     ];
