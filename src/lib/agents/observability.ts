@@ -6,6 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { Client } from 'langsmith';
 
 export interface TraceSpan {
   spanId: string;
@@ -42,6 +43,22 @@ export interface RunTrace {
   status: 'COMPLETED' | 'FAILED' | 'BLOCKED';
 }
 
+let _langsmithClient: Client | null = null;
+
+export function getLangsmithClient(): Client | null {
+  if (!_langsmithClient && process.env.LANGSMITH_API_KEY) {
+    try {
+      _langsmithClient = new Client({
+        apiKey: process.env.LANGSMITH_API_KEY,
+        apiUrl: process.env.LANGSMITH_ENDPOINT || 'https://api.smith.langchain.com'
+      });
+    } catch (err) {
+      console.warn('[LangSmith] Failed to initialize client:', err);
+    }
+  }
+  return _langsmithClient;
+}
+
 const TRACE_DIR = path.resolve(process.cwd(), '.runtime', 'traces');
 
 function ensureTraceDir() {
@@ -54,7 +71,7 @@ function ensureTraceDir() {
 const inMemoryTraces: RunTrace[] = [];
 
 /**
- * Creates and persists a LangSmith-compatible run trace
+ * Creates and persists a LangSmith-compatible run trace locally and syncs to LangSmith Cloud
  */
 export function recordRunTrace(trace: RunTrace): void {
   try {
@@ -66,6 +83,45 @@ export function recordRunTrace(trace: RunTrace): void {
 
     const filePath = path.join(TRACE_DIR, `${trace.traceId}.json`);
     fs.writeFileSync(filePath, JSON.stringify(trace, null, 2), 'utf-8');
+
+    // Asynchronously dispatch to LangSmith Cloud
+    const ls = getLangsmithClient();
+    if (ls) {
+      const projectName = process.env.LANGSMITH_PROJECT || 'carelink-clinical-agent';
+      const endTime = new Date(trace.createdAt).getTime();
+      const startTime = endTime - (trace.totalDurationMs || 500);
+
+      ls.createRun({
+        name: `CareLink Agent [${trace.routedAgent}]`,
+        run_type: 'chain',
+        inputs: {
+          query: trace.rootQuery,
+          patientId: trace.patientId || null,
+          sessionId: trace.sessionId || null,
+        },
+        outputs: {
+          routedAgent: trace.routedAgent,
+          routingConfidence: trace.routingConfidence,
+          groundingScore: trace.groundingScore,
+          citationsCount: trace.citations?.length || 0,
+          status: trace.status
+        },
+        project_name: projectName,
+        start_time: startTime,
+        end_time: endTime,
+        extra: {
+          metadata: {
+            providerUsed: trace.providerUsed,
+            isSafetyBlocked: trace.isSafetyBlocked,
+            tokenUsage: trace.tokenUsage,
+            spansCount: trace.spans?.length || 0,
+            spans: trace.spans
+          }
+        }
+      }).catch(err => {
+        console.warn('[LangSmith] Cloud trace sync error:', err.message);
+      });
+    }
   } catch (err) {
     console.warn('[Observability] Failed to persist trace to disk:', err);
   }
@@ -140,3 +196,36 @@ export function getObservabilitySummary() {
     safetyBlockCount: safetyBlocks
   };
 }
+
+/**
+ * Queries real-time LangSmith Cloud project status
+ */
+export async function getLangsmithProjectStatus() {
+  const ls = getLangsmithClient();
+  const projectName = process.env.LANGSMITH_PROJECT || 'carelink-clinical-agent';
+  if (!ls) {
+    return {
+      enabled: false,
+      projectName,
+      message: 'LANGSMITH_API_KEY is not configured.'
+    };
+  }
+
+  try {
+    const project = await ls.readProject({ projectName });
+    return {
+      enabled: true,
+      projectName,
+      projectId: project.id,
+      projectUrl: `https://smith.langchain.com/projects/p/${project.name || projectName}`,
+      createdAt: (project as any).start_time || (project as any).created_at || new Date().toISOString(),
+    };
+  } catch (err: any) {
+    return {
+      enabled: true,
+      projectName,
+      error: err.message
+    };
+  }
+}
+

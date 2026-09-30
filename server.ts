@@ -15,7 +15,7 @@ import { evaluateTelemetryDeterioration, simulateVitalsDeterioration } from "./s
 import { autoBookFollowUpAppointment } from "./src/lib/agents/appointmentAgent";
 import { rememberPatient, recallPatient, formatMemoryContext } from "./src/lib/memory";
 import { recordClinicianFeedback, getFeedbackMetrics, generateRetrainingPayload } from "./src/lib/feedbackAgent";
-import { recordRunTrace, getRecentTraces, getObservabilitySummary, type RunTrace, type TraceSpan } from "./src/lib/agents/observability";
+import { recordRunTrace, getRecentTraces, getObservabilitySummary, getLangsmithProjectStatus, type RunTrace, type TraceSpan } from "./src/lib/agents/observability";
 import { evaluateRagasMetrics, CLINICAL_BENCHMARK_CASES } from "./src/lib/agents/evalRagas";
 import {
   translateIndicText,
@@ -739,6 +739,17 @@ Vitals: ${JSON.stringify(vitals || {})}`;
     } catch (error: any) {
       console.error("Observability Summary Error:", error);
       res.status(500).json({ error: error.message || "Failed to get summary" });
+    }
+  });
+
+  // Observability: LangSmith Project Live Status & Cloud Tracing
+  app.get("/api/agent/observability/langsmith", async (_req, res) => {
+    try {
+      const status = await getLangsmithProjectStatus();
+      res.json(status);
+    } catch (error: any) {
+      console.error("LangSmith Status Error:", error);
+      res.status(500).json({ error: error.message || "Failed to get LangSmith status" });
     }
   });
 

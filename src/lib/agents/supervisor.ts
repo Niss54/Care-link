@@ -20,8 +20,9 @@ import { evaluatePMJAYEligibility } from "./pmjayAgent";
 import { lookupAbhaProfile } from "./abhaAgent";
 import { verifyAndResolveCitations } from "../citationResolver";
 import { callWithFailover } from "../failoverLlm";
+import { traceable } from "langsmith/traceable";
 
-export async function classifyClinicalIntent(
+async function _classifyClinicalIntent(
   query: string
 ): Promise<{ intent: ClinicalIntent; confidence: number }> {
   const qLower = query.toLowerCase();
@@ -101,6 +102,11 @@ export async function classifyClinicalIntent(
   return { intent: DEFAULT_INTENT, confidence: 0.50 };
 }
 
+export const classifyClinicalIntent = traceable(_classifyClinicalIntent, {
+  name: "Classify Clinical Intent",
+  run_type: "chain"
+});
+
 export function routeAgent(intent: string, confidence: number): ClinicalIntent {
   if (CLINICAL_INTENTS.includes(intent as ClinicalIntent) && confidence >= CONFIDENCE_FLOOR) {
     return intent as ClinicalIntent;
@@ -108,7 +114,7 @@ export function routeAgent(intent: string, confidence: number): ClinicalIntent {
   return DEFAULT_INTENT;
 }
 
-export async function runSupervisor(state: CareLinkAgentState): Promise<CareLinkAgentState> {
+async function _runSupervisor(state: CareLinkAgentState): Promise<CareLinkAgentState> {
   // ── STEP 1: Intent Classification ──
   const { intent, confidence } = await classifyClinicalIntent(state.userQuery);
   state.intent = intent;
@@ -266,3 +272,9 @@ export async function runSupervisor(state: CareLinkAgentState): Promise<CareLink
 
   return state;
 }
+
+export const runSupervisor = traceable(_runSupervisor, {
+  name: "CareLink Multi-Agent Clinical Supervisor",
+  run_type: "chain",
+  project_name: process.env.LANGSMITH_PROJECT || "carelink-clinical-agent"
+});
