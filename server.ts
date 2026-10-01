@@ -33,6 +33,7 @@ import {
   getIndicProvidersStatus,
 } from "./src/lib/agents/indicUnifiedGateway";
 import {
+  livekitTelephonyClient,
   escalationService,
   callPolicy,
   livekitWebhookHandler,
@@ -498,6 +499,46 @@ Vitals: ${JSON.stringify(vitals || {})}`;
   });
 
   // ─── LiveKit Critical Telephony Escalation Endpoints ─────────────────────────
+
+  // Get LiveKit Telephony Config & Live Connection Status
+  app.get("/api/telephony/config", (_req, res) => {
+    try {
+      const summary = livekitTelephonyClient.getConfigSummary();
+      res.json({
+        ...summary,
+        serverUrl: process.env.LIVEKIT_URL,
+        sipUri: process.env.LIVEKIT_SIP_URI,
+        isConnected: !livekitTelephonyClient.isMock(),
+      });
+    } catch (error: any) {
+      console.error("Telephony Config Error:", error);
+      res.status(500).json({ error: error.message || "Failed to get telephony config" });
+    }
+  });
+
+  // Generate LiveKit Room Access Token for Clinician Audio Monitor
+  app.post("/api/telephony/token", async (req, res) => {
+    try {
+      const { roomName, identity, name } = req.body || {};
+      if (!roomName) {
+        return res.status(400).json({ error: "Missing required 'roomName'" });
+      }
+      const token = await livekitTelephonyClient.generateRoomToken(
+        roomName,
+        identity || `clinician_${Date.now()}`,
+        name || 'Duty Clinician'
+      );
+      res.json({
+        token,
+        roomName,
+        serverUrl: process.env.LIVEKIT_URL,
+        sipUri: process.env.LIVEKIT_SIP_URI,
+      });
+    } catch (error: any) {
+      console.error("Telephony Token Generation Error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate LiveKit room token" });
+    }
+  });
 
   // Trigger Critical Voice Escalation with Safety & Policy Evaluation
   app.post("/api/telephony/escalate", async (req, res) => {

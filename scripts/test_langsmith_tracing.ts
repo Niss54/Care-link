@@ -50,8 +50,8 @@ async function main() {
       patientId: 'PT-HF-1092',
       vitals: { heartRate: 52, systolicBp: 88, diastolicBp: 56, spO2: 95 },
       medications: [
-        { name: 'Metoprolol Succinate', dose: '50mg', frequency: 'Daily' },
-        { name: 'Lisinopril', dose: '20mg', frequency: 'Daily' }
+        'Metoprolol Succinate 50mg Daily',
+        'Lisinopril 20mg Daily'
       ]
     }
   );
@@ -87,7 +87,7 @@ async function main() {
       startTime,
       durationMs: 45,
       status: 'SUCCESS',
-      metadata: s.details
+      metadata: s.detail as any
     })),
     createdAt: new Date().toISOString(),
     status: 'COMPLETED'

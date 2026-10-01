@@ -28,6 +28,7 @@ export interface LiveKitClientConfig {
   apiKey: string;
   apiSecret: string;
   sipTrunkId: string;
+  sipUri: string;
   agentName: string;
   telephonyMode: 'live' | 'mock';
   primaryContact: string;
@@ -71,6 +72,7 @@ export class LiveKitTelephonyClient {
       apiKey: customConfig?.apiKey || process.env.LIVEKIT_API_KEY || '',
       apiSecret: customConfig?.apiSecret || process.env.LIVEKIT_API_SECRET || '',
       sipTrunkId: customConfig?.sipTrunkId || process.env.LIVEKIT_SIP_TRUNK_ID || '',
+      sipUri: customConfig?.sipUri || process.env.LIVEKIT_SIP_URI || 'sip:1izi1wnvi5b.sip.livekit.cloud',
       agentName: customConfig?.agentName || process.env.LIVEKIT_VOICE_AGENT_NAME || 'carelink-escalation-agent',
       telephonyMode: isLiveRequested ? 'live' : 'mock',
       primaryContact: customConfig?.primaryContact || process.env.TELEPHONY_PRIMARY_CONTACT || '+919876543210',
@@ -113,6 +115,7 @@ export class LiveKitTelephonyClient {
       hasApiKey: Boolean(this.config.apiKey),
       hasApiSecret: Boolean(this.config.apiSecret),
       hasSipTrunkId: Boolean(this.config.sipTrunkId),
+      sipUri: this.config.sipUri,
       agentName: this.config.agentName,
       primaryContactMasked: this.config.primaryContact.slice(0, 3) + '****' + this.config.primaryContact.slice(-3),
       maxAttempts: this.config.maxAttempts,
