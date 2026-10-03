@@ -1,15 +1,13 @@
-# 🎬 CareLink — 3-Minute Live Hackathon Pitch & Demo Script
+# 🎬 CareLink — End-to-End Enterprise Platform Walkthrough & Verification Script
 
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Autonomous Agent Hackathon  
-> **Track:** Healthcare, MedTech & Clinical AI Agents  
+> **System:** CareLink Enterprise Clinical Copilot & Telemetry Escalation Platform  
 > **Presenter:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
-> **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
 > **Live Demo Target:** `http://localhost:3005` (Agent Cockpit AI)  
-> **Total Duration:** 3 Minutes Sharp (Judges Panel Pitch)  
+> **Total Duration:** 3-Minute Comprehensive Demonstration  
 
 ---
 
-## ⏱️ Pitch Timeline Overview
+## ⏱️ Walkthrough Timeline Overview
 
 ```
 0:00 ─── Hook & The Healthcare Crisis (30s)
@@ -17,7 +15,7 @@
 1:00 ─── Autonomous Multi-Agent Execution & Failover (45s)
 1:45 ─── Bharat Differentiator: Hindi ASHA Mode & PM-JAY (30s)
 2:15 ─── Autonomy: WhatsApp Discharge & Vitals Alert Loop (30s)
-2:45 ─── Active Learning Drift Alert & Winning Close (15s)
+2:45 ─── Active Learning Drift Alert & Production Close (15s)
 ```
 
 ---
@@ -27,7 +25,7 @@
 **[Visual: CareLink Clinical Dashboard showing 48 patients, 17 high-risk banner, and telemetry monitor]**
 
 > **SAY:**
-> *"Judges, every single day in hospitals across India, 6 out of every 100 patients discharged after a heart attack or acute surgery return to the emergency room within 30 days — suffering preventable complications and devastating financial toxicity.*
+> *"Every single day in hospitals across India and globally, 6 out of every 100 patients discharged after a heart attack or acute surgery return to the emergency room within 30 days — suffering preventable complications and devastating financial toxicity.*
 >
 > *Overstretched clinical teams cannot monitor thousands of post-discharge variables manually. But conventional generative AI cannot be trusted at the bedside: it leaks patient health records, hallucinates lethal dosages, and crashes when API rate limits strike.*
 >
@@ -104,7 +102,7 @@
 
 ---
 
-## ❓ Anticipated Judge Q&A Cheatsheet
+## ❓ Clinical & Technical Q&A Cheatsheet
 
 ### Q1: "How do you guarantee that patient health records aren't leaked to external LLMs?"
 > *"Our Layer 1 PHI Guardrail sits completely in front of all model gateways. It uses deterministic Regex and NER tokenizer patterns to replace all PII, PHI, and Indian Aadhaar numbers with synthetic session tokens (e.g. `[PATIENT_001]`). Only sanitized text reaches Gemini or Groq. De-tokenization happens in-memory inside the hospital firewall only when rendering to authorized clinicians."*

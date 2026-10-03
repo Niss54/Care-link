@@ -1,6 +1,6 @@
 # 🎙️ CareLink Telephony & LiveKit Closed-Loop Escalation Architecture
 
-> **Bharat Agentic 2026 Hackathon** — Critical Voice Escalation Specification  
+> **CareLink Enterprise Telephony Core** — Critical Voice Escalation Specification  
 > **Author:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 > **SDK:** `livekit-server-sdk` v2.16.1 | **Speech/Translation:** Digital India Bhashini (MeitY / NLTM) ⚡ Sarvam AI Indic API (`mayura:v1`, `bulbul:v1`)
 
@@ -99,7 +99,7 @@ CareLink integrates Sarvam AI to provide native voice synthesis and translation 
 | `en-IN` | English (India) | English (Latin) | Direct | `meera` |
 
 **Resilient Dual-Tier Fallback:**
-When running without `SARVAM_API_KEY` (in offline hackathon testing or demo sandboxes), CareLink falls back automatically to:
+When running without `SARVAM_API_KEY` (in offline sandbox testing or staging environments), CareLink falls back automatically to:
 1. **Deterministic Clinical Indic Vocabulary:** Validated clinical translations for hypoxia warnings, post-discharge care plans, and medication reminders.
 2. **Dual-Model LLM Gateway:** Gemini 2.5 Flash ⚡ Groq Cloud Indic translation.
 3. **Valid 16-Bit Mono PCM WAV Generator:** Generates playable RIFF audio chunks (`data:audio/wav;base64,UklGR...`) so UI audio players never crash.
@@ -148,4 +148,4 @@ When running without `SARVAM_API_KEY` (in offline hackathon testing or demo sand
 
 ---
 
-*CareLink Telephony Architecture — Built for Bharat Agentic 2026 by Nishant Maurya.*
+*CareLink Telephony Architecture — Built by Nishant Maurya.*

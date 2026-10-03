@@ -1,8 +1,7 @@
 # 🏗️ CareLink Technical Architecture Document
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
-> **Version:** 3.0.0-Agentic  
+> **Version:** 3.0.0-Production  
 > **Last Updated:** 2026-09-29  
 > **Architect:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 > **Status:** ✅ Approved Specification  
@@ -130,4 +129,4 @@ Mem0 Cloud REST API is configured with session scoping (`user_id = patient_id`):
 
 ---
 
-*CareLink Technical Architecture Document — Bharat Agentic 2026.*
+*CareLink Technical Architecture Document — Enterprise Architecture.*

@@ -2,7 +2,7 @@
  * CareLink LiveKit Telephony Client Adapter
  * 
  * Manages LiveKit Room dispatch, SIP participant outbound dialing,
- * and deterministic mock fallbacks for hackathons, testing, and offline modes.
+ * and deterministic mock fallbacks for staging, testing, and offline modes.
  */
 
 import {
@@ -314,7 +314,7 @@ export class LiveKitTelephonyClient {
 
   /**
    * Simulates full call lifecycle progression with state transition callbacks
-   * Used for automated test suites, hackathon demos, and mock escalation verification.
+   * Used for automated test suites, staging demonstrations, and mock escalation verification.
    */
   public async simulateMockCallLifecycle(
     alertPayload: CriticalAlertPayload,

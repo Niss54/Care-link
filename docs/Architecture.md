@@ -1,8 +1,7 @@
 # 🏗️ CareLink System Architecture
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
-> **Version:** 3.0.0-Agentic  
+> **Version:** 3.0.0-Production  
 > **Last Updated:** 2026-09-29  
 > **Architect:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 
@@ -100,4 +99,4 @@ CareLink is built for high-stakes healthcare operations where latency, auditabil
 
 ---
 
-*CareLink Architecture Documentation — Bharat Agentic 2026.*
+*CareLink Architecture Documentation — Enterprise Architecture.*

@@ -24,8 +24,8 @@
 [![Supabase](https://img.shields.io/badge/Supabase-RLS-3FCF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](./LICENSE)
 
-**🏆 Bharat Agentic 2026 — AIKart 12-Hour Autonomous Agent Hackathon**  
-**Track:** Healthcare, MedTech & Clinical AI Agents
+**Enterprise Autonomous Clinical Intelligence & Emergency Closed-Loop Care Platform**  
+**Domain:** Healthcare, MedTech, Clinical AI Agents & Real-Time Telehealth
 
 <img src="https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/rainbow.png" width="100%" alt="divider"/>
 
@@ -479,7 +479,7 @@ When set to <code>auto</code>, the gateway monitors latency and HTTP error codes
 
 Distributed under the **MIT License**. Free for research and educational purposes. See [`LICENSE`](./LICENSE) for details.
 
-> ⚠️ **Clinical Disclaimer:** Care Link is a hackathon prototype developed for **Bharat Agentic 2026**. While it incorporates rigorous pharmacovigilance gates and evidence-based clinical protocols, it is not certified by CDSCO/FDA and is not intended for unassisted clinical diagnosis in real healthcare environments.
+> ⚠️ **Clinical Disclaimer:** Care Link is an enterprise-grade clinical decision support and autonomous telemetry escalation platform. While it incorporates rigorous pharmacovigilance gates and evidence-based clinical protocols (ICMR, AHA, KDIGO, WHO), it is designed as an intelligent copilot for qualified healthcare teams and should supplement, not replace, direct physician clinical evaluation.
 
 ---
 
@@ -502,7 +502,7 @@ Distributed under the **MIT License**. Free for research and educational purpose
 
 <br/><br/>
 
-Developed with ❤️ and ☕ by **[Nishant Maurya](mailto:nishantma05@gmail.com)** for **Bharat Agentic 2026**
+Developed with ❤️ and ☕ by **[Nishant Maurya](mailto:nishantma05@gmail.com)**
 
 ⭐ **If you find Care Link inspiring, please star this repository!** ⭐
 

@@ -1,7 +1,6 @@
 # 🏥 CLAUDE.md — CareLink
 
 > Context file for AI assistants working on the CareLink clinical codebase.  
-> **Event:** Bharat Agentic 2026 — AIKart 12-Hour Autonomous Agent Hackathon  
 > **Author:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))
 
 ---

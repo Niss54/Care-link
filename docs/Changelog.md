@@ -20,7 +20,7 @@
 
 ---
 
-## [3.0.0-Agentic] — 2026-09-29 🏆 Bharat Agentic 2026 Major Upgrade
+## [3.0.0-Agentic] — 2026-09-29 🚀 Enterprise Agentic Architecture Major Upgrade
 
 ### ✨ Added
 - **Resilient Dual-Model Gateway:** Gemini 2.5 Flash primary with instant $<500\text{ ms}$ auto-failover to Groq (`openai/gpt-oss-120b`).

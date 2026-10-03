@@ -1,8 +1,6 @@
 # 🤖 CareLink — Multi-Agent Clinical AI Pipeline
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Autonomous Agent Hackathon  
-> **Track:** Healthcare, MedTech & Clinical AI Agents  
 > **Architecture:** 12-Layer Multi-Agent System (LangGraph + Qdrant + Mem0 + Dual-Model Failover)  
 > **Author & Lead:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 
@@ -213,4 +211,4 @@ Every clinical claim must cite evidence tags (`[ICMR-HF-01]`, `[AHA-DDI-01]`, `[
 
 ---
 
-*CareLink Multi-Agent Pipeline Documentation — Bharat Agentic 2026.*
+*CareLink Multi-Agent Pipeline Documentation — Enterprise Architecture.*

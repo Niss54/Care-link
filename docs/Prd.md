@@ -1,21 +1,20 @@
-# 📋 CareLink x Bharat Agentic 2026 — Master Product Requirements Document (PRD)
+# 📋 CareLink — Master Product Requirements Document (PRD)
 
 > **Project Name:** CareLink Agentic AI — Autonomous Multi-Agent HealthTech Platform  
-> **Fusion Target:** CareLink Core + AuRAG Agentic Architecture  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Autonomous Agent Hackathon (1 Oct 2026)  
-> **Track:** Healthcare, MedTech & Clinical AI Agents  
+> **Architecture Core:** CareLink Core + Multi-Agent Clinical Architecture  
+> **Domain:** Healthcare, MedTech & Clinical AI Systems  
 > **Author & Lead:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 > **Status:** 🟢 Approved Master Specification & Phased Execution Blueprint  
-> **Version:** 3.0.0-Bharat-Agentic (Post-Deep-Audit Revision)  
-> **Pre-Hackathon Score Baseline:** 68/100 ➔ **Target Hackathon Score:** 95+/100 (Top-4 / Winner Contender)
+> **Version:** 3.0.0-Enterprise-Production  
+> **System Readiness Baseline:** 68/100 ➔ **Target Enterprise Readiness Score:** 96+/100  
 
 ---
 
 ## 🧭 Executive Summary
 
-CareLink is a production-grade clinical copilot built for India's healthcare ecosystem. It tackles the severe crisis of **30-day patient readmissions** after acute cardiac, metabolic, and respiratory events. In high-volume Indian hospitals and primary health centers, clinicians face extreme burnout and cannot review thousands of post-discharge physiological variables manually. Furthermore, conventional LLMs hallucinate medical advice without clinical grounding, leak Protected Health Information (PHI) across API boundaries, and fail under rate limits.
+CareLink is a production-grade clinical copilot built for modern healthcare ecosystems. It tackles the severe crisis of **30-day patient readmissions** after acute cardiac, metabolic, and respiratory events. In high-volume hospitals and primary health centers, clinicians face extreme burnout and cannot review thousands of post-discharge physiological variables manually. Furthermore, conventional LLMs hallucinate medical advice without clinical grounding, leak Protected Health Information (PHI) across API boundaries, and fail under rate limits.
 
-Following a pre-hackathon deep audit (`CareLink_Deep_Audit_Report.pdf`), CareLink is upgraded from a 9-layer system into a **12-Layer Autonomous HealthTech Architecture** fusing the best agentic components from **AuRAG** (LangGraph StateGraph supervisor, resilient Gemini $\rightarrow$ Groq auto-failover, Qdrant Cloud clinical RAG, and Mem0 long-term memory) with **Bharat-native health integrations**:
+Following a comprehensive architectural audit, CareLink is engineered as a **12-Layer Autonomous HealthTech Architecture** incorporating resilient multi-agent coordination (LangGraph StateGraph supervisor, resilient Gemini $\rightarrow$ Groq auto-failover, Qdrant Cloud clinical RAG, and Mem0 long-term memory) with **Bharat-native health integrations**:
 1. **Zero Raw PHI Leakage:** 100% of HIPAA PII/PHI (names, MRNs, phone numbers, Aadhaar numbers) is scrubbed into reversible tokens inside the local firewall before external inference.
 2. **Deterministic Pharmacovigilance:** Hard rule engines block fatal drug interactions (e.g., Warfarin + NSAID, Metformin with eGFR < 30 mL/min) before LLM generation.
 3. **Evidence-Grounded RAG:** Clinical decisions cite verified guidelines (`[ICMR-HF-01]`, `[AHA-DDI-01]`, `[KDIGO-CKD-01]`, `[WHO-SEPSIS-01]`) with Grounding Fidelity $\ge 0.70$.
@@ -58,22 +57,22 @@ Following a pre-hackathon deep audit (`CareLink_Deep_Audit_Report.pdf`), CareLin
 
 ---
 
-## 1. Problem Statement & Hackathon Scoring Matrix
+## 1. Problem Statement & Enterprise Reliability Matrix
 
-### 1.1 The Bharat Healthcare Reality
-- **Bedside Cognitive Overload:** In government and private hospitals across Bharat, doctor-to-patient ratios exceed 1:1,000. Post-discharge check-ins are rare.
-- **Language Barrier:** Over 600 million citizens speak Hindi and regional languages; traditional hospital discharge summaries in English leave patients and rural ASHA workers confused.
-- **Unregulated Generative AI Risks:** Generative LLMs hallucinate dosages, fail when rate limits strike, and expose sensitive patient health records.
+### 1.1 The Healthcare Delivery Challenge
+- **Bedside Cognitive Overload:** In high-volume hospitals, doctor-to-patient ratios exceed 1:1,000. Post-discharge telemetry check-ins are rarely monitored continuously.
+- **Language Barrier:** Over 600 million citizens speak Hindi and regional languages; traditional hospital discharge summaries in English leave patients and community health workers confused.
+- **Unregulated Generative AI Risks:** Generic LLMs hallucinate dosages, fail when rate limits strike, and expose sensitive patient health records.
 
-### 1.2 Bharat Agentic 2026 Scoring Breakdown & Trajectory
-| Evaluation Dimension | Weight | Baseline (Audit) | With Upgrades | Key Hackathon Win Factor |
+### 1.2 Clinical Reliability & Operational Benchmark Matrix
+| Evaluation Dimension | Weight | Baseline (Audit) | Production Target | Key Operational Benchmark |
 | :--- | :---: | :---: | :---: | :--- |
-| **Agentic Depth & Tool Use** | 30% | 5.0 / 10 | **9.8 / 10** | LangGraph StateGraph, Gemini Function Calling (`check_vitals`, `lookup_guideline`), autonomous action loops |
-| **Bharat Health Stack** | 20% | 2.0 / 10 | **9.5 / 10** | ABHA ID lookup agent, PM-JAY ₹5L eligibility checker, Hindi output for ASHA workers |
+| **Agentic Depth & Tool Use** | 30% | 5.0 / 10 | **9.8 / 10** | LangGraph StateGraph, Gemini Function Calling (`check_vitals`, `lookup_guideline`), autonomous closed-loop actions |
+| **National Health Stack** | 20% | 2.0 / 10 | **9.5 / 10** | ABHA ID lookup agent, PM-JAY ₹5L eligibility checker, Hindi output for community health workers |
 | **Clinical RAG & Grounding** | 20% | 8.0 / 10 | **9.8 / 10** | 10 ICMR/AHA/WHO guidelines in Qdrant Cloud, token-overlap Citation Resolver |
 | **Privacy, Safety & Failover** | 15% | 8.0 / 10 | **9.9 / 10** | HIPAA Regex+NER scrubber, server-side key isolation, Gemini ⚡ Groq failover |
 | **Observability & Feedback** | 15% | 5.5 / 10 | **9.5 / 10** | Active learning drift alerts (>15%), LangSmith spans, RAGAS faithfulness (>0.85) |
-| **TOTAL SCORE** | 100% | **68 / 100** | **96 / 100** | **PODIUM / TOP-4 WINNER CONTENDER** |
+| **TOTAL READINESS** | 100% | **68 / 100** | **96 / 100** | **ENTERPRISE CLINICAL PRODUCTION GRADE** |
 
 ---
 
@@ -169,11 +168,11 @@ The roadmap is structured into 10 testable phases. Phases 1–6 are verified and
 - [x] **Phase 3: LangGraph Supervisor & 4 Specialists** (StateGraph router, Triage, Risk, CarePlan, MedSafety).
 - [x] **Phase 4: Long-Term Memory & Active Learning** (Mem0 integration, $>15\%$ drift detection).
 - [x] **Phase 5: Frontend Agent Cockpit UI** (React 19, StateGraph visualizer, reasoning trace, review actions).
-- [x] **Phase 6: Observability & RAGAS Evaluator** (LangSmith traces, RAGAS benchmark test suites, hackathon docs).
+- [x] **Phase 6: Observability & RAGAS Evaluator** (LangSmith traces, RAGAS benchmark test suites, system architecture docs).
 
 ---
 
-### 🚀 UPCOMING PHASES (Winning Upgrades from Deep Audit)
+### 🚀 UPCOMING PHASES (Production Hardening & Enhancements)
 
 ### Phase 7: Critical Security & Configuration Hardening
 - [x] **Task 7.1:** Move all direct LLM calls to `server.ts` via `/api/agent/run` and `/api/agent/llm-call`, and sanitize `failoverLlm.ts` to eliminate client-side key leakage.
@@ -195,13 +194,13 @@ The roadmap is structured into 10 testable phases. Phases 1–6 are verified and
 - [ ] **Task 9.4:** Build `appointmentAgent.ts` — Autonomous follow-up appointment booking in the CareLink calendar for high-risk patients.
 - [ ] **Task 9.5:** Git commit Phase 9 changes locally (no push).
 
-### Phase 10: Streaming Cockpit UX, AuRAG Pruning & Hackathon Polish
+### Phase 10: Streaming Cockpit UX, Code Pruning & Production Hardening
 - [ ] **Task 10.1:** Implement animated step-by-step agent execution visualization and typewriter response streaming in `AgentCockpitView.tsx`.
 - [ ] **Task 10.2:** Display PM-JAY card, ABHA ID badge, and WhatsApp follow-up preview inside the Cockpit.
-- [ ] **Task 10.3:** Prune unwanted industrial modules from `aurag/` while keeping core agent references safe.
-- [ ] **Task 10.4:** Rehearse the 3-minute winning demo flow (CHF $\rightarrow$ Vitals Alert $\rightarrow$ Hindi Plan $\rightarrow$ WhatsApp Send).
-- [ ] **Task 10.5:** Final git commit locally (no push).
+- [ ] **Task 10.3:** Prune unused external modules while keeping core agent references safe.
+- [ ] **Task 10.4:** Rehearse the end-to-end clinical workflow (CHF $\rightarrow$ Vitals Alert $\rightarrow$ Hindi Plan $\rightarrow$ WhatsApp Send).
+- [ ] **Task 10.5:** Final production verification and documentation update.
 
 ---
 
-*CareLink PRD v3.0 Approved for Bharat Agentic 2026 by Nishant Maurya.*
+*CareLink PRD v3.0 Approved by Nishant Maurya.*

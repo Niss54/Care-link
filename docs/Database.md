@@ -1,7 +1,6 @@
 # 🗄️ CareLink Database Design & Schema
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
 > **Database:** Supabase PostgreSQL + Row-Level Security (RLS)  
 > **Vector DB:** Qdrant Cloud (`carelink_guidelines`)  
 > **Last Updated:** 2026-09-29  
@@ -70,4 +69,4 @@ CREATE TABLE audit_log (
 
 ---
 
-*CareLink Database Design — Bharat Agentic 2026.*
+*CareLink Database Design — Enterprise Architecture.*

@@ -1,8 +1,7 @@
 # 🎫 CareLink — Feature Ticket & Sprint Milestone List
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
-> **Version Target:** v3.0.0-Bharat-Agentic  
+> **Version Target:** v3.0.0-Production  
 > **Last Updated:** 2026-09-29  
 > **Lead Architect & Developer:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 > **Status:** 🟢 Active Sprint  
@@ -108,12 +107,12 @@
 
 ---
 
-## 🎨 EPIC-10: Streaming UX, AuRAG Pruning & Demo Polish
+## 🎨 EPIC-10: Streaming UX, Code Pruning & System Hardening
 - **TICKET-1001 (⬜ Ready):** Add typewriter response streaming and animated execution step cards in UI.
 - **TICKET-1002 (⬜ Ready):** Display PM-JAY card, ABHA ID badge, and WhatsApp follow-up preview in Cockpit.
-- **TICKET-1003 (⬜ Ready):** Prune unwanted industrial modules from `aurag/` (CAD, Bitcoin LNbits, pump SCADA).
-- **TICKET-1004 (⬜ Ready):** Rehearse 3-minute hackathon demo flow.
+- **TICKET-1003 (⬜ Ready):** Prune unused external modules while keeping core healthcare agent references safe.
+- **TICKET-1004 (⬜ Ready):** Rehearse 3-minute clinical verification demo flow.
 
 ---
 
-*CareLink Feature Ticket List — Bharat Agentic 2026.*
+*CareLink Feature Ticket List — Enterprise Architecture.*

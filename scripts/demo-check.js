@@ -150,7 +150,7 @@ async function runChecks() {
   console.log(`\n------------------------------------------`);
   if (checksPassed === TOTAL_CHECKS) {
     console.log(`${C_GREEN}■ ${checksPassed}/${TOTAL_CHECKS} checks passed.${C_RESET}`);
-    console.log(`${C_GREEN}■ DEMO READY — Go win that hackathon!${C_RESET}`);
+    console.log(`${C_GREEN}■ SYSTEM READY — Production health verification passed!${C_RESET}`);
     process.exit(0);
   } else {
     console.log(`${C_YELLOW}■ ${checksPassed}/${TOTAL_CHECKS} checks passed.${C_RESET}`);

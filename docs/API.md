@@ -1,8 +1,7 @@
 # 🔌 CareLink API Documentation
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
-> **API Version:** v3.0-Agentic  
+> **API Version:** v3.0-Production  
 > **Base URL:** `http://localhost:3005`  
 > **Format:** REST + JSON  
 > **Last Updated:** 2026-09-29  
@@ -150,4 +149,4 @@ Triggers the standardized RAGAS clinical evaluation suite across 5 benchmark cas
 
 ---
 
-*CareLink API Documentation — Bharat Agentic 2026.*
+*CareLink API Documentation — Enterprise Architecture.*

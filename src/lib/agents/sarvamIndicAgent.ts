@@ -177,7 +177,7 @@ export interface TtsResponse {
 
 /**
  * Deterministic clinical dictionary for 10 Indic languages
- * Ensures immediate, rock-solid offline accuracy for all hackathon demos and benchmarks.
+ * Ensures immediate, rock-solid offline accuracy for sandbox environments and benchmarks.
  */
 const CLINICAL_INDIC_DICTIONARY: Record<string, {
   hypoxiaAlert: string;

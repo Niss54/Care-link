@@ -43,7 +43,7 @@ npm run lint
 ## 🔄 Modes of Operation
 
 ### 1. Deterministic Mock Mode (`TELEPHONY_MODE=mock`) — Default
-- **When to use:** Local testing, CI/CD automated runners, hackathon demo sandboxes without active SIP credits.
+- **When to use:** Local testing, CI/CD automated runners, staging demonstration sandboxes without active SIP credits.
 - **Behavior:**
   - Room dispatch generates mock IDs (`disp_mock_XXXX`).
   - SIP participant dials simulated endpoints.
@@ -67,7 +67,7 @@ npm run lint
 
 ---
 
-## 🎬 90-Second Hackathon Judge Demo Walkthrough
+## 🎬 90-Second Critical Escalation Demonstration Walkthrough
 
 1. **Open Cockpit:** Navigate to `http://localhost:3005` ➔ click **"Agent Cockpit"**.
 2. **Trigger Acute Anomaly:** Click **"🚨 Simulate Acute SpO2 Drop (88%)"** in the left column.

@@ -2,10 +2,8 @@
 
 > **Project Name:** CareLink — Autonomous Multi-Agent HealthTech Platform  
 > **Upgrade Target:** Closed-Loop Telephony Escalation (LiveKit) + Sarvam AI Indic Multilingual Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Autonomous Agent Hackathon  
 > **Author & Lead:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
 > **Status:** 🟢 Approved Specification — Phased Execution Blueprint (Phases 11–15)  
-> **Baseline Reference:** [`CareLink_LiveKit_Call_And_Hackathon_Upgrade_Spec.pdf`](file:///c:/Users/nisha/OneDrive/Documents/Downloads/carelink/public/CareLink_LiveKit_Call_And_Hackathon_Upgrade_Spec.pdf)  
 
 ---
 
@@ -94,7 +92,7 @@ Simultaneously, through **Sarvam AI**, CareLink gains native high-precision tran
 2. **Zero Hallucination / No Prescriptions:** The voice agent reads only server-verified facts. It is strictly prohibited from diagnosing new conditions, prescribing medications, or recommending dosage alterations on the call.
 3. **Identification & Brevity:** Every call begins: *"This is CareLink automated clinical escalation. Critical alert for case CASE-104..."* Initial delivery is kept strictly under 25 seconds.
 4. **Natural Acknowledgement:** Accepts conversational affirmative phrases ("acknowledge", "I'm on it", "I am handling it") and DTMF keypad input (`1`).
-5. **Deterministic Mock Mode (`TELEPHONY_MODE=mock`):** Enables full CI/CD testing, instant hackathon evaluation, and offline demonstrations with 100% reproducible state machine transitions.
+5. **Deterministic Mock Mode (`TELEPHONY_MODE=mock`):** Enables full CI/CD testing, instant automated verification, and offline staging demonstrations with 100% reproducible state machine transitions.
 
 ---
 
@@ -154,7 +152,7 @@ Simultaneously, through **Sarvam AI**, CareLink gains native high-precision tran
 
 ---
 
-## 🎬 90-Second Hackathon Judge Wow Sequence
+## 🎬 90-Second Emergency Closed-Loop Escalation Demonstration Sequence
 
 1. **Dashboard Baseline:** Show 48 patients, Sunita Sharma (CHF), and STABLE drift status.
 2. **Acute Deterioration:** Click "🚨 Simulate Acute SpO2 Drop (88%)" — Vitals plummet to 78% on telemetry.
@@ -162,8 +160,8 @@ Simultaneously, through **Sarvam AI**, CareLink gains native high-precision tran
 4. **Phone Rings & Voice Alert:** The clinician's phone rings. The LiveKit voice agent speaks the concise alert facts in 20 seconds.
 5. **Verbal Acknowledgement:** The doctor speaks: *"Acknowledge, I'm at bed 12."*
 6. **Closed-Loop Resolved:** The dashboard updates in real time to `ACKNOWLEDGED`, stopping the escalation ladder and saving the audit trace.
-7. **Bharat Multilingual Demo:** Switch to Tamil/Hindi/Telugu via Sarvam AI, displaying regional discharge instructions for village caregivers.
+7. **Multilingual Capability:** Switch to Tamil/Hindi/Telugu via Sarvam AI, displaying regional discharge instructions for village caregivers.
 
 ---
 
-*CareLink PRD v4.0 — Engineered for Bharat Agentic 2026 by Nishant Maurya.*
+*CareLink PRD v4.0 — Engineered by Nishant Maurya.*

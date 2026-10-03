@@ -1,7 +1,6 @@
 # 🚀 CareLink Deployment & Operations Guide
 
 > **Project:** CareLink — Autonomous Multi-Agent HealthTech Platform  
-> **Event:** Bharat Agentic 2026 | AIKart 12-Hour Hackathon  
 > **Runtime:** Node.js 20.x + Express + Vite  
 > **Last Updated:** 2026-09-29  
 > **Lead:** Nishant Maurya ([nishantma05@gmail.com](mailto:nishantma05@gmail.com))  
@@ -55,4 +54,4 @@ npx tsx scripts/test_phase6_e2e.ts
 
 ---
 
-*CareLink Deployment Guide — Bharat Agentic 2026.*
+*CareLink Deployment Guide — Enterprise Operations.*
